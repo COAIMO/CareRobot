@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:ignore="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_user_info"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/user_info_background"
+        android:drawableStart="@drawable/user_ic"
+        android:drawablePadding="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:textColor="@color/navi_textColor"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.7"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.2"
+        android:text="김민지" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_logout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/navi_backgroundColor"
+        android:drawableStart="@drawable/logout_ic"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:text="@string/btn_logout_title"
+        android:textColor="@color/navi_textColor"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.3"
+        app:layout_constraintStart_toStartOf="@id/btn_user_info"
+        app:layout_constraintTop_toBottomOf="@id/btn_user_info"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.2" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/btn_mode_carry"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/mode_nonselected_button"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="1"
+        app:layout_constraintStart_toEndOf="@id/btn_user_info"
+        app:layout_constraintTop_toTopOf="@id/btn_user_info"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.2">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/carry_mode_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/btn_mode_behavior"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/mode_nonselected_button"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="1"
+        app:layout_constraintStart_toEndOf="@id/btn_mode_carry"
+        app:layout_constraintTop_toTopOf="@id/btn_user_info"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.2">
+        <TextView
+            android:id="@+id/tv_behavior_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/behavior_mode_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/behavior_mode_title_sub"
+            android:textColor="@color/navi_textColor"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/tv_behavior_title"
+            app:layout_constraintStart_toStartOf="@+id/tv_behavior_title"
+            app:layout_constraintTop_toBottomOf="@id/tv_behavior_title" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/btn_mode_change"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/mode_nonselected_button"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="1"
+        app:layout_constraintStart_toEndOf="@id/btn_mode_behavior"
+        app:layout_constraintTop_toTopOf="@id/btn_user_info"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.2">
+        <TextView
+            android:id="@+id/tv_change_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/change_mode_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/change_mode_title_sub"
+            android:textColor="@color/navi_textColor"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/tv_change_title"
+            app:layout_constraintStart_toStartOf="@+id/tv_change_title"
+            app:layout_constraintTop_toBottomOf="@id/tv_change_title" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/btn_mode_all"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/mode_nonselected_button"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="1"
+        app:layout_constraintStart_toEndOf="@id/btn_mode_change"
+        app:layout_constraintTop_toTopOf="@id/btn_user_info"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.2" >
+        <TextView
+            android:id="@+id/tv_all_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/all_mode_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/all_mode_title_sub"
+            android:textColor="@color/navi_textColor"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="@+id/tv_all_title"
+            app:layout_constraintStart_toStartOf="@+id/tv_all_title"
+            app:layout_constraintTop_toBottomOf="@id/tv_all_title" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

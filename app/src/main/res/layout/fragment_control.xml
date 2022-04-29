@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".Logics.ControlFragment">
+    <ImageView
+        android:id="@+id/iv_wheelMove"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/wheel_move"
+        android:background="@drawable/seperate_line"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.35" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/wheel_line_control_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/controlbox_background"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintStart_toEndOf="@id/iv_wheelMove"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.65">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_goBack"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:background="@drawable/control_button"
+            android:drawableStart="@drawable/go_back_ic"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:text="@string/btn_goBack_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_goForward"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.35" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_goForward"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/control_button"
+            android:drawableEnd="@drawable/go_forward_ic"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:text="@string/btn_goForward_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toEndOf="@id/btn_goBack"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.35" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_stop_1"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/stop_button"
+            android:text="@string/btn_stop_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="35sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_goForward"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <ImageView
+        android:id="@+id/iv_shoulderMove"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/shoulder_move"
+        android:background="@drawable/seperate_line"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_wheelMove"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.35" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/wheel_turn_control_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/controlbox_background"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintStart_toEndOf="@id/iv_shoulderMove"
+        app:layout_constraintTop_toTopOf="@id/iv_shoulderMove"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.65">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_turnLeft"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:background="@drawable/control_button"
+            android:drawableStart="@drawable/trun_left_ic"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/btn_turnLeft_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_turnRight"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.35" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_turnRight"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/control_button"
+            android:drawableEnd="@drawable/trun_right_ic"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="@string/btn_turnRight_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toEndOf="@id/btn_turnLeft"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.35" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_stop_2"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/stop_button"
+            android:text="@string/btn_stop_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="35sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_turnRight"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/iv_waistMove"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/waist_move"
+        android:background="@drawable/seperate_line"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_shoulderMove"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.35" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/controlbox_background"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.24"
+        app:layout_constraintStart_toEndOf="@id/iv_waistMove"
+        app:layout_constraintTop_toTopOf="@id/iv_waistMove"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.65">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_waistUp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:background="@drawable/control_button"
+            android:drawableStart="@drawable/up_arrow_ic"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:text="@string/btn_upWaist_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/btn_waistDown"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.72" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_waistDown"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/control_button"
+            android:drawableStart="@drawable/down_arrow_ic"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:text="@string/btn_downWaist_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_waistUp"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.72" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_stop_3"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/stop_button"
+            android:text="@string/btn_stop_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="35sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_waistUp"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:id="@+id/iv_elbowMove"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/elbow_move"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.28"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_waistMove"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.35" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/main_backgroundColor"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.28"
+        app:layout_constraintStart_toEndOf="@id/iv_elbowMove"
+        app:layout_constraintTop_toTopOf="@id/iv_elbowMove"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.65">
+
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_elbowUp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:background="@drawable/control_button"
+            android:drawableStart="@drawable/up_arrow_ic"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:text="@string/btn_upElbow_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/btn_elbowDown"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.72" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_elbowDown"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/control_button"
+            android:drawableStart="@drawable/down_arrow_ic"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:text="@string/btn_downElbow_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/btn_play"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_elbowUp"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintVertical_chainStyle="spread_inside"
+            app:layout_constraintWidth_percent="0.72" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_stop_4"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/stop_button"
+            android:text="@string/btn_stop_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="35sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/btn_elbowDown"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_elbowUp"
+            app:layout_constraintTop_toTopOf="@id/btn_elbowUp" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_play"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/example_play_button"
+            android:drawableStart="@drawable/play_ic"
+            android:paddingStart="40dp"
+            android:paddingEnd="40dp"
+            android:text="@string/btn_examplePlay_title"
+            android:textColor="@color/navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:layout_marginTop="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.20"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_elbowDown"
+            app:layout_constraintVertical_chainStyle="spread_inside"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.89" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

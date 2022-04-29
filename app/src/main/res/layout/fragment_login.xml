@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/mainbackground"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".LoginFragment">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_select_robot"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/login_circle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.8" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_app_logo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/dito_ic"
+        app:layout_constraintBottom_toBottomOf="@id/iv_select_robot"
+        app:layout_constraintEnd_toEndOf="@id/iv_select_robot"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.08"
+        app:layout_constraintStart_toStartOf="@id/iv_select_robot"
+        app:layout_constraintTop_toTopOf="@id/iv_select_robot"
+        app:layout_constraintVertical_bias="0.18"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.3" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_user_ID"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/login_edittext_background"
+        android:drawableStart="@drawable/login_user_ic"
+        android:hint="@string/user_name"
+        android:textSize="25sp"
+        android:paddingStart="30dp"
+        android:drawablePadding="20dp"
+        app:layout_constraintBottom_toTopOf="@id/et_user_Password"
+        app:layout_constraintEnd_toEndOf="@id/iv_select_robot"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.06"
+        app:layout_constraintStart_toStartOf="@id/iv_select_robot"
+        app:layout_constraintTop_toBottomOf="@id/iv_app_logo"
+        app:layout_constraintVertical_chainStyle="spread_inside"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.5"
+        android:inputType="text"/>
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/et_user_Password"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/login_edittext_background"
+        android:drawableStart="@drawable/login_password_ic"
+        android:hint="@string/user_password"
+        android:textSize="25sp"
+        android:paddingStart="30dp"
+        android:drawablePadding="20dp"
+        app:layout_constraintEnd_toEndOf="@id/iv_select_robot"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.06"
+        app:layout_constraintStart_toStartOf="@id/iv_select_robot"
+        app:layout_constraintTop_toBottomOf="@id/et_user_ID"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.5"
+        android:inputType="textPassword"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_join"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/sub_navi_button"
+        android:text="사용자 등록하기"
+        android:textColor="@color/navi_textColor"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.04"
+        app:layout_constraintStart_toStartOf="@id/et_user_Password"
+        app:layout_constraintTop_toBottomOf="@id/et_user_Password"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.24" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btn_login"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/example_play_button"
+        android:text="입장하기"
+        android:textColor="@color/navi_textColor"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@id/et_user_Password"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.04"
+        app:layout_constraintTop_toTopOf="@id/btn_join"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.24" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_ment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:text="ID/PW가 기억이 안나신다면?"
+        android:textColor="@color/main_textColor"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@id/iv_select_robot"
+        app:layout_constraintStart_toStartOf="@id/iv_select_robot"
+        app:layout_constraintTop_toBottomOf="@id/btn_join" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_find"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/text_find_id_pw"
+        android:textColor="#4690CE"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@id/iv_select_robot"
+        app:layout_constraintStart_toStartOf="@id/iv_select_robot"
+        app:layout_constraintTop_toBottomOf="@id/tv_ment" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="100dp"
+        android:src="@drawable/wheeline_logo_ic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>

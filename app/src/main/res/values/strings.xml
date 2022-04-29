@@ -1,0 +1,51 @@
+<resources>
+    <string name="app_name">CareRobot</string>
+    <string name="btn_logout_title">로그아웃</string>
+    <string name="btn_back_title">뒤로가기</string>
+    <string name="btn_home_title">홈으로</string>
+    <string name="btn_stop_title">정지</string>
+    <string name="btn_goBack_title">후진</string>
+    <string name="btn_goForward_title">전진</string>
+    <string name="btn_turnLeft_title">좌회전</string>
+    <string name="btn_turnRight_title">우회전</string>
+    <string name="btn_upWaist_title">팔 리프트 올리기</string>
+    <string name="btn_downWaist_title">팔 리프트 내리기</string>
+    <string name="btn_upElbow_title">팔꿈치 각도 올리기</string>
+    <string name="btn_downElbow_title">팔꿈치 각도 내리기</string>
+    <string name="btn_examplePlay_title">사용예시 영상보기</string>
+
+
+    <string name="carry_mode_title">물건 옮기기</string>
+    <string name="carry_mode_title_heavy">무거운 물건 들어주기</string>
+    <string name="carry_mode_title_height">높이 올려주기</string>
+
+    <string name="behavior_mode_title">거동 보조</string>
+    <string name="behavior_mode_title_sub">최소 도움</string>
+    <string name="behavior_mode_title_stand">기립 (안아일으키기)</string>
+    <string name="behavior_mode_title_walk_hand">보행지원 (손잡기)</string>
+    <string name="behavior_mode_title_walk_waist">보행지원 (허리잡기)</string>
+
+    <string name="change_mode_title">이승 보조</string>
+    <string name="change_mode_title_sub">반 의존</string>
+    <string name="change_mode_title_change_hug">이승지원 (안아서)</string>
+    <string name="change_mode_title_transfer_stand">이동지원 (기립운반)</string>
+    <string name="change_mode_title_transfer_harness">이동지원 (하네스보행)</string>
+
+    <string name="all_mode_title">완전 보조</string>
+    <string name="all_mode_title_sub">완전 의존</string>
+    <string name="all_mode_title_position">자세변환 (일으키기)</string>
+    <string name="all_mode_title_change_sling">이승지원 (슬링)</string>
+    <string name="all_mode_title_transfer_sling">이동지원 (슬링)</string>
+    <string name="all_mode_title_transfer_bedridden_sling">이동지원 (와상슬링)</string>
+    <string name="all_mode_title_transfer_bedridden_board">이동지원 (와상보드)</string>
+    <string name="all_mode_title_transfer_chair">이동지원 (휠체어/의자)</string>
+    <string name="user_name">사용자 이름</string>
+    <string name="user_password">비밀번호</string>
+    <string name="text_find_id_pw"><u>ID/PW 찾으로 가기</u></string>
+    <string name="btn_join_title">등록하기</string>
+    <string name="text_user_phone_number">연락처</string>
+    <string name="text_password_confirm">비빌번호 확인</string>
+    <string name="text_password">비밀번호</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

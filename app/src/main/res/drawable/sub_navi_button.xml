@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle" >
+
+            <solid android:color="@color/sub_navi_button_backgroundColor"/>
+
+            <corners android:bottomLeftRadius="10dp"
+                android:bottomRightRadius="10dp"
+                android:topLeftRadius="10dp"
+                android:topRightRadius="10dp"/>
+            <padding android:left="10dp" android:top="0dp" android:right="0dp" android:bottom="0dp" />
+
+        </shape>
+    </item>
+
+</layer-list>

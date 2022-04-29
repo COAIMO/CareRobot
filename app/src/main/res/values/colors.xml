@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+
+
+    <color name="navi_backgroundColor">#1A1A1A</color>
+
+    <color name="sub_navi_backgroundColor">#545454</color>
+    <color name="sub_navi_button_backgroundColor">#939598</color>
+
+    <color name="control_button_backgroundColor">#FFFFFF</color>
+    <color name="control_stop_button_backgroundColor">#FF525F</color>
+    <color name="main_backgroundColor">#F2F5F7</color>
+    <color name="main_textColor">#605D5E</color>
+
+    <color name="control_box_lineColor">#DCE1E5</color>
+
+    <color name="navi_textColor">#FFFFFFFF</color>
+    <color name="sub_navi_textColor">#4D4D4D</color>
+
+</resources>

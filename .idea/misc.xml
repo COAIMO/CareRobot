@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/back_ic.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/behavior_mode_button.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/carry_mode_button.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/change_mode_button.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/control_button.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/controlbox_background.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/down_arrow_ic.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/example_play_button.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/forward_ic.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/go_back_ic.xml" value="0.306" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/go_forward_ic.xml" value="0.306" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/home_ic.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/ic_logout_ic.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/join_robot_ic.xml" value="0.269" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/login_edittext_background.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/logout_ic.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/mode1_selected_button.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/mode2_selected_button.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/mode3_selected_button.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/mode4_selected_button.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/mode_nonselected_button.xml" value="0.33" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/perfect_mode_button.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/play_ic.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/seperate_line.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/stop_button.xml" value="0.306" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/sub_navi_button.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/trun_left_ic.xml" value="0.18" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/trun_right_ic.xml" value="0.359" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/up_arrow_ic.xml" value="0.421" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/user_ic.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/user_info_background.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/activity_main.xml" value="0.15" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/choice_mode_layout.xml" value="0.16" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/control_box.xml" value="0.16" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_carry_mode.xml" value="0.27057291666666666" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_control.xml" value="0.18333333333333332" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_find_account_info.xml" value="0.14817708333333332" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_login.xml" value="0.14817708333333332" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_main.xml" value="0.15" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_new_account.xml" value="0.1" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_select_mode.xml" value="0.18333333333333332" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_select_mode2.xml" value="0.11958333333333333" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_selected_mode.xml" value="0.18" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/join_layout.xml" value="0.2" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/login_layout.xml" value="0.18" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/selected_mode_layout.xml" value="0.33" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/subtop_navigationbar.xml" value="0.33" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/top_navigationbar.xml" value="0.2" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

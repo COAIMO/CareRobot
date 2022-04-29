@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/main_backgroundColor">
+
+<!--    <include-->
+<!--        android:id="@+id/top_Navi"-->
+<!--        layout="@layout/top_navigationbar" />-->
+
+    <!--    물건 옮기기 모드-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/carry_mode_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/circle_message"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_Navi">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_heavy"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/carry_mode_button"
+            android:text="무거운 물건\n들어주기"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/btn_height"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_height"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/carry_mode_button"
+            android:text="@string/carry_mode_title_height"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_heavy"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--    거동보조 모드-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/behavior_mode_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/circle_message"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_Navi">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_stand"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/behavior_mode_button"
+            android:text="기립\n(안아 일으키기)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/btn_walk_hand"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_walk_hand"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/behavior_mode_button"
+            android:text="보행지원\n(손 잡기)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/btn_walk_hug"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_stand"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_walk_hug"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/behavior_mode_button"
+            android:text="보행지원\n(허리 잡기)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_walk_hand"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--이승 보조-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/change_mode_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/circle_message"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_Navi">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_change_hug"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/change_mode_button"
+            android:text="이승지원\n(안아서)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/btn_transfer_stand"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_transfer_stand"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/change_mode_button"
+            android:text="이동지원\n(기립운반)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/btn_transfer_harness"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_change_hug"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_transfer_harness"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/change_mode_button"
+            android:text="이동지원\n(하네스보행)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_transfer_stand"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.5" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--    완전보조-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/all_mode_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/circle_message"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_Navi">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_position"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/all_mode_button"
+            android:text="자세변환\n(일으키기)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@id/btn_change_sling"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/btn_transfer_sling"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.45" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_change_sling"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/all_mode_button"
+            android:text="이승지원\n(슬링)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/btn_position"
+            app:layout_constraintTop_toTopOf="@id/btn_position"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btn_position"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.45" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_transfer_sling"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/all_mode_button"
+            android:text="이동지원\n(슬링)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_transfer_bedridden_sling"
+            app:layout_constraintTop_toBottomOf="@id/btn_position"
+            app:layout_constraintBottom_toTopOf="@id/btn_transfer_bedridden_board"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.45" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_transfer_bedridden_sling"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/all_mode_button"
+            android:text="이동지원\n(와상슬링)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/btn_transfer_sling"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/btn_transfer_sling"
+            app:layout_constraintBottom_toBottomOf="@id/btn_transfer_sling"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.45" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_transfer_bedridden_board"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/all_mode_button"
+            android:text="이동지원\n(와상보드)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/btn_transfer_chair"
+            app:layout_constraintTop_toBottomOf="@id/btn_transfer_sling"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.45" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_transfer_chair"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/all_mode_button"
+            android:text="이동지원\n(휠체어/의자)"
+            android:textColor="@color/navi_textColor"
+            android:textSize="45sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/btn_transfer_bedridden_board"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/btn_transfer_bedridden_board"
+            app:layout_constraintBottom_toBottomOf="@id/btn_transfer_bedridden_board"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintVertical_chainStyle="packed"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.45" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/circle_message"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="250dp"
+        android:layout_marginBottom="50dp"
+        android:src="@drawable/circle_message_ic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.2"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.55" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/tv_join_ment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:gravity="center"
+        android:text="원하는 기능의\n 버튼을 누르세요."
+        android:textColor="@color/main_textColor"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/circle_message"
+        app:layout_constraintEnd_toEndOf="@id/circle_message"
+        app:layout_constraintHorizontal_bias="0.4"
+        app:layout_constraintStart_toStartOf="@id/circle_message"
+        app:layout_constraintTop_toTopOf="@id/circle_message"
+        app:layout_constraintVertical_bias="0.3" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_select_robot"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="50dp"
+        android:src="@drawable/join_robot_ic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_default="percent"
+        app:layout_constraintHeight_percent="0.2"
+        app:layout_constraintWidth_default="percent"
+        app:layout_constraintWidth_percent="0.3" />
+</androidx.constraintlayout.widget.ConstraintLayout>
