@@ -9,9 +9,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
 import com.samin.carerobot.Logics.SharedViewModel
-import com.samin.carerobot.R
 import com.samin.carerobot.databinding.FragmentControlBinding
-import com.samin.carerobot.databinding.FragmentSelectedModeBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -36,59 +34,105 @@ class ControlFragment : Fragment() {
         activity = getActivity() as MainActivity
         onBackPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                parentFragmentManager.beginTransaction()
-                    .replace(R.id.mainFragment_container, SelectModeFragment()).commit()
+                onBackPressedEvent()
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
     }
 
-    private fun backButtonEvent(){
-        when(sharedViewModel.viewState.value){
-            SharedViewModel.MODE_CARRY_HEAVY -> {
+    private fun onBackPressedEvent() {
+        when (sharedViewModel.viewState.value) {
 
+            SharedViewModel.MODE_CARRY_HEAVY and SharedViewModel.MODE_CARRY_HEIGHT -> {
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
-            SharedViewModel.MODE_CARRY_HEIGHT -> {
-
-            }
-
             SharedViewModel.MODE_BEHAVIOR_STAND -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_BEHAVIOR_WALKHAND -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_BEHAVIOR_WALKHUG -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
-
             SharedViewModel.MODE_CHANGE_CHANGEHUG -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_CHANGE_TRANSFERSTAND -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_CHANGE_TRANSFERHARNESS -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
-
             SharedViewModel.MODE_ALL_POSITION -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_ALL_CHANGESLING -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_ALL_TRANSFERSLING -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_ALL_TRANSFERBEDRIDDENSLING -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_ALL_TRANSFERBEDRIDDENBOARD -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
             SharedViewModel.MODE_ALL_TRANSFERCHAIR -> {
-
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                parentFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    (parentFragment as MainFragment).selectedModeFragment
+                ).commit()
             }
         }
     }

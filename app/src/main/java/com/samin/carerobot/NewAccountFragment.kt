@@ -1,10 +1,17 @@
 package com.samin.carerobot
 
+import android.content.Context
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.fragment.app.activityViewModels
+import com.samin.carerobot.Logics.SharedViewModel
+import com.samin.carerobot.databinding.FragmentNewAccountBinding
+import com.samin.carerobot.databinding.FragmentSelectModeBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -17,9 +24,30 @@ private const val ARG_PARAM2 = "param2"
  * create an instance of this fragment.
  */
 class NewAccountFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+    private lateinit var mBinding: FragmentNewAccountBinding
+    private lateinit var onBackPressedCallback: OnBackPressedCallback
+    private var activity: MainActivity? = null
+    private lateinit var selectedModeFragment: SelectedModeFragment
+    private val sharedViewModel by activityViewModels<SharedViewModel>()
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        activity = getActivity() as MainActivity
+        onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                activity?.onFragmentChange(SharedViewModel.LOGINFRAGMENT)
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        activity = null
+        onBackPressedCallback.remove()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +61,35 @@ class NewAccountFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_new_account, container, false)
+        mBinding = FragmentNewAccountBinding.inflate(inflater, container, false)
+        mBinding.btnLogin.setOnClickListener {
+            if (!mBinding.etUserID.text.isNullOrBlank()) {
+                if (!mBinding.etUserPassword.text.isNullOrBlank() && !mBinding.etUserPasswordConfirm.text.isNullOrBlank()) {
+                    if (!mBinding.etUserPhoneNumber.text.isNullOrBlank()) {
+                        if (mBinding.etUserPassword.text.toString() == mBinding.etUserPasswordConfirm.text.toString()) {
+                            activity?.sharedPreference?.saveUserInfo(mBinding.etUserPhoneNumber.text.toString(), mBinding.etUserID.text.toString())
+                            activity?.sharedPreference?.saveUserInfo(mBinding.etUserID.text.toString(), mBinding.etUserPassword.text.toString())
+                            Toast.makeText(requireContext(), "계정이 생성되었습니다.", Toast.LENGTH_SHORT).show()
+                            activity?.onFragmentChange(SharedViewModel.LOGINFRAGMENT)
+                        }else{
+                            Toast.makeText(requireContext(), "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+                        }
+                    }else{
+                        Toast.makeText(requireContext(), "휴대폰 번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+                }else{
+                    Toast.makeText(requireContext(), "비밀번호을 입력해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(requireContext(), "이름을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            }
+        }
+        mBinding.btnBack.setOnClickListener {
+            activity?.onFragmentChange(SharedViewModel.LOGINFRAGMENT)
+        }
+
+
+        return mBinding.root
     }
 
     companion object {

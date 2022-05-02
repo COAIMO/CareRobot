@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
 import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.databinding.FragmentMainBinding
@@ -29,16 +30,21 @@ class MainFragment : Fragment() {
     lateinit var selectedModeFragment: SelectedModeFragment
     lateinit var controlFragment: ControlFragment
     private val sharedViewModel by activityViewModels<SharedViewModel>()
+    private lateinit var onBackPressedCallback: OnBackPressedCallback
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         activity = getActivity() as MainActivity
-
+        onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
     }
 
     override fun onDetach() {
         super.onDetach()
-//        onBackPressed.remove()
+        onBackPressedCallback.remove()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,53 +90,13 @@ class MainFragment : Fragment() {
     private fun initView() {
         sharedViewModel.viewState.observe(viewLifecycleOwner) {
             initTopNaviButton()
+            setTopNavibar(it)
             setSubNavibarTitle(it)
-            when (it) {
-                SharedViewModel.MODE_CARRY -> {
-                    mBinding.topNavi.btnModeCarry.setBackgroundResource(R.drawable.mode1_selected_button)
-                    mBinding.subtopLayout.visibility = View.VISIBLE
-                    childFragmentManager.beginTransaction().replace(
-                        R.id.mainFragment_container,
-                        selectedModeFragment
-                    ).commit()
-                }
-                SharedViewModel.MODE_BEHAVIOR -> {
-                    mBinding.topNavi.btnModeBehavior.setBackgroundResource(R.drawable.mode2_selected_button)
-                    mBinding.subtopLayout.visibility = View.VISIBLE
-                    childFragmentManager.beginTransaction().replace(
-                        R.id.mainFragment_container,
-                        selectedModeFragment
-                    ).commit()
-                }
-                SharedViewModel.MODE_CHANGE -> {
-                    mBinding.topNavi.btnModeChange.setBackgroundResource(R.drawable.mode3_selected_button)
-                    mBinding.subtopLayout.visibility = View.VISIBLE
-                    childFragmentManager.beginTransaction().replace(
-                        R.id.mainFragment_container,
-                        selectedModeFragment
-                    ).commit()
-                }
-                SharedViewModel.MODE_ALL -> {
-                    mBinding.topNavi.btnModeAll.setBackgroundResource(R.drawable.mode4_selected_button)
-                    mBinding.subtopLayout.visibility = View.VISIBLE
-                    childFragmentManager.beginTransaction().replace(
-                        R.id.mainFragment_container,
-                        selectedModeFragment
-                    ).commit()
-                }
-                else -> {
-                    mBinding.subtopLayout.visibility = View.VISIBLE
-                    childFragmentManager.beginTransaction().replace(
-                        R.id.mainFragment_container,
-                        controlFragment
-                    ).commit()
-                }
-            }
         }
+        mBinding.topNavi.btnUserInfo.text = activity?.sharedPreference.loadUserID()
     }
 
-    private fun setSubNavibarTitle(viewState: Int) {
-        mBinding.subtopNavibar.ivForward.visibility = View.GONE
+    private fun setSubNavibarTitle(viewState: Int){
         when (viewState) {
             SharedViewModel.MODE_CARRY -> {
                 mBinding.subtopNavibar.tvModeTitle.setText(R.string.carry_mode_title)
@@ -149,6 +115,7 @@ class MainFragment : Fragment() {
                 mBinding.subtopNavibar.tvModeTitleContent.setText(R.string.carry_mode_title_height)
             }
             SharedViewModel.MODE_BEHAVIOR -> {
+                mBinding.subtopNavibar.tvModeTitleContent.text = ""
                 mBinding.subtopNavibar.tvModeTitle.setText(R.string.behavior_mode_title)
                 mBinding.subtopNavibar.tvModeTitleSub.setText(R.string.behavior_mode_title_sub)
             }
@@ -171,6 +138,7 @@ class MainFragment : Fragment() {
                 mBinding.subtopNavibar.tvModeTitleContent.setText(R.string.behavior_mode_title_walk_waist)
             }
             SharedViewModel.MODE_CHANGE -> {
+                mBinding.subtopNavibar.tvModeTitleContent.text = ""
                 mBinding.subtopNavibar.tvModeTitle.setText(R.string.change_mode_title)
                 mBinding.subtopNavibar.tvModeTitleSub.setText(R.string.change_mode_title_sub)
             }
@@ -193,6 +161,7 @@ class MainFragment : Fragment() {
                 mBinding.subtopNavibar.tvModeTitleContent.setText(R.string.change_mode_title_transfer_harness)
             }
             SharedViewModel.MODE_ALL -> {
+                mBinding.subtopNavibar.tvModeTitleContent.text = ""
                 mBinding.subtopNavibar.tvModeTitle.setText(R.string.all_mode_title)
                 mBinding.subtopNavibar.tvModeTitleSub.setText(R.string.all_mode_title_sub)
             }
@@ -231,6 +200,160 @@ class MainFragment : Fragment() {
                 mBinding.subtopNavibar.tvModeTitleSub.setText(R.string.all_mode_title_sub)
                 mBinding.subtopNavibar.ivForward.visibility = View.VISIBLE
                 mBinding.subtopNavibar.tvModeTitleContent.setText(R.string.all_mode_title_transfer_chair)
+            }
+        }
+
+    }
+
+    private fun setTopNavibar(viewState: Int) {
+        mBinding.subtopNavibar.ivForward.visibility = View.GONE
+        when (viewState) {
+            SharedViewModel.MODE_CARRY -> {
+                mBinding.topNavi.btnModeCarry.setBackgroundResource(R.drawable.mode1_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CARRY_HEAVY -> {
+                mBinding.topNavi.btnModeCarry.setBackgroundResource(R.drawable.mode1_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CARRY_HEIGHT -> {
+                mBinding.topNavi.btnModeCarry.setBackgroundResource(R.drawable.mode1_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+
+            SharedViewModel.MODE_BEHAVIOR -> {
+                mBinding.topNavi.btnModeBehavior.setBackgroundResource(R.drawable.mode2_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_BEHAVIOR_STAND -> {
+                mBinding.topNavi.btnModeBehavior.setBackgroundResource(R.drawable.mode2_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_BEHAVIOR_WALKHAND -> {
+                mBinding.topNavi.btnModeBehavior.setBackgroundResource(R.drawable.mode2_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_BEHAVIOR_WALKHUG -> {
+                mBinding.topNavi.btnModeBehavior.setBackgroundResource(R.drawable.mode2_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+
+            SharedViewModel.MODE_CHANGE -> {
+                mBinding.topNavi.btnModeChange.setBackgroundResource(R.drawable.mode3_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CHANGE_CHANGEHUG -> {
+                mBinding.topNavi.btnModeChange.setBackgroundResource(R.drawable.mode3_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CHANGE_TRANSFERSTAND -> {
+                mBinding.topNavi.btnModeChange.setBackgroundResource(R.drawable.mode3_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CHANGE_TRANSFERHARNESS -> {
+                mBinding.topNavi.btnModeChange.setBackgroundResource(R.drawable.mode3_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+
+            SharedViewModel.MODE_ALL -> {
+                mBinding.topNavi.btnModeAll.setBackgroundResource(R.drawable.mode4_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_POSITION -> {
+                mBinding.topNavi.btnModeAll.setBackgroundResource(R.drawable.mode4_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_CHANGESLING -> {
+                mBinding.topNavi.btnModeAll.setBackgroundResource(R.drawable.mode4_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_TRANSFERSLING -> {
+                mBinding.topNavi.btnModeAll.setBackgroundResource(R.drawable.mode4_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_TRANSFERBEDRIDDENSLING -> {
+                mBinding.topNavi.btnModeAll.setBackgroundResource(R.drawable.mode4_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_TRANSFERBEDRIDDENBOARD -> {
+                mBinding.topNavi.btnModeAll.setBackgroundResource(R.drawable.mode4_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_TRANSFERCHAIR -> {
+                mBinding.topNavi.btnModeAll.setBackgroundResource(R.drawable.mode4_selected_button)
+                mBinding.subtopLayout.visibility = View.VISIBLE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    controlFragment
+                ).commit()
             }
         }
 
@@ -279,15 +402,140 @@ class MainFragment : Fragment() {
                 activity?.onFragmentChange(SharedViewModel.LOGINFRAGMENT)
             }
             mBinding.subtopNavibar.btnBack -> {
-                childFragmentManager.beginTransaction().replace(
-                    R.id.mainFragment_container,
-                    selectModeFragment
-                ).commit()
+//                childFragmentManager.beginTransaction().replace(
+//                    R.id.mainFragment_container,
+//                    selectModeFragment
+//                ).commit()
+                subNavibarBackButtonEvent()
             }
             mBinding.subtopNavibar.btnHome -> {
                 childFragmentManager.beginTransaction().replace(
                     R.id.mainFragment_container,
                     selectModeFragment
+                ).commit()
+            }
+        }
+    }
+
+    private fun subNavibarBackButtonEvent(){
+        when(sharedViewModel.viewState.value){
+            SharedViewModel.MODE_CARRY ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CARRY_HEAVY and SharedViewModel.MODE_CARRY_HEIGHT ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_BEHAVIOR ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_BEHAVIOR_STAND ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_BEHAVIOR_WALKHAND ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_BEHAVIOR_WALKHUG ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CHANGE ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CHANGE_CHANGEHUG ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CHANGE_TRANSFERSTAND ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_CHANGE_TRANSFERHARNESS ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_POSITION ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_CHANGESLING ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_TRANSFERSLING ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_TRANSFERBEDRIDDENSLING ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_TRANSFERBEDRIDDENBOARD ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
+                ).commit()
+            }
+            SharedViewModel.MODE_ALL_TRANSFERCHAIR ->{
+                sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                childFragmentManager.beginTransaction().replace(
+                    R.id.mainFragment_container,
+                    selectedModeFragment
                 ).commit()
             }
         }

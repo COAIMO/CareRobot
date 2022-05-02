@@ -2,6 +2,7 @@ package com.samin.carerobot
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.samin.carerobot.Logics.SharedPreference
 import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.databinding.ActivityMainBinding
 
@@ -10,12 +11,14 @@ class MainActivity : AppCompatActivity() {
     lateinit var loginFragment: LoginFragment
     lateinit var newAccountFragment: NewAccountFragment
     lateinit var mainFragment: MainFragment
+    lateinit var sharedPreference: SharedPreference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
         setFragment()
+        sharedPreference = SharedPreference(this)
     }
 
     private fun setFragment() {

@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.databinding.FragmentLoginBinding
 
@@ -18,18 +20,24 @@ class LoginFragment : Fragment() {
     private var param2: String? = null
     private lateinit var mBinding: FragmentLoginBinding
     private var activity: MainActivity? = null
-    private lateinit var onBackPressed: OnBackPressedCallback
+    private lateinit var onBackPressedCallback: OnBackPressedCallback
+    private val sharedViewModel by activityViewModels<SharedViewModel>()
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         activity = getActivity() as MainActivity
+        onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
 
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
     }
 
     override fun onDetach() {
         super.onDetach()
         activity = null
-//        onBackPressed.remove()
+        onBackPressedCallback.remove()
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,7 +71,35 @@ class LoginFragment : Fragment() {
     private fun onClick(view:View){
         when(view){
             mBinding.btnJoin -> activity?.onFragmentChange(SharedViewModel.NEWACCOUNTFRAGMENT)
-            mBinding.btnLogin -> activity?.onFragmentChange(SharedViewModel.MAINFRAGMENT)
+            mBinding.btnLogin -> {
+                if (!mBinding.etUserID.text.isNullOrEmpty()){
+                    if (!mBinding.etUserPassword.text.isNullOrEmpty()){
+                        if (activity?.sharedPreference?.checkUserID(mBinding.etUserID.text.toString())!!) {
+                            if (activity?.sharedPreference?.checkUserPassword(
+                                    mBinding.etUserID.text.toString(),
+                                    mBinding.etUserPassword.text.toString()
+                                )!!
+                            ) {
+                                activity?.onFragmentChange(SharedViewModel.MAINFRAGMENT)
+                            } else {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "비밀번호가 틀립니다.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "존재하지 않는 아이디입니다.", Toast.LENGTH_SHORT)
+                                .show()
+                        }
+
+                    }else{
+                        Toast.makeText(requireContext(), "비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                    }
+                }else{
+                    Toast.makeText(requireContext(), "아이디를 입력해주세요.", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
     }
