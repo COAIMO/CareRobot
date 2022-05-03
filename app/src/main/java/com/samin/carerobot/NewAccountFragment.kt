@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
+import com.samin.carerobot.Logics.SharedPreference
 import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.databinding.FragmentNewAccountBinding
 import com.samin.carerobot.databinding.FragmentSelectModeBinding
@@ -67,8 +68,9 @@ class NewAccountFragment : Fragment() {
                 if (!mBinding.etUserPassword.text.isNullOrBlank() && !mBinding.etUserPasswordConfirm.text.isNullOrBlank()) {
                     if (!mBinding.etUserPhoneNumber.text.isNullOrBlank()) {
                         if (mBinding.etUserPassword.text.toString() == mBinding.etUserPasswordConfirm.text.toString()) {
-                            activity?.sharedPreference?.saveUserInfo(mBinding.etUserPhoneNumber.text.toString(), mBinding.etUserID.text.toString())
+                            activity?.sharedPreference?.saveUserInfo(SharedPreference.USER_NAME, mBinding.etUserID.text.toString())
                             activity?.sharedPreference?.saveUserInfo(mBinding.etUserID.text.toString(), mBinding.etUserPassword.text.toString())
+                            activity?.sharedPreference?.saveUserInfo(mBinding.etUserPhoneNumber.text.toString(), mBinding.etUserID.text.toString())
                             Toast.makeText(requireContext(), "계정이 생성되었습니다.", Toast.LENGTH_SHORT).show()
                             activity?.onFragmentChange(SharedViewModel.LOGINFRAGMENT)
                         }else{

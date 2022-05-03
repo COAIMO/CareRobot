@@ -341,14 +341,14 @@
         android:gravity="center"
         android:text="원하는 기능의\n 버튼을 누르세요."
         android:textColor="@color/main_textColor"
-        android:textSize="50sp"
+        android:textSize="40sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/circle_message"
         app:layout_constraintEnd_toEndOf="@id/circle_message"
-        app:layout_constraintHorizontal_bias="0.4"
+        app:layout_constraintHorizontal_bias="0.368"
         app:layout_constraintStart_toStartOf="@id/circle_message"
         app:layout_constraintTop_toTopOf="@id/circle_message"
-        app:layout_constraintVertical_bias="0.3" />
+        app:layout_constraintVertical_bias="0.011" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_select_robot"

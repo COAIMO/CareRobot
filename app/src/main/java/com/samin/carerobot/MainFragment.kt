@@ -93,7 +93,7 @@ class MainFragment : Fragment() {
             setTopNavibar(it)
             setSubNavibarTitle(it)
         }
-        mBinding.topNavi.btnUserInfo.text = activity?.sharedPreference.loadUserID()
+        mBinding.topNavi.btnUserInfo.text = activity?.sharedPreference!!.loadUserID()
     }
 
     private fun setSubNavibarTitle(viewState: Int){
@@ -399,13 +399,10 @@ class MainFragment : Fragment() {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
             }
             mBinding.topNavi.btnLogout -> {
+                activity?.sharedPreference!!.loginState(false)
                 activity?.onFragmentChange(SharedViewModel.LOGINFRAGMENT)
             }
             mBinding.subtopNavibar.btnBack -> {
-//                childFragmentManager.beginTransaction().replace(
-//                    R.id.mainFragment_container,
-//                    selectModeFragment
-//                ).commit()
                 subNavibarBackButtonEvent()
             }
             mBinding.subtopNavibar.btnHome -> {

@@ -8,6 +8,7 @@ class SharedPreference(context:Context) {
 
     companion object{
         const val USER_NAME ="NAME"
+        const val LOGIN_STATE = "STATE"
     }
 
     private val  userInfoSharedPreference =
@@ -42,6 +43,24 @@ class SharedPreference(context:Context) {
         val token = object : TypeToken<String>() {}.type
         if (data.isNotEmpty()){
             tmp = Gson().fromJson<String>(data, token)
+        }
+        return tmp
+    }
+
+    fun loginState(state:Boolean){
+        val gosn = Gson().toJson(state)
+        userInfoSharedPreference.edit().apply{
+            putString(LOGIN_STATE, gosn)
+            apply()
+        }
+    }
+
+    fun checkloginState():Boolean{
+        var tmp = false
+        val data = userInfoSharedPreference.getString(LOGIN_STATE, "")!!
+        val token = object : TypeToken<Boolean>() {}.type
+        if (data.isNotEmpty()){
+            tmp = Gson().fromJson<Boolean>(data, token)
         }
         return tmp
     }

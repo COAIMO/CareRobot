@@ -80,7 +80,10 @@ class LoginFragment : Fragment() {
                                     mBinding.etUserPassword.text.toString()
                                 )!!
                             ) {
+                                activity?.sharedPreference!!.loginState(true)
                                 activity?.onFragmentChange(SharedViewModel.MAINFRAGMENT)
+                                mBinding.etUserID.text!!.clear()
+                                mBinding.etUserPassword.text!!.clear()
                             } else {
                                 Toast.makeText(
                                     requireContext(),

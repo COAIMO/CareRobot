@@ -29,7 +29,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/top_Navi_layout"
         app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.08">
+        app:layout_constraintHeight_percent="0.06">
         <include
             android:id="@+id/subtop_navibar"
             layout="@layout/subtop_navigationbar"/>
