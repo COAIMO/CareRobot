@@ -10,6 +10,7 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
+import com.jeongmin.nurimotortester.NurirobotMC
 import com.samin.carerobot.Logics.ControllerPad
 import com.samin.carerobot.Logics.SharedPreference
 import com.samin.carerobot.Logics.SharedViewModel
@@ -95,45 +96,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onGenericMotionEvent(event: MotionEvent?): Boolean {
-
-        event?.actionButton
-        event?.source
-
-//        if (ControllerPad.isDpadDevice(event!!)) {
-//            when (controllerPad.getDirectionPressed(event)) {
-//                ControllerPad.UP -> {
-//                    // Do something for UP direction press
-//                    Log.d(TAG, "UP")
-//
-//                    return true
-//                }
-//                ControllerPad.RIGHT -> {
-//                    // Do something for RIGHT direction press
-//                    Log.d(TAG, "RIGHT")
-//
-//                    return true
-//                }
-//                ControllerPad.DOWN -> {
-//                    // Do something for UP direction press
-//                    Log.d(TAG, "DOWN")
-//
-//                    return true
-//                }
-//                ControllerPad.LEFT -> {
-//                    // Do something for LEFT direction press
-//                    Log.d(TAG, "LEFT")
-//
-//                    return true
-//                }
-//                ControllerPad.CENTER -> {
-//                    // Do something for LEFT direction press
-//                    Log.d(TAG, "CENTER")
-//
-//                    return true
-//                }
-//            }
-//        }
-//        return true
         return if (ControllerPad.isJoyStick(event!!)) {
             // Process the movements starting from the
             // earliest historical position in the batch
@@ -155,8 +117,16 @@ class MainActivity : AppCompatActivity() {
             if (ControllerPad.isGamePad(event)) {
                 if (event.repeatCount == 0) {
                     when (keyCode) {
-                        KeyEvent.KEYCODE_BUTTON_A ->
+                        KeyEvent.KEYCODE_BUTTON_A -> {
                             Log.d(TAG, "KEYCODE_BUTTON_A")
+                            val nuriMC = NurirobotMC()
+                            nuriMC.ControlAcceleratedSpeed(
+                                0,
+                                (0x00).toByte(),
+                                0F,
+                                0.1F
+                            )
+                        }
                         KeyEvent.KEYCODE_BUTTON_B ->
                             Log.d(TAG, "KEYCODE_BUTTON_B")
                         KeyEvent.KEYCODE_BUTTON_X ->
