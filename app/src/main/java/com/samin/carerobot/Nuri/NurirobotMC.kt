@@ -2,6 +2,7 @@ package com.jeongmin.nurimotortester
 
 import android.util.Log
 import com.jeongmin.nurimotortester.Nuri.*
+import com.samin.carerobot.Logics.HexDump
 import com.samin.carerobot.Nuri.ICommand
 import java.lang.Math.round
 import java.nio.ByteBuffer
@@ -10,7 +11,7 @@ import kotlin.experimental.inv
 
 class NurirobotMC : ICommand {
     val TAG = "TAG"
-    override var PacketName: String? = null
+    override var packet: Byte? = null
     override var Data: ByteArray? = null
     override var ID: Byte? = null
 
@@ -456,8 +457,7 @@ class NurirobotMC : ICommand {
             val chksum = GetCheckSum()
             if (Data!![4] == chksum) {
                 try {
-//                    PacketName = Data!![5].toString()
-                    PacketName = ProtocolMode.codesMap[Data!![5]].toString()
+                    packet = ProtocolMode.codesMap[Data!![5]]!!.byte
                     ret = true
                 } catch (e: Exception) {
                     ret = false
@@ -483,10 +483,10 @@ class NurirobotMC : ICommand {
         var teno = Math.round(arg.Pos!! / 0.01f)
 
         //todo
-        val tmppos = floatToByteArray(Math.round(arg.Pos!! / 0.01f).toFloat())?.reversedArray()
-        tmppos?.copyInto(data, 1, 0, 2)
-        val tmpspd = floatToByteArray(Math.round(arg.Speed!! / 0.1f).toFloat())?.reversedArray()
-        tmpspd?.copyInto(data, 3, 0, 2)
+        val tmppos = HexDump.toByteArray(round(arg.Pos!! / 0.01f).toShort()).reversedArray()
+        tmppos?.copyInto(data, 1, 0, tmppos.size)
+        val tmpspd = HexDump.toByteArray(round(arg.Speed!! / 0.1f).toShort()).reversedArray()
+        tmpspd?.copyInto(data, 3, 0, tmpspd.size)
         BuildProtocol(arg.ID!!, 0x07, 0x01, data)
     }
 

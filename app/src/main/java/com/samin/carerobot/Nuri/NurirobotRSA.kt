@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import kotlin.experimental.inv
 
 class NurirobotRSA: ICommand {
-    override var PacketName: String? = null
+    override var packet: Byte? = null
     override var Data: ByteArray? = null
     override var ID: Byte? = null
     val TAG = "TAG"
@@ -361,7 +361,7 @@ class NurirobotRSA: ICommand {
             val chksum = GetCheckSum()
             if (Data!![4] == chksum) {
                 try {
-                    PacketName = ProtocolMode.codesMap[Data!![5]].toString()
+                    packet = ProtocolMode.codesMap[Data!![5]]!!.byte
                     ret = true
                 } catch (e: Exception) {
                     ret = false

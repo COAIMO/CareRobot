@@ -8,6 +8,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
+import com.jeongmin.nurimotortester.Nuri.Direction
+import com.jeongmin.nurimotortester.NurirobotMC
+import com.samin.carerobot.Logics.CareRobotMC
 import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.databinding.FragmentControlBinding
 
@@ -42,7 +45,6 @@ class ControlFragment : Fragment() {
 
     private fun onBackPressedEvent() {
         when (sharedViewModel.viewState.value) {
-
             SharedViewModel.MODE_CARRY_HEAVY and SharedViewModel.MODE_CARRY_HEIGHT -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY
                 parentFragmentManager.beginTransaction().replace(
@@ -156,9 +158,75 @@ class ControlFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         mBinding = FragmentControlBinding.inflate(inflater, container, false)
+        setButtonClickEvent()
         return mBinding.root
     }
+    private fun setButtonClickEvent(){
+        mBinding.btnGoBack.setOnClickListener {
+            onClick(mBinding.btnGoBack)
+        }
+        mBinding.btnGoForward.setOnClickListener {
+            onClick(mBinding.btnGoForward)
+        }
+        mBinding.btnStop1.setOnClickListener {
+            onClick(mBinding.btnStop1)
+        }
+        mBinding.btnTurnLeft.setOnClickListener {
+            onClick(mBinding.btnTurnLeft)
+        }
+        mBinding.btnTurnRight.setOnClickListener {
+            onClick(mBinding.btnTurnRight)
+        }
+        mBinding.btnStop2.setOnClickListener {
+            onClick(mBinding.btnStop2)
+        }
+        mBinding.btnWaistUp.setOnClickListener {
+            onClick(mBinding.btnWaistUp)
+        }
+        mBinding.btnWaistDown.setOnClickListener {
+            onClick(mBinding.btnWaistDown)
+        }
+        mBinding.btnStop3.setOnClickListener {
+            onClick(mBinding.btnStop3)
+        }
+        mBinding.btnElbowUp.setOnClickListener {
+            onClick(mBinding.btnElbowUp)
+        }
+        mBinding.btnElbowDown.setOnClickListener {
+            onClick(mBinding.btnElbowDown)
+        }
+        mBinding.btnStop4.setOnClickListener {
+            onClick(mBinding.btnStop4)
+        }
+    }
 
+    private fun onClick(view:View){
+        val nuriMC = NurirobotMC()
+        when(view){
+            mBinding.btnElbowUp->{
+//                val sedate = ByteArray(22)
+//                nuriMC.ControlPosSpeed(CareRobotMC.Left_Elbow.byte, Direction.CW.direction, 360f, 1f)
+//                nuriMC.Data!!.copyInto(sedate,0,0,nuriMC.Data!!.size)
+//                nuriMC.ControlPosSpeed(CareRobotMC.Right_Elbow.byte, Direction.CCW.direction, 360f, 1f)
+//                nuriMC.Data!!.copyInto(sedate,11,0,nuriMC.Data!!.size)
+//                activity?.serialService?.sendData(sedate)
+
+                nuriMC.ControlPosSpeed(CareRobotMC.Right_Elbow.byte, Direction.CCW.direction, 360f, 1f)
+                activity?.serialService?.sendData(nuriMC.Data!!)
+            }
+            mBinding.btnStop4 ->{
+                stopMotor(CareRobotMC.Right_Elbow.byte)
+            }
+        }
+
+    }
+
+    private fun stopMotor(id:Byte){
+        val sedate = ByteArray(20)
+        val nuriMC = NurirobotMC()
+        nuriMC.ControlAcceleratedSpeed(id, Direction.CCW.direction, 0f, 0.1f)
+        activity?.serialService?.sendData(sedate)
+    }
     companion object {
         /**
          * Use this factory method to create a new instance of

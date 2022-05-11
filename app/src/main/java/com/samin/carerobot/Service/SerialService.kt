@@ -12,12 +12,17 @@ import android.hardware.usb.UsbManager
 import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
+import android.os.Message
 import android.util.Log
 import android.widget.Toast
 import com.hoho.android.usbserial.driver.UsbSerialDriver
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
+import com.jeongmin.nurimotortester.Nuri.Direction
+import com.jeongmin.nurimotortester.Nuri.NuriPosSpeedAclCtrl
+import com.jeongmin.nurimotortester.Nuri.ProtocolMode
+import com.jeongmin.nurimotortester.NurirobotMC
 import com.samin.carerobot.BuildConfig
 import com.samin.carerobot.Logics.HexDump
 import kotlinx.coroutines.GlobalScope
@@ -33,7 +38,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         const val ACTION_USB_PERMISSION_NOT_GRANTED = "ACTION_USB_PERMISSION_NOT_GRANTED"
         const val ACTION_USB_DEVICE_DETACHED = "ACTION_USB_DEVICE_DETACHED"
         val INTENT_ACTION_GRANT_USB = BuildConfig.APPLICATION_ID + ".GRANT_USB"
-        private const val BAUD_RATE = 1000000
+        private const val BAUD_RATE = 115200
         private const val WRITE_WAIT_MILLIS = 2000
         private const val READ_WAIT_MILLIS = 2000
         var SERVICE_CONNECTED = false
@@ -97,7 +102,6 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
 
     override fun onNewData(data: ByteArray?) {
         Log.d("로그", "onNewData : ${HexDump.dumpHexString(data)}")
-//        Log.d("로그", "onNewData recived ======")
         if (data != null) {
             parseReceiveData(data)
         }
@@ -142,6 +146,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         filter.addAction(ACTION_USB_PERMISSION_NOT_GRANTED)
         registerReceiver(broadcastReceiver, filter)
     }
+
     private fun findUSBSerialDevice(hasPermission: Boolean = false) {
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
         if (usbManager.deviceList.isEmpty()) {
@@ -160,7 +165,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             }, 0)
             return
         }
-        if(usbDrivers!!.count() > 0){
+        if (usbDrivers!!.count() > 0) {
             usbDriver = usbDrivers!!.get(0)
             device = usbDriver.device
 
@@ -188,7 +193,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             )
             usbSerialPort!!.dtr = true
             usbSerialPort!!.rts = true
-            usbIoManager = SerialInputOutputManager(usbSerialPort)
+            usbIoManager = SerialInputOutputManager(usbSerialPort, this)
             usbIoManager!!.readTimeout = 10
 //            usbIoManager!!.writeTimeout = 200
 //            usbIoManager!!.readBufferSize = 1000
@@ -215,9 +220,9 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
     fun sendData(data: ByteArray) {
 //        usbSerialPort?.write(data, WRITE_WAIT_MILLIS)
         usbIoManager?.writeAsync(data)
-
-        Log.d("태그", "send data : \n${HexDump.dumpHexString(data)}")
+        Log.d("로그", "send data : \n${HexDump.dumpHexString(data)}")
     }
+
     fun parseReceiveData(data: ByteArray) {
         lastRecvTime = System.currentTimeMillis()
         try {
@@ -230,7 +235,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             var idx: Int = 0
 //            Log.d("태그", "received = ${HexDump.dumpHexString(data)}")
 
-            if (tmpdata.size < 7) {
+            if (tmpdata.size < 6) {
                 //3. 수신받은 데이터 부족 시 리시브버퍼로 데이터 이동
                 System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
                 //4. 이전 받은 데이터 확인을 위해 버퍼 인덱스 수정
@@ -240,7 +245,6 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
 
             while (true) {
                 val chkPos = indexOfBytes(tmpdata, idx, tmpdata.size)
-                tmpdata[chkPos + 4] + 4 + 1
                 if (chkPos != -1) {
                     //해더 유무 체크 및 헤더 몇 번째 있는지 반환
                     val scndpos = indexOfBytes(tmpdata, chkPos + 1, tmpdata.size)
@@ -251,10 +255,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                             // 해당 전문을 다 받았을 경우 ,또는 크거나
                             val focusdata: ByteArray =
                                 tmpdata.drop(chkPos).toByteArray()
-                            //todo
-                            mHandler.obtainMessage(RECEIVED_SERERIAL_DATA, focusdata)
-                                .sendToTarget()
-
+                            recvData(focusdata)
                             bufferIndex = 0;
 
                         } else {
@@ -277,6 +278,8 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                             tmpdata.drop(chkPos).take(scndpos - chkPos).toByteArray()
 
                         mHandler.obtainMessage(RECEIVED_SERERIAL_DATA, focusdata).sendToTarget()
+                        recvData(focusdata)
+
                         // 두번째 헤더 부분을 idx
                         idx = scndpos
                     }
@@ -290,6 +293,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             e.printStackTrace()
         }
     }
+
     private fun indexOfBytes(data: ByteArray, startIdx: Int, count: Int): Int {
         if (data.size == 0 || count == 0 || startIdx >= count)
             return -1
@@ -310,6 +314,71 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             i++
         }
         return -1
+    }
+
+    val mcIDMap = hashMapOf<Byte, Byte>()
+    val hashMap2 = HashMap<Byte, Byte>().apply {
+        1 to 1
+        2 to 2
+        3 to 3
+        4 to 4
+        5 to 5
+        6 to 6
+        7 to 7
+    }
+
+    private fun recvData(data: ByteArray) {
+        val receiveParser = NurirobotMC()
+        if (!receiveParser.Parse(data))
+            return
+
+        receiveParser.GetDataStruct()
+        when (receiveParser.packet) {
+            ProtocolMode.FEEDPing.byte -> {
+                Log.d("SerialService", "CheckProductPing data : \n${HexDump.dumpHexString(data)}")
+                val getID = receiveParser.Data!!.get(2)
+                mcIDMap.put(getID,getID)
+            }
+            ProtocolMode.FEEDSpeed.byte -> {
+                val motorState = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
+                Log.d("로그", "speed :${motorState.Speed} direction:${motorState.Direction}" +
+                        "current : ${motorState.Current} pos : ${motorState.Pos} arrivetime : ${motorState.Arrivetime}")
+            }
+            ProtocolMode.FEEDPos.byte -> {
+                val motorState = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
+                Log.d("로그", "speed :${motorState.Speed} direction:${motorState.Direction}" +
+                        "current : ${motorState.Current} pos : ${motorState.Pos} arrivetime : ${motorState.Arrivetime}")
+            }
+        }
+    }
+
+
+
+//    val sendParser = NurirobotMC()
+    lateinit var feedBackPingThread: Thread
+    lateinit var feedBackMotorStateInfoThread: Thread
+
+    private fun feedback() {
+        for (wheelID in 0..1) {
+//            sendParser.Feedback()
+
+        }
+
+    }
+
+
+    fun feedBackPing() {
+
+        feedBackPingThread = Thread {
+            val sendParser = NurirobotMC()
+            for (id in 0..7) {
+                sendParser.Feedback(id.toByte(), ProtocolMode.REQPing.byte)
+                val cloneData = sendParser.Data!!.clone()
+                sendData(cloneData)
+                Thread.sleep(100)
+            }
+        }
+        feedBackPingThread.start()
     }
 
 }

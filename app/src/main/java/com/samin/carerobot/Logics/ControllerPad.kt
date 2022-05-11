@@ -7,8 +7,9 @@ import android.view.KeyEvent
 import android.view.MotionEvent
 import com.samin.carerobot.MainActivity
 
-class ControllerPad {
+class ControllerPad(viewModel: SharedViewModel) {
     private var directionPressed = -1
+    val sharedViewModel: SharedViewModel = viewModel
 
     fun getDirectionPressed(event: InputEvent): Int {
         if (!isDpadDevice(event)) {
@@ -70,45 +71,34 @@ class ControllerPad {
     }
 
     fun processJoystickInput(event: MotionEvent, historyPos: Int) {
-
         val inputDevice = event.device
 
-        // Calculate the horizontal distance to move by
-        // using the input value from one of these physical controls:
-        // the left control stick, hat axis, or the right control stick.
+        //왼쪽 조이스틱
         var x: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
-        Log.d(MainActivity.TAG, " AXIS_X : $x")
+        var y: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
+        sharedViewModel.left_Joystick.value = JoystickCoordinate(x,y)
 
+
+        //방향키값 들어옴
         if (x == 0f) {
             x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_X, historyPos)
-            //방향키값 들어옴
-            Log.d(MainActivity.TAG, " AXIS_HAT_X : $x")
+//            Log.d(MainActivity.TAG, " AXIS_HAT_X : $x")
         }
-        if (x == 0f) {
-            x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
-            //오른쪽 조이스틱
-            Log.d(MainActivity.TAG, " AXIS_Z : $x")
-        }
-
-        // Calculate the vertical distance to move by
-        // using the input value from one of these physical controls:
-        // the left control stick, hat switch, or the right control stick.
-        var y: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
-        Log.d(MainActivity.TAG, " AXIS_Y : $y")
-
         if (y == 0f) {
             y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_HAT_Y, historyPos)
-            //방향키값 들어옴
-            Log.d(MainActivity.TAG, " AXIS_HAT_Y : $y")
+//            Log.d(MainActivity.TAG, " AXIS_HAT_Y : $y")
         }
-        if (y == 0f) {
+
+        //오른쪽 조이스틱
+        if (x == 0f && y == 0f) {
+            x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
             y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
-
-            //오른쪽 조이스틱
-            Log.d(MainActivity.TAG, " AXIS_RZ : $y")
+            sharedViewModel.right_Joystick.value = JoystickCoordinate(x,y)
+            Log.d(MainActivity.TAG, " AXIS_Z : $x , AXIS_RZ : $y")
         }
-
-
+//        if (y == 0f) {
+//            y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
+//        }
     }
 
     companion object {
@@ -126,7 +116,7 @@ class ControllerPad {
             event.source and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK
                     && event.action == MotionEvent.ACTION_MOVE
 
-        fun isGamePad(event: KeyEvent):Boolean =
+        fun isGamePad(event: KeyEvent): Boolean =
             event.source and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD
     }
 }

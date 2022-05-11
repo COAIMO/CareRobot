@@ -1,7 +1,7 @@
 package com.samin.carerobot.Nuri
 
 interface ICommand {
-    var PacketName: String?
+    var packet: Byte?
     var Data : ByteArray?
     var ID : Byte?
     fun Parse(data: ByteArray): Boolean

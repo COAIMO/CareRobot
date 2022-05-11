@@ -123,7 +123,6 @@ enum class ProtocolMode(val byte: Byte) {
     /// 펌웨어 버전 피드백
     /// </summary>
     REQFirmware(0xCD.toByte()),
-
     /// <summary>
     /// 핑(수신)
     /// </summary>
