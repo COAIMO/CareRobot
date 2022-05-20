@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.jeongmin.nurimotortester.Nuri.NuriPosSpeedAclCtrl
+import java.util.concurrent.ConcurrentHashMap
 
 class SharedViewModel:ViewModel() {
     companion object{
@@ -43,10 +44,12 @@ class SharedViewModel:ViewModel() {
     var right_Joystick_y = MutableLiveData<Float>()
     var left_Joystick = MutableLiveData<JoystickCoordinate>()
     var right_Joystick = MutableLiveData<JoystickCoordinate>()
+    var controlPart = MutableLiveData<Byte?>()
 
     private val motorStateInfo = HashMap<Byte, NuriPosSpeedAclCtrl>()
-    fun putMotorStateInfo(){
 
-    }
+    val encoderPOSMap = MutableLiveData<HashMap<Byte, Float>>()
+    val encoderPOSMapt = ConcurrentHashMap<Byte, Float>()
+    val motorInfo = ConcurrentHashMap<Byte,MotorInfo>()
 
 }

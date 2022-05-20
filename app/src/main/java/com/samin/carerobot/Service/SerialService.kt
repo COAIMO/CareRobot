@@ -15,22 +15,26 @@ import android.os.IBinder
 import android.os.Message
 import android.util.Log
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.AndroidViewModel
 import com.hoho.android.usbserial.driver.UsbSerialDriver
 import com.hoho.android.usbserial.driver.UsbSerialPort
 import com.hoho.android.usbserial.driver.UsbSerialProber
 import com.hoho.android.usbserial.util.SerialInputOutputManager
 import com.jeongmin.nurimotortester.Nuri.Direction
 import com.jeongmin.nurimotortester.Nuri.NuriPosSpeedAclCtrl
+import com.jeongmin.nurimotortester.Nuri.NuriProtocol
 import com.jeongmin.nurimotortester.Nuri.ProtocolMode
 import com.jeongmin.nurimotortester.NurirobotMC
 import com.samin.carerobot.BuildConfig
+import com.samin.carerobot.Logics.CareRobotMC
 import com.samin.carerobot.Logics.HexDump
+import com.samin.carerobot.Logics.SharedViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.lang.Exception
 
 class SerialService : Service(), SerialInputOutputManager.Listener {
     companion object {
@@ -38,7 +42,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         const val ACTION_USB_PERMISSION_NOT_GRANTED = "ACTION_USB_PERMISSION_NOT_GRANTED"
         const val ACTION_USB_DEVICE_DETACHED = "ACTION_USB_DEVICE_DETACHED"
         val INTENT_ACTION_GRANT_USB = BuildConfig.APPLICATION_ID + ".GRANT_USB"
-        private const val BAUD_RATE = 115200
+        private const val BAUD_RATE = 250000
         private const val WRITE_WAIT_MILLIS = 2000
         private const val READ_WAIT_MILLIS = 2000
         var SERVICE_CONNECTED = false
@@ -82,6 +86,9 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                 if (serialPortConnected) {
                     usbSerialPort?.close()
                     serialPortConnected = false
+                    isFeedBack = false
+                    feedBackMotorStateInfoThread?.join()
+                    feedBackMotorStateInfoThread?.interrupt()
                 }
                 mHandler.obtainMessage(
                     2,
@@ -100,8 +107,9 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         }
     }
 
+    val REVC = "REVC"
     override fun onNewData(data: ByteArray?) {
-        Log.d("로그", "onNewData : ${HexDump.dumpHexString(data)}")
+        Log.d(REVC, "onNewData : ${HexDump.dumpHexString(data)}")
         if (data != null) {
             parseReceiveData(data)
         }
@@ -199,7 +207,8 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
 //            usbIoManager!!.readBufferSize = 1000
             usbIoManager!!.start()
             serialPortConnected = true
-
+            isFeedBack = true
+            feedback()
         }
     }
 
@@ -251,12 +260,17 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                     //다음 헤더가 없는 경우 -1 변환(헤더 중복 체크)
                     if (scndpos == -1) {
                         // 다음 데이터 없음
-                        if (tmpdata[chkPos + 4] + 4 + 1 <= tmpdata.size - chkPos) {
+                        if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
                             // 해당 전문을 다 받았을 경우 ,또는 크거나
+                            val grabageDataSize = tmpdata.size - chkPos - (tmpdata[chkPos + 3] + 4)
+//                            tmpdata.lastIndex
+//                            tmpdata.sliceArray(tmpdata.lastIndex-grabageDataSize..tmpdata.lastIndex)
+                            //chkPos로 헤더 앞데이터 자르고 뒤에 가바지데이터 제거
                             val focusdata: ByteArray =
-                                tmpdata.drop(chkPos).toByteArray()
+                                tmpdata.drop(chkPos).dropLast(grabageDataSize).toByteArray()
                             recvData(focusdata)
                             bufferIndex = 0;
+//                            Log.d(REVC, "parseReceiveData1 : ${HexDump.dumpHexString(focusdata)}")
 
                         } else {
                             //해당 전문보다 데이터가 작을경우
@@ -279,6 +293,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
 
                         mHandler.obtainMessage(RECEIVED_SERERIAL_DATA, focusdata).sendToTarget()
                         recvData(focusdata)
+                        Log.d(REVC, "parseReceiveData2 : ${HexDump.dumpHexString(focusdata)}")
 
                         // 두번째 헤더 부분을 idx
                         idx = scndpos
@@ -337,32 +352,59 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             ProtocolMode.FEEDPing.byte -> {
                 Log.d("SerialService", "CheckProductPing data : \n${HexDump.dumpHexString(data)}")
                 val getID = receiveParser.Data!!.get(2)
-                mcIDMap.put(getID,getID)
+                mcIDMap.put(getID, getID)
             }
             ProtocolMode.FEEDSpeed.byte -> {
                 val motorState = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
-                Log.d("로그", "speed :${motorState.Speed} direction:${motorState.Direction}" +
-                        "current : ${motorState.Current} pos : ${motorState.Pos} arrivetime : ${motorState.Arrivetime}")
+//                Log.d(
+//                    "로그", "speed :${motorState.Speed} direction:${motorState.Direction}" +
+//                            "current : ${motorState.Current} pos : ${motorState.Pos} arrivetime : ${motorState.Arrivetime}"
+//                )
             }
             ProtocolMode.FEEDPos.byte -> {
-                val motorState = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
-                Log.d("로그", "speed :${motorState.Speed} direction:${motorState.Direction}" +
-                        "current : ${motorState.Current} pos : ${motorState.Pos} arrivetime : ${motorState.Arrivetime}")
+//                val motorState = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
+//                val msg = mHandler.obtainMessage(ProtocolMode.FEEDPos.byte.toInt(), motorState)
+//                mHandler.handleMessage(msg)
+//                Log.d(
+//                    "RECEIVE",
+//                    "ID:${motorState.ID} speed :${motorState.Speed} direction:${motorState.Direction}" +
+//                            "current : ${motorState.Current} pos : ${motorState.Pos!! / 4096 * 360 * 100} arrivetime : ${motorState.Arrivetime}"
+//                )
+
+                val msg = mHandler.obtainMessage(ProtocolMode.FEEDPos.byte.toInt(), data)
+                mHandler.handleMessage(msg)
             }
         }
     }
 
 
+    //    val sendParser = NurirobotMC()
+    var feedBackPingThread: Thread? = null
+    var feedBackMotorStateInfoThread: Thread? = null
+    var isFeedBack = false
+    var isAnotherJob = false
 
-//    val sendParser = NurirobotMC()
-    lateinit var feedBackPingThread: Thread
-    lateinit var feedBackMotorStateInfoThread: Thread
+    fun feedback() {
+        feedBackMotorStateInfoThread = Thread {
+            val sendParser = NurirobotMC()
+            while (isFeedBack) {
+                try {
+                    while (isAnotherJob) {
+                        Thread.sleep(10)
+                    }
 
-    private fun feedback() {
-        for (wheelID in 0..1) {
-//            sendParser.Feedback()
+                    for (encorderID in CareRobotMC.Left_Shoulder_Encoder.byte..CareRobotMC.Right_Elbow_Encoder.byte) {
+                        sendParser.Feedback(encorderID.toByte(), ProtocolMode.REQPos.byte)
+                        sendData(sendParser.Data!!.clone())
+                        Thread.sleep(20)
+                    }
 
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
+        feedBackMotorStateInfoThread?.start()
 
     }
 
@@ -371,14 +413,14 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
 
         feedBackPingThread = Thread {
             val sendParser = NurirobotMC()
-            for (id in 0..7) {
+            for (id in 1..12) {
                 sendParser.Feedback(id.toByte(), ProtocolMode.REQPing.byte)
                 val cloneData = sendParser.Data!!.clone()
                 sendData(cloneData)
-                Thread.sleep(100)
+                Thread.sleep(20)
             }
         }
-        feedBackPingThread.start()
+        feedBackPingThread?.start()
     }
 
 }

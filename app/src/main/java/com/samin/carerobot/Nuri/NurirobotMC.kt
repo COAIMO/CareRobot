@@ -18,7 +18,8 @@ class NurirobotMC : ICommand {
     override fun GetCheckSum(): Byte {
         if (Data == null) return 0
         else if (Data!!.size >= 0) {
-            val sumval: UInt = Data!!.toUByteArray().sum() - Data!![0].toUByte() - Data!![1].toUByte() - Data!![4].toUByte()
+            val sumval: UInt = Data!!.toUByteArray()
+                .sum() - Data!![0].toUByte() - Data!![1].toUByte() - Data!![4].toUByte()
             return sumval.toByte().inv()
         } else return 0
     }
@@ -105,7 +106,7 @@ class NurirobotMC : ICommand {
         return result
     }
 
-    override fun GetDataStruct():Any {
+    override fun GetDataStruct(): Any {
         return when (ProtocolMode.codesMap[Data!![5]]) {
             ProtocolMode.CTRLPosSpeed -> {
                 val nuripos = NuriPosSpeedAclCtrl()
@@ -193,7 +194,8 @@ class NurirobotMC : ICommand {
                 nuriRateSpeed.Protocol = Data!![5]
                 nuriRateSpeed.ID = Data!![2]
 //                nuriRateSpeed.Speed = Data!!.slice(5..6).reversed().toString().toUShort()
-                nuriRateSpeed.Speed = littleEndianConversion(Data!!.slice(6..7).toByteArray()).toUShort()
+                nuriRateSpeed.Speed =
+                    littleEndianConversion(Data!!.slice(6..7).toByteArray()).toUShort()
                 nuriRateSpeed
             }
             ProtocolMode.SETResolution -> {
@@ -201,7 +203,8 @@ class NurirobotMC : ICommand {
                 nuriResolution.Protocol = Data!![5]
                 nuriResolution.ID = Data!![2]
 //                nuriResolution.Resolution = Data!!.slice(5..6).reversed().toString().toUShort()
-                nuriResolution.Resolution = littleEndianConversion(Data!!.slice(6..7).toByteArray()).toUShort()
+                nuriResolution.Resolution =
+                    littleEndianConversion(Data!!.slice(6..7).toByteArray()).toUShort()
                 nuriResolution
             }
             ProtocolMode.SETRatio -> {
@@ -334,8 +337,19 @@ class NurirobotMC : ICommand {
 //                    ByteBuffer.wrap(Data!!.slice(6..7).reversed().toByteArray()).getFloat() * 0.01f
 //                nuriPosSpeedAclCtrl.Speed =
 //                    ByteBuffer.wrap(Data!!.slice(8..9).reversed().toByteArray()).getFloat() * 0.1f
-                nuriPosSpeedAclCtrl.Pos = littleEndianConversion(Data!!.slice(7..8).toByteArray()) * 0.01f
-                nuriPosSpeedAclCtrl.Speed = littleEndianConversion(Data!!.slice(9..10).toByteArray()) * 0.1f
+                Log.d(
+                    "체크",
+                    "CheckProductPing data : \n${
+                        littleEndianConversion(
+                            Data!!.slice(7..8).toByteArray()
+                        )
+                    }"
+                )
+
+                nuriPosSpeedAclCtrl.Pos =
+                    littleEndianConversion(Data!!.slice(7..8).toByteArray()) * 0.01f
+                nuriPosSpeedAclCtrl.Speed =
+                    littleEndianConversion(Data!!.slice(9..10).toByteArray()) * 0.1f
 //                nuriPosSpeedAclCtrl.Current = (Data!![11] * 100).toShort()
                 nuriPosSpeedAclCtrl.Current = (Data!![11].toUByte() * 100u).toShort()
                 nuriPosSpeedAclCtrl
@@ -350,8 +364,10 @@ class NurirobotMC : ICommand {
 //                    ByteBuffer.wrap(Data!!.slice(8..9).reversed().toByteArray()).getFloat() * 0.01f
 //                nuriPosSpeedAclCtrl.Speed =
 //                    ByteBuffer.wrap(Data!!.slice(6..7).reversed().toByteArray()).getFloat() * 0.1f
-                nuriPosSpeedAclCtrl.Pos = littleEndianConversion(Data!!.slice(9..10).toByteArray()) * 0.01f
-                nuriPosSpeedAclCtrl.Speed = littleEndianConversion(Data!!.slice(7..8).toByteArray()) * 0.1f
+                nuriPosSpeedAclCtrl.Pos =
+                    littleEndianConversion(Data!!.slice(9..10).toByteArray()) * 0.01f
+                nuriPosSpeedAclCtrl.Speed =
+                    littleEndianConversion(Data!!.slice(7..8).toByteArray()) * 0.1f
 //                nuriPosSpeedAclCtrl.Current = (Data!![11] * 100).toShort()
                 nuriPosSpeedAclCtrl.Current = (Data!![11].toUByte() * 100u).toShort()
                 nuriPosSpeedAclCtrl
@@ -391,7 +407,8 @@ class NurirobotMC : ICommand {
                 nuriRatedSpeed.ID = Data!![2]
 //                nuriRatedSpeed.Speed =
 //                    (Data!!.slice(5..6).reversed().toByteArray()).toString().toUShort()
-                nuriRatedSpeed.Speed = littleEndianConversion(Data!!.slice(6..7).toByteArray()).toUShort()
+                nuriRatedSpeed.Speed =
+                    littleEndianConversion(Data!!.slice(6..7).toByteArray()).toUShort()
                 nuriRatedSpeed
             }
             ProtocolMode.FEEDResolution -> {
@@ -400,7 +417,8 @@ class NurirobotMC : ICommand {
                 nuriResolution.ID = Data!![2]
 //                nuriResolution.Resolution =
 //                    (Data!!.slice(5..6).reversed().toByteArray()).toString().toUShort()
-                nuriResolution.Resolution = littleEndianConversion(Data!!.slice(6..7).toByteArray()).toUShort()
+                nuriResolution.Resolution =
+                    littleEndianConversion(Data!!.slice(6..7).toByteArray()).toUShort()
                 nuriResolution
             }
             ProtocolMode.FEEDRatio -> {

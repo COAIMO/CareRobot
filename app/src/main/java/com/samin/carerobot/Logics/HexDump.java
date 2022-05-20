@@ -102,8 +102,8 @@ public class HexDump {
     public static byte[] toByteArray(short i) {
         byte[] array = new byte[2];
 
-        array[1] = (byte) (i & 0xFF);
-        array[0] = (byte) ((i >> 8) & 0xFF);
+        array[0] = (byte) (i & 0xFF);
+        array[1] = (byte) ((i >> 8) & 0xFF);
 
         return array;
     }

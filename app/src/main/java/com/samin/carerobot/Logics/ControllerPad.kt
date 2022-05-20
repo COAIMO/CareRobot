@@ -10,6 +10,9 @@ import com.samin.carerobot.MainActivity
 class ControllerPad(viewModel: SharedViewModel) {
     private var directionPressed = -1
     val sharedViewModel: SharedViewModel = viewModel
+    var ex_X = 0f
+    var ex_Y = 0f
+    var isUsable = false
 
     fun getDirectionPressed(event: InputEvent): Int {
         if (!isDpadDevice(event)) {
@@ -76,7 +79,11 @@ class ControllerPad(viewModel: SharedViewModel) {
         //왼쪽 조이스틱
         var x: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
         var y: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
-        sharedViewModel.left_Joystick.value = JoystickCoordinate(x,y)
+        if (!ex_X.equals(x) || !ex_Y.equals(y)) {
+            ex_X = x
+            ex_Y = y
+            sharedViewModel.left_Joystick.value = JoystickCoordinate(x, y)
+        }
 
 
         //방향키값 들어옴
@@ -93,8 +100,7 @@ class ControllerPad(viewModel: SharedViewModel) {
         if (x == 0f && y == 0f) {
             x = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Z, historyPos)
             y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)
-            sharedViewModel.right_Joystick.value = JoystickCoordinate(x,y)
-            Log.d(MainActivity.TAG, " AXIS_Z : $x , AXIS_RZ : $y")
+            sharedViewModel.right_Joystick.value = JoystickCoordinate(x, y)
         }
 //        if (y == 0f) {
 //            y = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_RZ, historyPos)

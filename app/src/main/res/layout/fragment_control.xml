@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".ControlFragment">
+
     <ImageView
         android:id="@+id/iv_wheelMove"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@drawable/wheel_move"
         android:background="@drawable/seperate_line"
+        android:src="@drawable/wheel_move"
         app:layout_constraintHeight_default="percent"
         app:layout_constraintHeight_percent="0.24"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,7 +45,7 @@
             android:textColor="@color/sub_navi_textColor"
             android:textSize="30sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/btn_turnLeft"
             app:layout_constraintEnd_toStartOf="@+id/btn_goForward"
             app:layout_constraintHeight_default="percent"
             app:layout_constraintHeight_percent="0.25"
@@ -57,7 +58,7 @@
             android:id="@+id/btn_goForward"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="8dp"
             android:background="@drawable/control_button"
             android:drawableEnd="@drawable/go_forward_ic"
             android:paddingLeft="30dp"
@@ -66,11 +67,53 @@
             android:textColor="@color/sub_navi_textColor"
             android:textSize="30sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/btn_turnRight"
             app:layout_constraintHeight_default="percent"
             app:layout_constraintHeight_percent="0.25"
             app:layout_constraintStart_toEndOf="@id/btn_goBack"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.35" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_turnLeft"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="30dp"
+            android:background="@drawable/control_button"
+            android:drawableStart="@drawable/trun_left_ic"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="@string/btn_turnLeft_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btn_goForward"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btn_goBack"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.35" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_turnRight"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="@drawable/control_button"
+            android:drawableEnd="@drawable/trun_right_ic"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:text="@string/btn_turnRight_title"
+            android:textColor="@color/sub_navi_textColor"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.25"
+            app:layout_constraintStart_toStartOf="@id/btn_goForward"
+            app:layout_constraintTop_toBottomOf="@id/btn_goForward"
             app:layout_constraintWidth_default="percent"
             app:layout_constraintWidth_percent="0.35" />
 
@@ -96,8 +139,8 @@
         android:id="@+id/iv_shoulderMove"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@drawable/shoulder_move"
         android:background="@drawable/seperate_line"
+        android:src="@drawable/shoulder_move"
         app:layout_constraintHeight_default="percent"
         app:layout_constraintHeight_percent="0.24"
         app:layout_constraintStart_toStartOf="parent"
@@ -117,8 +160,48 @@
         app:layout_constraintWidth_default="percent"
         app:layout_constraintWidth_percent="0.65">
 
+        <RadioGroup
+            android:id="@+id/shoulder_radio_group"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/btn_rotateLeft"
+            app:layout_constraintEnd_toEndOf="@id/btn_rotateRight"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.1"
+            app:layout_constraintStart_toStartOf="@id/btn_rotateLeft"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RadioButton
+                android:id="@+id/btn_selected_LeftShoulder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="왼쪽"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/btn_selected_RightShoulder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="오른쪽"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/btn_selected_BothShoulder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="양쪽"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </RadioGroup>
+
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_turnLeft"
+            android:id="@+id/btn_rotateLeft"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="30dp"
@@ -131,7 +214,7 @@
             android:textSize="30sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/btn_turnRight"
+            app:layout_constraintEnd_toStartOf="@+id/btn_rotateRight"
             app:layout_constraintHeight_default="percent"
             app:layout_constraintHeight_percent="0.25"
             app:layout_constraintStart_toStartOf="parent"
@@ -140,7 +223,7 @@
             app:layout_constraintWidth_percent="0.35" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_turnRight"
+            android:id="@+id/btn_rotateRight"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="10dp"
@@ -155,7 +238,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintHeight_default="percent"
             app:layout_constraintHeight_percent="0.25"
-            app:layout_constraintStart_toEndOf="@id/btn_turnLeft"
+            app:layout_constraintStart_toEndOf="@id/btn_rotateLeft"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_default="percent"
             app:layout_constraintWidth_percent="0.35" />
@@ -172,7 +255,7 @@
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/btn_turnRight"
+            app:layout_constraintStart_toEndOf="@id/btn_rotateRight"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -181,8 +264,8 @@
         android:id="@+id/iv_waistMove"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@drawable/waist_move"
         android:background="@drawable/seperate_line"
+        android:src="@drawable/waist_move"
         app:layout_constraintHeight_default="percent"
         app:layout_constraintHeight_percent="0.24"
         app:layout_constraintStart_toStartOf="parent"
@@ -285,6 +368,46 @@
         app:layout_constraintWidth_default="percent"
         app:layout_constraintWidth_percent="0.65">
 
+        <RadioGroup
+            android:id="@+id/elbow_radio_group"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toTopOf="@id/btn_elbowUp"
+            app:layout_constraintEnd_toEndOf="@id/btn_elbowUp"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.1"
+            app:layout_constraintStart_toStartOf="@id/btn_elbowUp"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RadioButton
+                android:id="@+id/btn_selected_LeftElbow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="왼쪽"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/btn_selected_RightElbow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="오른쪽"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <RadioButton
+                android:id="@+id/btn_selected_BothElbow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:text="양쪽"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </RadioGroup>
+
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btn_elbowUp"
@@ -303,7 +426,7 @@
             app:layout_constraintHeight_default="percent"
             app:layout_constraintHeight_percent="0.25"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/elbow_radio_group"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintWidth_default="percent"
             app:layout_constraintWidth_percent="0.72" />
@@ -327,8 +450,8 @@
             app:layout_constraintHeight_percent="0.25"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_elbowUp"
-            app:layout_constraintWidth_default="percent"
             app:layout_constraintVertical_chainStyle="spread_inside"
+            app:layout_constraintWidth_default="percent"
             app:layout_constraintWidth_percent="0.72" />
 
         <androidx.appcompat.widget.AppCompatButton
@@ -350,6 +473,7 @@
             android:id="@+id/btn_play"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="20dp"
             android:background="@drawable/example_play_button"
             android:drawableStart="@drawable/play_ic"
             android:paddingStart="40dp"
@@ -358,7 +482,6 @@
             android:textColor="@color/navi_textColor"
             android:textSize="30sp"
             android:textStyle="bold"
-            android:layout_marginTop="20dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_default="percent"
