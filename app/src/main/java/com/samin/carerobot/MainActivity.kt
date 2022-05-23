@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var controllerPad: ControllerPad
     private lateinit var sharedViewModel: SharedViewModel
     lateinit var motorControllerParser: MotorControllerParser
+
     companion object {
         val TAG = "태그"
     }
@@ -47,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         setFragment()
         checkLogin()
         moveRobot()
-//        LoadingDialog(this).show()
         observeMotorState()
 
     }
@@ -139,7 +139,7 @@ class MainActivity : AppCompatActivity() {
 //                        tmpPosData.ID!!,
 //                        tmpPosData.Pos!! / 4096 * 360 * 100
 //                    )
-                    Log.d(TEST, "data : ${HexDump.dumpHexString(msg.obj as ByteArray)}")
+//                    Log.d(TEST, "data : ${HexDump.dumpHexString(msg.obj as ByteArray)}")
                     motorControllerParser.parser(msg.obj as ByteArray)
 
                 }
@@ -151,40 +151,49 @@ class MainActivity : AppCompatActivity() {
     lateinit var observeMotorStateThread: Thread
     private fun observeMotorState() {
         observeMotorStateThread = Thread {
-            while (true) {
-                for (i in sharedViewModel.encoderPOSMapt) {
-                    when (i.key) {
-                        CareRobotMC.Left_Shoulder_Encoder.byte -> {
-                            Log.d(TEST, "Left_Shoulder_Encoder : ${i.value}")
-                            if (42f < i.value && i.value < 150f) {
-                                stopMotor(CareRobotMC.Left_Shoulder.byte)
-                                exLeft_Shoulder_Encoder_Data = i.value
-                            }
-                        }
-                        CareRobotMC.Left_Elbow_Encoder.byte -> {
-                            Log.d(TEST, "Left_Elbow_Encoder : ${i.value}")
-                            if (350f < i.value || i.value < 164f) {
-                                stopMotor(CareRobotMC.Left_Elbow.byte)
-                            }
-                        }
-                        CareRobotMC.Right_Shoulder_Encoder.byte -> {
-                            Log.d(TEST, "Right_Shoulder_Encoder : ${i.value}")
-                            if (210f < i.value && i.value < 318f) {
-                                stopMotor(CareRobotMC.Right_Shoulder.byte)
-                            }
-                        }
-                        CareRobotMC.Right_Elbow_Encoder.byte -> {
-                            Log.d(TEST, "Right_Elbow_Encoder : ${i.value}")
-                            if (i.value < 10f || i.value > 196f) {
-                                stopMotor(CareRobotMC.Right_Elbow.byte)
-                            }
+            try {
+                while (true) {
+                    for ((key, value) in sharedViewModel.motorInfo) {
+                        when (key) {
+                            CareRobotMC.Left_Shoulder_Encoder.byte -> {
+                                Log.d(TEST, "Left_Shoulder_Encoder : ${value.position}")
+                                if (value.max_Alert!! || value.min_Alert!!) {
+                                    stopMotor(CareRobotMC.Left_Shoulder.byte)
+//                                Log.d(TEST, "Left_Shoulder_Encoder : 멈춤")
+                                } else {
 
+                                }
+                            }
+                            CareRobotMC.Left_Elbow_Encoder.byte -> {
+                                Log.d(TEST, "Left_Elbow_Encoder : ${value.position}")
+                                if (value.max_Alert!! || value.min_Alert!!) {
+                                    stopMotor(CareRobotMC.Left_Elbow.byte)
+//                                    Log.d(TEST, "Left_Elbow : 멈춤")
+                                } else {
+                                }
+                            }
+                            CareRobotMC.Right_Shoulder_Encoder.byte -> {
+                                Log.d(TEST, "Right_Shoulder_Encoder : ${value.position}")
+                                if (value.max_Alert!! || value.min_Alert!!) {
+                                    stopMotor(CareRobotMC.Right_Shoulder.byte)
+                                } else {
+                                }
+                            }
+                            CareRobotMC.Right_Elbow_Encoder.byte -> {
+                                Log.d(TEST, "Right_Elbow_Encoder : ${value.position}")
+                                if (value.max_Alert!! || value.min_Alert!!) {
+                                    stopMotor(CareRobotMC.Right_Elbow.byte)
+                                    Log.d(TEST, "Right_Elbow_Encoder : 멈춤")
+                                } else {
+                                }
+                            }
                         }
                     }
+                    Thread.sleep(20)
                 }
-                Thread.sleep(100)
+            }catch (e:Exception){
+                e.printStackTrace()
             }
-
         }
         observeMotorStateThread.start()
     }
@@ -232,31 +241,48 @@ class MainActivity : AppCompatActivity() {
         if (event != null) {
             var handled = false
             if (ControllerPad.isGamePad(event)) {
-                controllerPad.isUsable = true
                 if (event.repeatCount == 0) {
                     when (keyCode) {
                         KeyEvent.KEYCODE_BUTTON_A -> {
                             sharedViewModel.controlPart.value = CareRobotMC.Shoulder.byte
+                            controllerPad.isUsable = true
                         }
                         KeyEvent.KEYCODE_BUTTON_B -> {
                             sharedViewModel.controlPart.value = CareRobotMC.Elbow.byte
+                            controllerPad.isUsable = true
                         }
                         KeyEvent.KEYCODE_BUTTON_X -> {
-                            sharedViewModel.controlPart.value = CareRobotMC.Wheel.byte
+//                            sharedViewModel.controlPart.value = CareRobotMC.Wheel.byte
+//                            controllerPad.isUsable = true
+                            val sendParser = NurirobotMC()
+                            serialService?.isAnotherJob = true
+                            for (id in 1..12) {
+                                sendParser.Feedback(id.toByte(), ProtocolMode.REQPing.byte)
+                                val cloneData = sendParser.Data!!.clone()
+                                serialService?.sendData(cloneData)
+                                Thread.sleep(20)
+                            }
+                            serialService?.isAnotherJob = false
+
                         }
                         KeyEvent.KEYCODE_BUTTON_Y -> {
                             sharedViewModel.controlPart.value = CareRobotMC.Waist.byte
+                            controllerPad.isUsable = true
                         }
                         KeyEvent.KEYCODE_BUTTON_R1 -> {
                             sharedViewModel.controlPart.value = CareRobotMC.Right_Shoulder.byte
+                            controllerPad.isUsable = true
                         }
                         KeyEvent.KEYCODE_BUTTON_L1 -> {
                             sharedViewModel.controlPart.value = CareRobotMC.Left_Shoulder.byte
+                            controllerPad.isUsable = true
                         }
                         KeyEvent.KEYCODE_BUTTON_R2 -> {
+                            controllerPad.isUsable = true
                             sharedViewModel.controlPart.value = CareRobotMC.Right_Elbow.byte
                         }
                         KeyEvent.KEYCODE_BUTTON_L2 -> {
+                            controllerPad.isUsable = true
                             sharedViewModel.controlPart.value = CareRobotMC.Left_Elbow.byte
                         }
                         else -> {
@@ -275,31 +301,39 @@ class MainActivity : AppCompatActivity() {
         if (event != null) {
             var handled = false
             if (ControllerPad.isGamePad(event)) {
-                controllerPad.isUsable = false
                 if (event.repeatCount == 0) {
                     when (keyCode) {
                         KeyEvent.KEYCODE_BUTTON_A -> {
                             sharedViewModel.controlPart.value = null
+                            controllerPad.isUsable = false
                         }
                         KeyEvent.KEYCODE_BUTTON_B -> {
+                            controllerPad.isUsable = false
                             sharedViewModel.controlPart.value = null
                         }
                         KeyEvent.KEYCODE_BUTTON_X -> {
+                            controllerPad.isUsable = false
                             sharedViewModel.controlPart.value = null
                         }
                         KeyEvent.KEYCODE_BUTTON_Y -> {
+                            controllerPad.isUsable = false
                             sharedViewModel.controlPart.value = null
                         }
                         KeyEvent.KEYCODE_BUTTON_R1 -> {
+                            controllerPad.isUsable = false
                             sharedViewModel.controlPart.value = null
                         }
                         KeyEvent.KEYCODE_BUTTON_L1 -> {
+                            controllerPad.isUsable = false
                             sharedViewModel.controlPart.value = null
+                            stopRobot()
                         }
                         KeyEvent.KEYCODE_BUTTON_R2 -> {
+                            controllerPad.isUsable = false
                             sharedViewModel.controlPart.value = null
                         }
                         KeyEvent.KEYCODE_BUTTON_L2 -> {
+                            controllerPad.isUsable = false
                             sharedViewModel.controlPart.value = null
                         }
                         else -> {
@@ -324,10 +358,10 @@ class MainActivity : AppCompatActivity() {
 //            moveWheelchair(tmpRPM)
         }
         sharedViewModel.right_Joystick.observe(this) {
-//            if (!controllerPad.isUsable) {
-//                stopRobot()
-//                return@observe
-//            }
+            if (!controllerPad.isUsable) {
+                stopRobot()
+                return@observe
+            }
             when (sharedViewModel.controlPart.value) {
                 CareRobotMC.Waist.byte -> {
                     serialService?.isAnotherJob = true
@@ -338,6 +372,7 @@ class MainActivity : AppCompatActivity() {
                         tmp.Left,
                         0.1f
                     )
+                    sharedViewModel.controlDirection = tmp.LeftDirection
                     serialService?.sendData(sendParser.Data!!.clone())
                     serialService?.isAnotherJob = false
                 }
@@ -350,11 +385,10 @@ class MainActivity : AppCompatActivity() {
                         tmp.Right,
                         0.1f
                     )
-                    serialService?.sendData(sendParser.Data!!.clone())
-                    Log.d(
-                        TEST,
-                        "Right_Shoulder : ${HexDump.dumpHexString(sendParser.Data!!.clone())}"
-                    )
+                    sharedViewModel.controlDirection = tmp.RightDirection
+                    if (controllerPad.isUsable) {
+                        serialService?.sendData(sendParser.Data!!.clone())
+                    }
                     serialService?.isAnotherJob = false
                 }
                 CareRobotMC.Left_Shoulder.byte -> {
@@ -366,7 +400,10 @@ class MainActivity : AppCompatActivity() {
                         tmp.Left,
                         0.1f
                     )
-                    serialService?.sendData(sendParser.Data!!.clone())
+                    sharedViewModel.controlDirection = tmp.LeftDirection
+                    if (controllerPad.isUsable) {
+                        serialService?.sendData(sendParser.Data!!.clone())
+                    }
                     serialService?.isAnotherJob = false
                 }
                 CareRobotMC.Right_Elbow.byte -> {
@@ -378,22 +415,28 @@ class MainActivity : AppCompatActivity() {
                         tmp.Right,
                         0.1f
                     )
-                    serialService?.sendData(sendParser.Data!!.clone())
-                    Log.d(TEST, "Right_Elbow : ${HexDump.dumpHexString(sendParser.Data!!.clone())}")
+                    sharedViewModel.controlDirection = tmp.RightDirection
+                    if (controllerPad.isUsable) {
+                        serialService?.sendData(sendParser.Data!!.clone())
+                    }
                     serialService?.isAnotherJob = false
                 }
                 CareRobotMC.Left_Elbow.byte -> {
-                    serialService?.isAnotherJob = true
-                    val tmp = getElbowDirectionRPM(it)
-                    sendParser.ControlAcceleratedSpeed(
-                        CareRobotMC.Left_Elbow.byte,
-                        (if (tmp.LeftDirection == Direction.CW) 0x01 else 0x00).toByte(),
-                        tmp.Left,
-                        0.1f
-                    )
-                    serialService?.sendData(sendParser.Data!!.clone())
-                    Log.d(TEST, "Left_Elbow : ${HexDump.dumpHexString(sendParser.Data!!.clone())}")
-                    serialService?.isAnotherJob = false
+//                    if(sharedViewModel.right_Elbow_isUsable.value!!){
+                        serialService?.isAnotherJob = true
+                        val tmp = getElbowDirectionRPM(it)
+                        sendParser.ControlAcceleratedSpeed(
+                            CareRobotMC.Left_Elbow.byte,
+                            (if (tmp.LeftDirection == Direction.CW) 0x01 else 0x00).toByte(),
+                            tmp.Left,
+                            0.1f
+                        )
+                        sharedViewModel.controlDirection = tmp.LeftDirection
+                        if (controllerPad.isUsable) {
+                            serialService?.sendData(sendParser.Data!!.clone())
+                        }
+                        serialService?.isAnotherJob = false
+//                    }
                 }
                 CareRobotMC.Shoulder.byte -> {
 
@@ -590,6 +633,9 @@ class MainActivity : AppCompatActivity() {
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CW
         }
+
+//        sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte].
+
         return ret
     }
 
@@ -640,7 +686,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun stopMotor(id_1: Byte, id_2: Byte? = null) {
+    fun stopMotor(id_1: Byte, id_2: Byte? = null) {
         val nuriMC = NurirobotMC()
         serialService!!.isAnotherJob = true
         if (id_2 == null) {
@@ -665,7 +711,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopRobot() {
         val nuriMC = NurirobotMC()
-        serialService!!.isAnotherJob = true
+        serialService?.isAnotherJob = true
         for (i in CareRobotMC.Left_Shoulder.byte..CareRobotMC.Left_Wheel.byte) {
             nuriMC.ControlAcceleratedSpeed(i.toByte(), Direction.CCW.direction, 0f, 0.1f)
             serialService?.sendData(nuriMC.Data!!.clone())
@@ -675,11 +721,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     lateinit var setModeThread: Thread
-    private fun setstandardmode(){
+    private fun setstandardmode() {
         setModeThread = Thread {
 
 
         }
         setModeThread.start()
     }
+
 }

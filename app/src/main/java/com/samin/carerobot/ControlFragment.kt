@@ -353,6 +353,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
+                        sharedViewModel.controlDirection = Direction.CW
                         activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Right.byte -> {
@@ -362,6 +363,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
+                        sharedViewModel.controlDirection = Direction.CW
                         activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Both.byte -> {
@@ -380,6 +382,7 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+                        sharedViewModel.controlDirection = Direction.CW
                         activity?.serialService?.sendData(sedate)
                     }
                 }
@@ -393,6 +396,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
+                        sharedViewModel.controlDirection = Direction.CCW
                         activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Right.byte -> {
@@ -402,6 +406,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
+                        sharedViewModel.controlDirection = Direction.CCW
                         activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Both.byte -> {
@@ -420,6 +425,7 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+                        sharedViewModel.controlDirection = Direction.CCW
                         activity?.serialService?.sendData(sedate)
                     }
                 }

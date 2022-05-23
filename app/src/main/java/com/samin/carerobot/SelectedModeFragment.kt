@@ -8,6 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
+import com.jeongmin.nurimotortester.Nuri.Direction
+import com.jeongmin.nurimotortester.NurirobotMC
+import com.samin.carerobot.LoadingPage.LoadingDialog
+import com.samin.carerobot.Logics.CareRobotMC
 import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.databinding.FragmentSelectedModeBinding
 
@@ -29,7 +33,8 @@ class SelectedModeFragment : Fragment() {
     private lateinit var mBinding: FragmentSelectedModeBinding
     private var activity: MainActivity? = null
     private val sharedViewModel by activityViewModels<SharedViewModel>()
-
+    private lateinit var changeRobotPositionThread: Thread
+    private lateinit var laodingView: LoadingDialog
     override fun onAttach(context: Context) {
         super.onAttach(context)
         activity = getActivity() as MainActivity
@@ -93,7 +98,7 @@ class SelectedModeFragment : Fragment() {
         }
     }
 
-    private fun setButtonClickEvent(){
+    private fun setButtonClickEvent() {
         mBinding.btnHeavy.setOnClickListener {
             onClick(mBinding.btnHeavy)
         }
@@ -138,48 +143,135 @@ class SelectedModeFragment : Fragment() {
         }
     }
 
-    private fun onClick(view:View){
-        when(view){
-            mBinding.btnHeavy->{
-                sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY_HEAVY
+    var step_1 = true
+    var step_2 = true
+
+    private fun onClick(view: View) {
+        val nuriMC = NurirobotMC()
+        laodingView = LoadingDialog(requireContext())
+        when (view) {
+            mBinding.btnHeavy -> {
+                laodingView.show()
+                changeRobotPositionThread = Thread {
+                    while (step_1) {
+                        val tmp = sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
+                        if (tmp?.position!! > 1 && tmp.position!! <= tmp.min_Range!! + 10) {
+                            nuriMC.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Shoulder.byte,
+                                Direction.CW.direction,
+                                2f,
+                                0.1f
+                            )
+                            activity?.serialService?.sendData(nuriMC.Data!!)
+                            Thread.sleep(20)
+                        } else if (tmp.min_Range!! < tmp.position!! && tmp.position!! > tmp.max_Range!! - 10) {
+                            nuriMC.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Shoulder.byte,
+                                Direction.CCW.direction,
+                                2f,
+                                0.1f
+                            )
+                            activity?.serialService?.sendData(nuriMC.Data!!)
+                            Thread.sleep(20)
+                        } else if (tmp.position!! > 0 && tmp.position!! < 1) {
+                            activity?.stopMotor(CareRobotMC.Right_Shoulder.byte)
+                        }
+                        val tmp2 = sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
+                        if (tmp2?.position!! > 1 && tmp2.position!! <= tmp2.min_Range!! + 10) {
+                            nuriMC.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Shoulder.byte,
+                                Direction.CW.direction,
+                                2f,
+                                0.1f
+                            )
+                            activity?.serialService?.sendData(nuriMC.Data!!)
+                            Thread.sleep(20)
+                        } else if (tmp2.position!! > tmp2.min_Range!! && tmp2.position!! > tmp2.max_Range!!-10) {
+                            nuriMC.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Shoulder.byte,
+                                Direction.CCW.direction,
+                                2f,
+                                0.1f
+                            )
+                            activity?.serialService?.sendData(nuriMC.Data!!)
+                            Thread.sleep(20)
+                        } else if (tmp2.position!! > 0 && tmp2.position!! < 1) {
+                            activity?.stopMotor(CareRobotMC.Left_Shoulder.byte)
+                            step_1 = false
+                        }
+                    }
+
+//                    while (step_2){
+//                        val tmp = sharedViewModel.motorInfo[CareRobotMC.Right_Elbow.byte]
+//                        if (tmp?.position!! > 0 && tmp.position!! <= 94) {
+//                            nuriMC.ControlAcceleratedSpeed(
+//                                CareRobotMC.Right_Elbow.byte,
+//                                Direction.CCW.direction,
+//                                3f,
+//                                0.1f
+//                            )
+//                            activity?.serialService?.sendData(nuriMC.Data!!)
+//                            Thread.sleep(20)
+//                        } else if (95 < tmp.position!! && tmp.position!! <= 360) {
+//                            nuriMC.ControlAcceleratedSpeed(
+//                                CareRobotMC.Right_Elbow.byte,
+//                                Direction.CW.direction,
+//                                3f,
+//                                0.1f
+//                            )
+//                            activity?.serialService?.sendData(nuriMC.Data!!)
+//                            Thread.sleep(20)
+//                        } else if(tmp.position!! > 95 && tmp.position!! <96){
+//                            activity?.stopMotor(CareRobotMC.Right_Shoulder.byte)
+//                            step_2 = false
+//                        }
+//
+//                    }
+                    activity?.runOnUiThread {
+                        sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY_HEAVY
+                        laodingView.dismiss()
+                    }
+                }
+                changeRobotPositionThread.start()
+                step_1 = true
             }
-            mBinding.btnHeight->{
-                sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY_HEAVY
+            mBinding.btnHeight -> {
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY_HEIGHT
             }
-            mBinding.btnStand ->{
+            mBinding.btnStand -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR_STAND
             }
-            mBinding.btnWalkHand ->{
+            mBinding.btnWalkHand -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR_WALKHAND
             }
-            mBinding.btnWalkHug ->{
+            mBinding.btnWalkHug -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR_WALKHUG
             }
-            mBinding.btnChangeHug ->{
+            mBinding.btnChangeHug -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE_CHANGEHUG
             }
-            mBinding.btnTransferStand ->{
+            mBinding.btnTransferStand -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE_TRANSFERSTAND
             }
-            mBinding.btnTransferHarness->{
+            mBinding.btnTransferHarness -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE_TRANSFERHARNESS
             }
-            mBinding.btnPosition->{
+            mBinding.btnPosition -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL_POSITION
             }
-            mBinding.btnChangeSling->{
+            mBinding.btnChangeSling -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL_CHANGESLING
             }
-            mBinding.btnTransferSling->{
+            mBinding.btnTransferSling -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL_TRANSFERSLING
             }
-            mBinding.btnTransferBedriddenSling->{
+            mBinding.btnTransferBedriddenSling -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL_TRANSFERBEDRIDDENSLING
             }
-            mBinding.btnTransferBedriddenBoard->{
+            mBinding.btnTransferBedriddenBoard -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL_TRANSFERBEDRIDDENBOARD
             }
-            mBinding.btnTransferChair->{
+            mBinding.btnTransferChair -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL_TRANSFERCHAIR
             }
         }

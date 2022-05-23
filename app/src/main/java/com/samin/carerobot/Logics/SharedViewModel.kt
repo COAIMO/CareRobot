@@ -3,6 +3,7 @@ package com.samin.carerobot.Logics
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.jeongmin.nurimotortester.Nuri.Direction
 import com.jeongmin.nurimotortester.Nuri.NuriPosSpeedAclCtrl
 import java.util.concurrent.ConcurrentHashMap
 
@@ -38,18 +39,12 @@ class SharedViewModel:ViewModel() {
     }
 
     var viewState = MutableLiveData<Int>()
-    var left_Joystick_x = MutableLiveData<Float>()
-    var left_Joystick_y = MutableLiveData<Float>()
-    var right_Joystick_x = MutableLiveData<Float>()
-    var right_Joystick_y = MutableLiveData<Float>()
     var left_Joystick = MutableLiveData<JoystickCoordinate>()
     var right_Joystick = MutableLiveData<JoystickCoordinate>()
     var controlPart = MutableLiveData<Byte?>()
-
-    private val motorStateInfo = HashMap<Byte, NuriPosSpeedAclCtrl>()
-
-    val encoderPOSMap = MutableLiveData<HashMap<Byte, Float>>()
-    val encoderPOSMapt = ConcurrentHashMap<Byte, Float>()
     val motorInfo = ConcurrentHashMap<Byte,MotorInfo>()
+    var controlDirection = Direction.CW
+
+    var right_Elbow_isUsable = MutableLiveData<Boolean>()
 
 }
