@@ -63,6 +63,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
     private var lastRecvTime: Long = System.currentTimeMillis()
     private var bufferIndex: Int = 0
     private var recvBuffer: ByteArray = ByteArray(1024)
+    var isUsedWaist = false
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (INTENT_ACTION_GRANT_USB.equals(intent?.action)) {
@@ -228,8 +229,12 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
 
     fun sendData(data: ByteArray) {
 //        usbSerialPort?.write(data, WRITE_WAIT_MILLIS)
-        usbIoManager?.writeAsync(data)
-        Log.d("로그", "send data : \n${HexDump.dumpHexString(data)}")
+        try {
+            usbIoManager?.writeAsync(data)
+            Log.d("로그", "send data : \n${HexDump.dumpHexString(data)}")
+        }catch (e:Exception){
+            e.printStackTrace()
+        }
     }
 
     fun parseReceiveData(data: ByteArray) {
@@ -392,20 +397,17 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                     while (isAnotherJob) {
                         Thread.sleep(10)
                     }
-
                     for (encorderID in CareRobotMC.Left_Shoulder_Encoder.byte..CareRobotMC.Right_Elbow_Encoder.byte) {
                         sendParser.Feedback(encorderID.toByte(), ProtocolMode.REQPos.byte)
                         sendData(sendParser.Data!!.clone())
                         Thread.sleep(20)
                     }
-
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
         }
         feedBackMotorStateInfoThread?.start()
-
     }
 
 

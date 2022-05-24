@@ -252,18 +252,8 @@ class MainActivity : AppCompatActivity() {
                             controllerPad.isUsable = true
                         }
                         KeyEvent.KEYCODE_BUTTON_X -> {
-//                            sharedViewModel.controlPart.value = CareRobotMC.Wheel.byte
-//                            controllerPad.isUsable = true
-                            val sendParser = NurirobotMC()
-                            serialService?.isAnotherJob = true
-                            for (id in 1..12) {
-                                sendParser.Feedback(id.toByte(), ProtocolMode.REQPing.byte)
-                                val cloneData = sendParser.Data!!.clone()
-                                serialService?.sendData(cloneData)
-                                Thread.sleep(20)
-                            }
-                            serialService?.isAnotherJob = false
-
+                            sharedViewModel.controlPart.value = CareRobotMC.Wheel.byte
+                            controllerPad.isUsable = true
                         }
                         KeyEvent.KEYCODE_BUTTON_Y -> {
                             sharedViewModel.controlPart.value = CareRobotMC.Waist.byte
@@ -354,8 +344,8 @@ class MainActivity : AppCompatActivity() {
     private fun moveRobot() {
 
         sharedViewModel.left_Joystick.observe(this) {
-//            val tmpRPM = getRPMMath(it)
-//            moveWheelchair(tmpRPM)
+            val tmpRPM = getRPMMath(it)
+            moveWheelchair(tmpRPM)
         }
         sharedViewModel.right_Joystick.observe(this) {
             if (!controllerPad.isUsable) {
@@ -473,13 +463,9 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    val MaxForward: Float = 50f //1326.9645
-    val MaxBackward: Float = 885f // 884.6426044
-    val MaxLeftRight: Float = 400f
-    val turn_damping: Float = 2.2f
+    val MaxForward: Float = 40f //1326.9645
 
     private fun getRPMMath(coordinate: JoystickCoordinate): MotorRPMInfo {
-
         val ret: MotorRPMInfo = MotorRPMInfo()
         var left = 0f
         var right = 0f
@@ -493,9 +479,7 @@ class MainActivity : AppCompatActivity() {
             TAG,
             "x: $joy_x\tY: $joy_y\t anlge: $angle\t r: $r"
         )
-//        if (joy_y == 1f){
-//
-//        }
+
         if (joy_x > 0 && joy_y > 0) {
             //우회전
             left = MaxForward * r * joy_x
@@ -528,20 +512,20 @@ class MainActivity : AppCompatActivity() {
             ret.RightDirection = Direction.CCW
         } else if (joy_x == 0f && joy_y < 0) {
             //후진
-            left = MaxForward * r
-            right = MaxForward * r
+            left = MaxForward * r/2
+            right = MaxForward * r/2
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CW
         } else if (joy_y == 0f && joy_x > 0) {
             //제자리 우회전
-            left = MaxForward * r
-            right = MaxForward * r
+            left = MaxForward * r/2
+            right = MaxForward * r/2
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CW
         } else if (joy_y == 0f && joy_x < 0) {
             //제자리 좌회전
-            left = MaxForward * r
-            right = MaxForward * r
+            left = MaxForward * r/2
+            right = MaxForward * r/2
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CCW
         }
@@ -642,68 +626,52 @@ class MainActivity : AppCompatActivity() {
     private fun calcConcentrationLeft(curr: Float): Float {
         var ret: Float = 0.1f
 
-//        if (rpmLeft < 400f) {
-//            val calc = curr / 800f
-//            if (calc < 0.2f)
-//                ret = 0.1f
-//            else if (calc < 0.4f)
-//                ret = 0.2f
-//            else if (calc < 0.6f)
-//                ret = 0.3f
-//            else if (calc < 0.8f)
-//                ret = 0.5f
-//            else
-//                ret = 0.7f
-//        } else {
-//            ret = 0.1f
-//        }
-//        val calc = curr / 800f
-//        if (calc < 0.2f)
-//            ret = 0.1f
-//        else if (calc < 0.4f)
-//            ret = 0.2f
-//        else if (calc < 0.6f)
-//            ret = 0.3f
-//        else if (calc < 0.8f)
-//            ret = 0.5f
-//        else
-//            ret = 0.7f
-//        return ret
-
-        val calc = curr / 10f
-        ret = calc
+        val calc = curr / 40f
+        if (calc < 0.2f)
+            ret = 0.1f
+        else if (calc < 0.4f)
+            ret = 0.2f
+        else if (calc < 0.6f)
+            ret = 0.3f
+        else if (calc < 0.8f)
+            ret = 0.5f
+        else
+            ret = 0.7f
         return ret
     }
 
     private fun calcConcentrationRight(curr: Float): Float {
         var ret: Float = 0.1f
-        val calc = curr / 10f
-        ret = calc
+        val calc = curr / 40f
+        if (calc < 0.2f)
+            ret = 0.1f
+        else if (calc < 0.4f)
+            ret = 0.2f
+        else if (calc < 0.6f)
+            ret = 0.3f
+        else if (calc < 0.8f)
+            ret = 0.5f
+        else
+            ret = 0.7f
         return ret
-    }
-
-    private fun initPosition() {
-
     }
 
     fun stopMotor(id_1: Byte, id_2: Byte? = null) {
         val nuriMC = NurirobotMC()
         serialService!!.isAnotherJob = true
-        if (id_2 == null) {
-            nuriMC.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
-            serialService?.sendData(nuriMC.Data!!.clone())
-        } else {
-//            val sedate = ByteArray(20)
-//            nuriMC.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
-//            nuriMC.Data!!.clone().copyInto(sedate, 0, 0, nuriMC.Data!!.size)
-//            nuriMC.ControlAcceleratedSpeed(id_2, Direction.CCW.direction, 0f, 0.1f)
-//            nuriMC.Data!!.clone().copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-            val sedate = ByteArray(22)
-            nuriMC.ControlPosSpeed(id_1, Direction.CCW.direction, 0f, 0f)
-            nuriMC.Data!!.clone().copyInto(sedate, 0, 0, nuriMC.Data!!.size)
-            nuriMC.ControlPosSpeed(id_2, Direction.CCW.direction, 0f, 0f)
-            nuriMC.Data!!.clone().copyInto(sedate, 11, 0, nuriMC.Data!!.size)
-            serialService?.sendData(sedate)
+        for (count in 0..2){
+            if (id_2 == null) {
+                nuriMC.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
+                serialService?.sendData(nuriMC.Data!!.clone())
+            } else {
+                val sedate = ByteArray(22)
+                nuriMC.ControlPosSpeed(id_1, Direction.CCW.direction, 0f, 0f)
+                nuriMC.Data!!.clone().copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+                nuriMC.ControlPosSpeed(id_2, Direction.CCW.direction, 0f, 0f)
+                nuriMC.Data!!.clone().copyInto(sedate, 11, 0, nuriMC.Data!!.size)
+                serialService?.sendData(sedate)
+            }
+            Thread.sleep(10)
         }
         serialService!!.isAnotherJob = false
 

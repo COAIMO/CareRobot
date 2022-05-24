@@ -46,5 +46,4 @@ class SharedViewModel:ViewModel() {
     var controlDirection = Direction.CW
 
     var right_Elbow_isUsable = MutableLiveData<Boolean>()
-
 }

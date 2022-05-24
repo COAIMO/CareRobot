@@ -117,11 +117,11 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                 }
 
                 // 에러 범위 안인가?
-                if (tmpInfo.position!! < tmpInfo.min_Range!!){
+                if (tmpInfo.position!! < tmpInfo.min_Range!!) {
                     if (viewModel.controlDirection != Direction.CCW) {
                         tmpInfo.min_Alert = true
                     }
-                }else if(tmpInfo.position!! > tmpInfo.max_Range!!){
+                } else if (tmpInfo.position!! > tmpInfo.max_Range!!) {
                     if (viewModel.controlDirection != Direction.CW) {
                         tmpInfo.max_Alert = true
                     }
@@ -173,11 +173,11 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                     tmpInfo.currnet_Direction = exDirection[id]
                 }
                 // 에러 범위 안인가?
-                if (tmpInfo.position!! < tmpInfo.min_Range!!){
+                if (tmpInfo.position!! < tmpInfo.min_Range!!) {
                     if (viewModel.controlDirection != Direction.CCW) {
                         tmpInfo.min_Alert = true
                     }
-                }else if(tmpInfo.position!! > tmpInfo.max_Range!!){
+                } else if (tmpInfo.position!! > tmpInfo.max_Range!!) {
                     if (viewModel.controlDirection != Direction.CW) {
                         tmpInfo.max_Alert = true
                     }
