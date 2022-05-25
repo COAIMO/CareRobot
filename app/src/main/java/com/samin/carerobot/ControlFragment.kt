@@ -285,7 +285,7 @@ class ControlFragment : Fragment() {
                     0.1f
                 )
                 nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                activity?.serialService?.sendData(sedate)
+//                activity?.serialService?.sendData(sedate)
             }
             mBinding.btnGoForward -> {
                 val sedate = ByteArray(20)
@@ -303,7 +303,7 @@ class ControlFragment : Fragment() {
                     0.1f
                 )
                 nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                activity?.serialService?.sendData(sedate)
+//                activity?.serialService?.sendData(sedate)
             }
             mBinding.btnTurnLeft -> {
                 val sedate = ByteArray(20)
@@ -321,7 +321,7 @@ class ControlFragment : Fragment() {
                     0.1f
                 )
                 nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                activity?.serialService?.sendData(sedate)
+//                activity?.serialService?.sendData(sedate)
             }
             mBinding.btnTurnRight -> {
                 val sedate = ByteArray(20)
@@ -339,7 +339,7 @@ class ControlFragment : Fragment() {
                     0.1f
                 )
                 nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                activity?.serialService?.sendData(sedate)
+//                activity?.serialService?.sendData(sedate)
             }
             mBinding.btnStop1 -> {
                 stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
@@ -354,7 +354,7 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.controlDirection = Direction.CW
-                        activity?.serialService?.sendData(nuriMC.Data!!)
+//                        activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Right.byte -> {
                         nuriMC.ControlAcceleratedSpeed(
@@ -364,7 +364,7 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.controlDirection = Direction.CW
-                        activity?.serialService?.sendData(nuriMC.Data!!)
+//                        activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Both.byte -> {
                         val sedate = ByteArray(20)
@@ -383,7 +383,7 @@ class ControlFragment : Fragment() {
                         )
                         nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
                         sharedViewModel.controlDirection = Direction.CW
-                        activity?.serialService?.sendData(sedate)
+//                        activity?.serialService?.sendData(sedate)
                     }
                 }
             }
@@ -397,7 +397,7 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.controlDirection = Direction.CCW
-                        activity?.serialService?.sendData(nuriMC.Data!!)
+//                        activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Right.byte -> {
                         nuriMC.ControlAcceleratedSpeed(
@@ -407,7 +407,7 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.controlDirection = Direction.CCW
-                        activity?.serialService?.sendData(nuriMC.Data!!)
+//                        activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Both.byte -> {
                         val sedate = ByteArray(20)
@@ -426,7 +426,7 @@ class ControlFragment : Fragment() {
                         )
                         nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
                         sharedViewModel.controlDirection = Direction.CCW
-                        activity?.serialService?.sendData(sedate)
+//                        activity?.serialService?.sendData(sedate)
                     }
                 }
 
@@ -442,7 +442,7 @@ class ControlFragment : Fragment() {
                     200f,
                     0.1f
                 )
-                activity?.serialService?.sendData(nuriMC.Data!!.clone())
+//                activity?.serialService?.sendData(nuriMC.Data!!.clone())
             }
             mBinding.btnWaistDown -> {
 //                nuriMC.ControlPosSpeed(CareRobotMC.Waist.byte, Direction.CCW.direction, 360f, 0.1f)
@@ -452,7 +452,7 @@ class ControlFragment : Fragment() {
                     200f,
                     0.1f
                 )
-                activity?.serialService?.sendData(nuriMC.Data!!.clone())
+//                activity?.serialService?.sendData(nuriMC.Data!!.clone())
             }
             mBinding.btnStop3 -> {
                 stopMotor(CareRobotMC.Waist.byte)
@@ -466,7 +466,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
-                        activity?.serialService?.sendData(nuriMC.Data!!)
+//                        activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Right.byte -> {
                         nuriMC.ControlAcceleratedSpeed(
@@ -475,7 +475,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
-                        activity?.serialService?.sendData(nuriMC.Data!!)
+//                        activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Both.byte -> {
                         val sedate = ByteArray(20)
@@ -493,7 +493,7 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                        activity?.serialService?.sendData(sedate)
+//                        activity?.serialService?.sendData(sedate)
                     }
                 }
             }
@@ -506,7 +506,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
-                        activity?.serialService?.sendData(nuriMC.Data!!)
+//                        activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Right.byte -> {
                         nuriMC.ControlAcceleratedSpeed(
@@ -515,7 +515,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
-                        activity?.serialService?.sendData(nuriMC.Data!!)
+//                        activity?.serialService?.sendData(nuriMC.Data!!)
                     }
                     ControlMode.Both.byte -> {
                         val sedate = ByteArray(20)
@@ -533,7 +533,7 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                        activity?.serialService?.sendData(sedate)
+//                        activity?.serialService?.sendData(sedate)
                     }
                 }
             }
@@ -548,14 +548,14 @@ class ControlFragment : Fragment() {
         val nuriMC = NurirobotMC()
         if (id_2 == null) {
             nuriMC.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
-            activity?.serialService?.sendData(nuriMC.Data!!.clone())
+//            activity?.serialService?.sendData(nuriMC.Data!!.clone())
         } else {
             val sedate = ByteArray(20)
             nuriMC.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
             nuriMC.Data!!.clone().copyInto(sedate, 0, 0, nuriMC.Data!!.size)
             nuriMC.ControlAcceleratedSpeed(id_2, Direction.CCW.direction, 0f, 0.1f)
             nuriMC.Data!!.clone().copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-            activity?.serialService?.sendData(sedate)
+//            activity?.serialService?.sendData(sedate)
         }
     }
 

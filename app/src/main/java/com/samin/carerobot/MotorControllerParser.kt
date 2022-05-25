@@ -2,11 +2,15 @@ package com.samin.carerobot
 
 import android.util.Log
 import com.jeongmin.nurimotortester.Nuri.Direction
+import com.jeongmin.nurimotortester.Nuri.NuriPosSpeedAclCtrl
+import com.jeongmin.nurimotortester.NurirobotMC
 import com.samin.carerobot.Logics.CareRobotMC
 import com.samin.carerobot.Logics.MotorInfo
 import com.samin.carerobot.Logics.SharedViewModel
 import java.lang.Math.abs
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.collections.HashMap
 
 class MotorControllerParser(viewModel: SharedViewModel) {
     val viewModel: SharedViewModel = viewModel
@@ -15,13 +19,51 @@ class MotorControllerParser(viewModel: SharedViewModel) {
     val hmapLastedDate = ConcurrentHashMap<Byte, Long>()
     val exPositonhmap = HashMap<Byte, Float>()
     val exDirection = HashMap<Byte, Direction>()
+    val receiveParser = NurirobotMC()
+
     fun parser(arg: ByteArray) {
-        val encorder_id = arg[2]
         val time = System.currentTimeMillis()
-        val position =
-            (littleEndianConversion(arg!!.slice(7..8).toByteArray()) / 4096f * 360f)
-        hmapLastedDate[encorder_id] = time
-        setMotorInfo(encorder_id, position)
+
+        if (arg[2] == CareRobotMC.Waist.byte) {
+            val tmpInfo = MotorInfo()
+            hmapLastedDate[arg[2]] = time
+            receiveParser.Data = arg
+            val tmp = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
+            tmpInfo.motor_id = tmp.ID
+            tmpInfo.position = tmp.Pos
+//            viewModel.waistInfo.postValue(tmp)
+
+            var exPosition = exPositonhmap[arg[2]]
+            if (exPosition == null) {
+                exPosition = tmp.Pos
+                exPositonhmap[arg[2]] = exPosition!!
+            }
+
+            if (exPositonhmap[arg[2]]!! < tmpInfo.position!!) {
+                tmpInfo.currnet_Direction = Direction.CCW
+                exDirection[arg[2]] = tmpInfo.currnet_Direction!!
+            } else if (exPositonhmap[arg[2]]!! >  tmpInfo.position!!) {
+                tmpInfo.currnet_Direction = Direction.CW
+                exDirection[arg[2]] = tmpInfo.currnet_Direction!!
+            } else {
+                tmpInfo.currnet_Direction = exDirection[arg[2]]
+            }
+
+            Log.d("허리","Direction : ${tmpInfo.currnet_Direction}\t Pos : ${tmpInfo.position}")
+            synchronized(viewModel.lockobj) {
+                viewModel.motorInfo[arg[2]] = tmpInfo
+            }
+            exPositonhmap[arg[2]] = tmpInfo.position!!
+
+        } else {
+            val encorder_id = arg[2]
+            val position =
+                (littleEndianConversion(arg!!.slice(7..8).toByteArray()) / 4096f * 360f)
+            val sensorData = arg[11] == 1.toByte()
+            hmapLastedDate[encorder_id] = time
+            setMotorInfo(encorder_id, position, sensorData)
+        }
+
     }
 
     private fun littleEndianConversion(bytes: ByteArray): Int {
@@ -33,11 +75,11 @@ class MotorControllerParser(viewModel: SharedViewModel) {
     }
 
 
-    private fun setMotorInfo(id: Byte, position: Float) {
+    private fun setMotorInfo(id: Byte, position: Float, sensor:Boolean) {
         val tmpInfo = MotorInfo()
         tmpInfo.encoder_id = id
         tmpInfo.position = position
-
+        tmpInfo.proximity_Sensor = sensor
         var exPosition = exPositonhmap[id]
         if (exPosition == null) {
             exPosition = position
@@ -188,4 +230,6 @@ class MotorControllerParser(viewModel: SharedViewModel) {
         viewModel.motorInfo[id] = tmpInfo
         exPositonhmap[id] = position
     }
+
+    private fun setWaistInfo(){}
 }

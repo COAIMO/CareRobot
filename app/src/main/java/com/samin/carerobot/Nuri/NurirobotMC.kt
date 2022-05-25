@@ -337,14 +337,14 @@ class NurirobotMC : ICommand {
 //                    ByteBuffer.wrap(Data!!.slice(6..7).reversed().toByteArray()).getFloat() * 0.01f
 //                nuriPosSpeedAclCtrl.Speed =
 //                    ByteBuffer.wrap(Data!!.slice(8..9).reversed().toByteArray()).getFloat() * 0.1f
-                Log.d(
-                    "체크",
-                    "CheckProductPing data : \n${
-                        littleEndianConversion(
-                            Data!!.slice(7..8).toByteArray()
-                        )
-                    }"
-                )
+//                Log.d(
+//                    "체크",
+//                    "CheckProductPing data : \n${
+//                        littleEndianConversion(
+//                            Data!!.slice(7..8).toByteArray()
+//                        )
+//                    }"
+//                )
 
                 nuriPosSpeedAclCtrl.Pos =
                     littleEndianConversion(Data!!.slice(7..8).toByteArray()) * 0.01f
@@ -492,21 +492,17 @@ class NurirobotMC : ICommand {
     /// 1. 위치, 속도제어(송신)
     /// </summary>
     /// <param name="arg">위치, 속도, 도달시간</param>
-
+    @OptIn(ExperimentalUnsignedTypes::class)
     fun PROT_ControlPosSpeed(arg: NuriPosSpeedAclCtrl) {
         val data: ByteArray = ByteArray(5)
-        if (arg.Direction == Direction.CCW) {
-            data[0] = 0x00
-        } else data[0] = 0x01
-        var teno = Math.round(arg.Pos!! / 0.01f)
-
-        //todo
-        val tmppos = HexDump.toByteArray(round(arg.Pos!! / 0.01f).toShort()).reversedArray()
-        tmppos?.copyInto(data, 1, 0, tmppos.size)
+        data[0] = (if (arg.Direction === Direction.CCW) 0x00 else 0x01).toByte()
         val tmpspd = HexDump.toByteArray(round(arg.Speed!! / 0.1f).toShort()).reversedArray()
-        tmpspd?.copyInto(data, 3, 0, tmpspd.size)
+        val tmppos = HexDump.toByteArray(round(arg.Pos!! / 0.01f).toShort()).reversedArray()
+        tmppos.copyInto(data,1,0,tmppos.size)
+        tmpspd.copyInto(data, 3,0,tmpspd.size)
         BuildProtocol(arg.ID!!, 0x07, 0x01, data)
     }
+
 
     fun floatToByteArray(value: Float): ByteArray? {
         val intBits = java.lang.Float.floatToIntBits(value)
@@ -542,8 +538,8 @@ class NurirobotMC : ICommand {
     fun PROT_ControlAcceleratedPos(arg: NuriPosSpeedAclCtrl) {
         val data = ByteArray(4)
         data[0] = (if (arg.Direction === Direction.CCW) 0x00 else 0x01).toByte()
-        val tmppos = floatToByteArray(Math.round(arg.Pos!! / 0.01f).toFloat())?.reversedArray()
-        tmppos?.copyInto(data, 1, 0, 2)
+        val tmppos = HexDump.toByteArray(round(arg.Pos!! / 0.01f).toShort()).reversedArray()
+        tmppos.copyInto(data, 1, 0, tmppos.size)
         data[3] = Math.round(arg.Arrivetime!! / 0.1f).toInt().toByte()
         BuildProtocol(arg.ID!!, 0x06, 0x02, data)
     }
@@ -572,12 +568,6 @@ class NurirobotMC : ICommand {
     fun PROT_ControlAcceleratedSpeed(arg: NuriPosSpeedAclCtrl) {
         val data = ByteArray(4)
         data[0] = (if (arg.Direction === Direction.CCW) 0x00 else 0x01).toByte()
-//        val tmpspd = floatToByteArray(Math.round(arg.Pos!! / 0.01f).toFloat())?.reversedArray()
-//        val tmpspd = floatToByteArray(Math.round(arg.Speed!! / 0.1f).toFloat())?.reversedArray()
-//        tmpspd?.copyInto(data, 1, 0, 2)
-//        data[3] = Math.round(arg.Arrivetime!! / 0.1f).toInt().toByte()
-//        BuildProtocol(arg.ID!!, 0x06, 0x03, data)
-
         val tmpspd = round(arg.Speed!! / 0.1f)
         data[2] = (tmpspd and 0xFF).toByte()
         data[1] = ((tmpspd shr 8) and 0xff).toByte()
@@ -595,7 +585,6 @@ class NurirobotMC : ICommand {
     fun ControlAcceleratedSpeed(id: Byte, direction: Byte, speed: Float, arrive: Float) {
         val nuriPosSpeedAclCtrl = NuriPosSpeedAclCtrl()
         nuriPosSpeedAclCtrl.ID = id
-//        nuriPosSpeedAclCtrl.Direction = direction as Direction
         nuriPosSpeedAclCtrl.Direction = Direction.codesMap[direction]
         nuriPosSpeedAclCtrl.Speed = speed
         nuriPosSpeedAclCtrl.Arrivetime = arrive

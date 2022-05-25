@@ -1,5 +1,6 @@
 package com.samin.carerobot
 
+import android.app.Service
 import android.content.*
 import android.os.*
 import android.speech.tts.TextToSpeech
@@ -9,9 +10,7 @@ import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.coai.uikit.load.LoaderView
 import com.jeongmin.nurimotortester.Nuri.Direction
-import com.jeongmin.nurimotortester.Nuri.NuriPosSpeedAclCtrl
 import com.jeongmin.nurimotortester.Nuri.ProtocolMode
 import com.jeongmin.nurimotortester.NurirobotMC
 import com.samin.carerobot.LoadingPage.LoadingDialog
@@ -27,8 +26,6 @@ class MainActivity : AppCompatActivity() {
     lateinit var newAccountFragment: NewAccountFragment
     lateinit var mainFragment: MainFragment
     lateinit var sharedPreference: SharedPreference
-    var serialService: SerialService? = null
-    var isSerialSevice = false
     lateinit var controllerPad: ControllerPad
     private lateinit var sharedViewModel: SharedViewModel
     lateinit var motorControllerParser: MotorControllerParser
@@ -48,13 +45,24 @@ class MainActivity : AppCompatActivity() {
         setFragment()
         checkLogin()
         moveRobot()
-        observeMotorState()
+        loadingView = LoadingDialog(this)
 
+
+    }
+
+    override fun onStart() {
+        super.onStart()
+        bindMessengerService()
     }
 
     override fun onResume() {
         super.onResume()
-        bindSerialService()
+        setFilters()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unbindMessengerService()
     }
 
     private fun setFragment() {
@@ -82,11 +90,6 @@ class MainActivity : AppCompatActivity() {
         } else onFragmentChange(SharedViewModel.LOGINFRAGMENT)
     }
 
-    fun bindSerialService() {
-        val usbSerialServiceIntent = Intent(this, SerialService::class.java)
-        bindService(usbSerialServiceIntent, serialServiceConnection, Context.BIND_AUTO_CREATE)
-    }
-
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
@@ -96,8 +99,6 @@ class MainActivity : AppCompatActivity() {
                         "시리얼 포트가 정상 연결되었습니다.",
                         Toast.LENGTH_SHORT
                     ).show()
-                    serialService!!.isFeedBack = true
-                    serialService?.feedback()
                 }
                 SerialService.ACTION_USB_PERMISSION_NOT_GRANTED -> Toast.makeText(
                     context,
@@ -115,24 +116,15 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(broadcastReceiver, filter)
     }
 
-    val serialServiceConnection = object : ServiceConnection {
-        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
-            val binder = service as SerialService.SerialServiceBinder
-            serialService = binder.getService()
-            //핸들러 연결
-            serialService!!.setHandler(datahandler)
-            isSerialSevice = true
-        }
-
-        override fun onServiceDisconnected(name: ComponentName?) {
-            isSerialSevice = false
-            Toast.makeText(this@MainActivity, "서비스 연결 해제", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    val datahandler = object : Handler(Looper.getMainLooper()) {
+    var isFirst = true
+    private val serialSVCIPCHandler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
+                SerialService.MSG_SERIAL_CONNECT -> {
+                    Thread.sleep(1000)
+                    observeMotorState()
+//                    initWaist()
+                }
                 ProtocolMode.FEEDPos.byte.toInt() -> {
 //                    val tmpPosData = msg.obj as NuriPosSpeedAclCtrl
 //                    sharedViewModel.encoderPOSMapt.put(
@@ -140,13 +132,57 @@ class MainActivity : AppCompatActivity() {
 //                        tmpPosData.Pos!! / 4096 * 360 * 100
 //                    )
 //                    Log.d(TEST, "data : ${HexDump.dumpHexString(msg.obj as ByteArray)}")
+                    if (isFirst) {
+                        Thread.sleep(2000)
+                        observeMotorState()
+                        initWaist()
+                        isFirst = false
+                    }
                     motorControllerParser.parser(msg.obj as ByteArray)
 
                 }
-
+                else -> super.handleMessage(msg)
             }
         }
     }
+    private val serialSVCIPCClient = Messenger(serialSVCIPCHandler)
+    private var serialSVCIPCService: Messenger? = null
+    private val serialSVCIPCServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            serialSVCIPCService = Messenger(service).apply {
+                send(Message.obtain(null, SerialService.MSG_BIND_CLIENT, 0, 0).apply {
+                    replyTo = serialSVCIPCClient
+                })
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            serialSVCIPCService = null
+        }
+    }
+
+    private fun bindMessengerService() {
+        Intent(this, SerialService::class.java).run {
+            bindService(this, serialSVCIPCServiceConnection, Service.BIND_AUTO_CREATE)
+        }
+    }
+
+    private fun unbindMessengerService() {
+        serialSVCIPCService?.send(
+            Message.obtain(null, SerialService.MSG_UNBIND_CLIENT, 0, 0).apply {
+                replyTo = serialSVCIPCClient
+            })
+        unbindService(serialSVCIPCServiceConnection)
+    }
+
+    fun sendProtocolToSerial(data: ByteArray) {
+        val msg = Message.obtain(null, SerialService.MSG_SERIAL_SEND)
+        val bundle = Bundle()
+        bundle.putByteArray("", data)
+        msg.data = bundle
+        serialSVCIPCService?.send(msg)
+    }
+
     val TEST = "테스트"
     lateinit var observeMotorStateThread: Thread
     private fun observeMotorState() {
@@ -156,16 +192,22 @@ class MainActivity : AppCompatActivity() {
                     for ((key, value) in sharedViewModel.motorInfo) {
                         when (key) {
                             CareRobotMC.Left_Shoulder_Encoder.byte -> {
-                                Log.d(TEST, "Left_Shoulder_Encoder : ${value.position}")
+                                Log.d(
+                                    TEST,
+                                    "Left_Shoulder_Encoder : ${value.position} sensor: ${value.proximity_Sensor}"
+                                )
                                 if (value.max_Alert!! || value.min_Alert!!) {
                                     stopMotor(CareRobotMC.Left_Shoulder.byte)
-//                                Log.d(TEST, "Left_Shoulder_Encoder : 멈춤")
+                                    Log.d(TEST, "Left_Shoulder_Encoder : 멈춤")
                                 } else {
 
                                 }
                             }
                             CareRobotMC.Left_Elbow_Encoder.byte -> {
-                                Log.d(TEST, "Left_Elbow_Encoder : ${value.position}")
+                                Log.d(
+                                    TEST,
+                                    "Left_Elbow_Encoder : ${value.position} sensor: ${value.proximity_Sensor}"
+                                )
                                 if (value.max_Alert!! || value.min_Alert!!) {
                                     stopMotor(CareRobotMC.Left_Elbow.byte)
 //                                    Log.d(TEST, "Left_Elbow : 멈춤")
@@ -173,14 +215,14 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                             CareRobotMC.Right_Shoulder_Encoder.byte -> {
-                                Log.d(TEST, "Right_Shoulder_Encoder : ${value.position}")
+//                                Log.d(TEST, "Right_Shoulder_Encoder : ${value.position} sensor: ${value.proximity_Sensor}")
                                 if (value.max_Alert!! || value.min_Alert!!) {
                                     stopMotor(CareRobotMC.Right_Shoulder.byte)
                                 } else {
                                 }
                             }
                             CareRobotMC.Right_Elbow_Encoder.byte -> {
-                                Log.d(TEST, "Right_Elbow_Encoder : ${value.position}")
+//                                Log.d(TEST, "Right_Elbow_Encoder : ${value.position} sensor: ${value.proximity_Sensor}")
                                 if (value.max_Alert!! || value.min_Alert!!) {
                                     stopMotor(CareRobotMC.Right_Elbow.byte)
                                     Log.d(TEST, "Right_Elbow_Encoder : 멈춤")
@@ -188,10 +230,18 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                         }
+                        if (sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.proximity_Sensor!! &&
+                            sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.proximity_Sensor!!
+                        ) {
+                            if (sharedViewModel.controlDirection == Direction.CCW) {
+                                stopMotor(CareRobotMC.Waist.byte)
+                            }
+                        }
                     }
                     Thread.sleep(20)
+
                 }
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
@@ -240,6 +290,7 @@ class MainActivity : AppCompatActivity() {
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (event != null) {
             var handled = false
+            val nuriMC = NurirobotMC()
             if (ControllerPad.isGamePad(event)) {
                 if (event.repeatCount == 0) {
                     when (keyCode) {
@@ -344,8 +395,8 @@ class MainActivity : AppCompatActivity() {
     private fun moveRobot() {
 
         sharedViewModel.left_Joystick.observe(this) {
-            val tmpRPM = getRPMMath(it)
-            moveWheelchair(tmpRPM)
+//            val tmpRPM = getRPMMath(it)
+//            moveWheelchair(tmpRPM)
         }
         sharedViewModel.right_Joystick.observe(this) {
             if (!controllerPad.isUsable) {
@@ -354,7 +405,6 @@ class MainActivity : AppCompatActivity() {
             }
             when (sharedViewModel.controlPart.value) {
                 CareRobotMC.Waist.byte -> {
-                    serialService?.isAnotherJob = true
                     val tmp = getDirectionRPM(it)
                     sendParser.ControlAcceleratedSpeed(
                         CareRobotMC.Waist.byte,
@@ -363,11 +413,9 @@ class MainActivity : AppCompatActivity() {
                         0.1f
                     )
                     sharedViewModel.controlDirection = tmp.LeftDirection
-                    serialService?.sendData(sendParser.Data!!.clone())
-                    serialService?.isAnotherJob = false
+                    sendProtocolToSerial(sendParser.Data!!.clone())
                 }
                 CareRobotMC.Right_Shoulder.byte -> {
-                    serialService?.isAnotherJob = true
                     val tmp = getShoulderDirectionRPM(it)
                     sendParser.ControlAcceleratedSpeed(
                         CareRobotMC.Right_Shoulder.byte,
@@ -377,12 +425,10 @@ class MainActivity : AppCompatActivity() {
                     )
                     sharedViewModel.controlDirection = tmp.RightDirection
                     if (controllerPad.isUsable) {
-                        serialService?.sendData(sendParser.Data!!.clone())
+                        sendProtocolToSerial(sendParser.Data!!.clone())
                     }
-                    serialService?.isAnotherJob = false
                 }
                 CareRobotMC.Left_Shoulder.byte -> {
-                    serialService?.isAnotherJob = true
                     val tmp = getShoulderDirectionRPM(it)
                     sendParser.ControlAcceleratedSpeed(
                         CareRobotMC.Left_Shoulder.byte,
@@ -392,12 +438,10 @@ class MainActivity : AppCompatActivity() {
                     )
                     sharedViewModel.controlDirection = tmp.LeftDirection
                     if (controllerPad.isUsable) {
-                        serialService?.sendData(sendParser.Data!!.clone())
+                        sendProtocolToSerial(sendParser.Data!!.clone())
                     }
-                    serialService?.isAnotherJob = false
                 }
                 CareRobotMC.Right_Elbow.byte -> {
-                    serialService?.isAnotherJob = true
                     val tmp = getElbowDirectionRPM(it)
                     sendParser.ControlAcceleratedSpeed(
                         CareRobotMC.Right_Elbow.byte,
@@ -407,26 +451,21 @@ class MainActivity : AppCompatActivity() {
                     )
                     sharedViewModel.controlDirection = tmp.RightDirection
                     if (controllerPad.isUsable) {
-                        serialService?.sendData(sendParser.Data!!.clone())
+                        sendProtocolToSerial(sendParser.Data!!.clone())
                     }
-                    serialService?.isAnotherJob = false
                 }
                 CareRobotMC.Left_Elbow.byte -> {
-//                    if(sharedViewModel.right_Elbow_isUsable.value!!){
-                        serialService?.isAnotherJob = true
-                        val tmp = getElbowDirectionRPM(it)
-                        sendParser.ControlAcceleratedSpeed(
-                            CareRobotMC.Left_Elbow.byte,
-                            (if (tmp.LeftDirection == Direction.CW) 0x01 else 0x00).toByte(),
-                            tmp.Left,
-                            0.1f
-                        )
-                        sharedViewModel.controlDirection = tmp.LeftDirection
-                        if (controllerPad.isUsable) {
-                            serialService?.sendData(sendParser.Data!!.clone())
-                        }
-                        serialService?.isAnotherJob = false
-//                    }
+                    val tmp = getElbowDirectionRPM(it)
+                    sendParser.ControlAcceleratedSpeed(
+                        CareRobotMC.Left_Elbow.byte,
+                        (if (tmp.LeftDirection == Direction.CW) 0x01 else 0x00).toByte(),
+                        tmp.Left,
+                        0.1f
+                    )
+                    sharedViewModel.controlDirection = tmp.LeftDirection
+                    if (controllerPad.isUsable) {
+                        sendProtocolToSerial(sendParser.Data!!.clone())
+                    }
                 }
                 CareRobotMC.Shoulder.byte -> {
 
@@ -459,7 +498,7 @@ class MainActivity : AppCompatActivity() {
             calcConcentrationRight(tmpRPMInfo.Right)
         )
         sendParser.Data!!.copyInto(sedate, 10, 0, sendParser.Data!!.size)
-        serialService?.sendData(sedate)
+//        serialService?.sendData(sedate)
     }
 
 
@@ -512,20 +551,20 @@ class MainActivity : AppCompatActivity() {
             ret.RightDirection = Direction.CCW
         } else if (joy_x == 0f && joy_y < 0) {
             //후진
-            left = MaxForward * r/2
-            right = MaxForward * r/2
+            left = MaxForward * r / 2
+            right = MaxForward * r / 2
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CW
         } else if (joy_y == 0f && joy_x > 0) {
             //제자리 우회전
-            left = MaxForward * r/2
-            right = MaxForward * r/2
+            left = MaxForward * r / 2
+            right = MaxForward * r / 2
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CW
         } else if (joy_y == 0f && joy_x < 0) {
             //제자리 좌회전
-            left = MaxForward * r/2
-            right = MaxForward * r/2
+            left = MaxForward * r / 2
+            right = MaxForward * r / 2
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CCW
         }
@@ -658,43 +697,566 @@ class MainActivity : AppCompatActivity() {
 
     fun stopMotor(id_1: Byte, id_2: Byte? = null) {
         val nuriMC = NurirobotMC()
-        serialService!!.isAnotherJob = true
-        for (count in 0..2){
+        for (count in 0..2) {
             if (id_2 == null) {
                 nuriMC.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
-                serialService?.sendData(nuriMC.Data!!.clone())
+                sendProtocolToSerial(nuriMC.Data!!.clone())
             } else {
                 val sedate = ByteArray(22)
                 nuriMC.ControlPosSpeed(id_1, Direction.CCW.direction, 0f, 0f)
                 nuriMC.Data!!.clone().copyInto(sedate, 0, 0, nuriMC.Data!!.size)
                 nuriMC.ControlPosSpeed(id_2, Direction.CCW.direction, 0f, 0f)
                 nuriMC.Data!!.clone().copyInto(sedate, 11, 0, nuriMC.Data!!.size)
-                serialService?.sendData(sedate)
+                sendProtocolToSerial(sedate)
+
             }
             Thread.sleep(10)
         }
-        serialService!!.isAnotherJob = false
-
     }
 
     private fun stopRobot() {
         val nuriMC = NurirobotMC()
-        serialService?.isAnotherJob = true
         for (i in CareRobotMC.Left_Shoulder.byte..CareRobotMC.Left_Wheel.byte) {
             nuriMC.ControlAcceleratedSpeed(i.toByte(), Direction.CCW.direction, 0f, 0.1f)
-            serialService?.sendData(nuriMC.Data!!.clone())
+            sendProtocolToSerial(nuriMC.Data!!.clone())
             Thread.sleep(20)
         }
-        serialService!!.isAnotherJob = false
     }
 
-    lateinit var setModeThread: Thread
-    private fun setstandardmode() {
-        setModeThread = Thread {
 
+    private lateinit var changeRobotPositionThread: Thread
+    private lateinit var loadingView: LoadingDialog
 
+    fun robotModeChange(mode: Int) {
+        loadingView.show()
+        val nuriMC = NurirobotMC()
+        var step_1 = true
+        var step_2 = true
+        var right_ShoulderSet = false
+        var left_ShoulderSet = false
+        var right_ElbowSet = false
+        var left_ElbowSet = false
+
+        when (mode) {
+            1 -> {
+                changeRobotPositionThread = Thread {
+                    try {
+                        while (step_1) {
+                            val rightShoulder_tmp =
+                                sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
+                            val leftShoulder_tmp =
+                                sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
+                            if (rightShoulder_tmp?.position!! > 1 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 10) {
+                                right_ShoulderSet = false
+                                if (rightShoulder_tmp?.position!! < 3) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Shoulder.byte,
+                                        Direction.CW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Shoulder.byte,
+                                        Direction.CW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                sendProtocolToSerial(nuriMC.Data!!.clone())
+                                Thread.sleep(20)
+                            } else if (rightShoulder_tmp.min_Range!! < rightShoulder_tmp.position!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 10) {
+                                right_ShoulderSet = false
+                                if (rightShoulder_tmp.position!! > 362) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Shoulder.byte,
+                                        Direction.CCW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Shoulder.byte,
+                                        Direction.CCW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                sendProtocolToSerial(nuriMC.Data!!.clone())
+                                Thread.sleep(20)
+                            } else if (rightShoulder_tmp.position!! > 0 && rightShoulder_tmp.position!! < 1) {
+                                if (!right_ShoulderSet) {
+                                    stopMotor(CareRobotMC.Right_Shoulder.byte)
+                                }
+                                right_ShoulderSet = true
+                            }
+
+                            if (leftShoulder_tmp?.position!! > 1 && leftShoulder_tmp.position!! <= leftShoulder_tmp.min_Range!! + 10) {
+                                left_ShoulderSet = false
+                                if (leftShoulder_tmp.position!! < 3) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Shoulder.byte,
+                                        Direction.CW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Shoulder.byte,
+                                        Direction.CW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                sendProtocolToSerial(nuriMC.Data!!.clone())
+                                Thread.sleep(20)
+                            } else if (leftShoulder_tmp.position!! > leftShoulder_tmp.min_Range!! && leftShoulder_tmp.position!! > leftShoulder_tmp.max_Range!! - 10) {
+                                left_ShoulderSet = false
+                                if (leftShoulder_tmp.position!! > 362) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Shoulder.byte,
+                                        Direction.CCW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Shoulder.byte,
+                                        Direction.CCW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                sendProtocolToSerial(nuriMC.Data!!.clone())
+                                Thread.sleep(20)
+                            } else if (leftShoulder_tmp.position!! > 0 && leftShoulder_tmp.position!! < 1) {
+                                if (!left_ShoulderSet) {
+                                    stopMotor(CareRobotMC.Left_Shoulder.byte)
+                                }
+                                left_ShoulderSet = true
+                            }
+
+                            if (right_ShoulderSet && left_ShoulderSet) {
+                                step_1 = false
+                            }
+                        }
+
+                        while (step_2) {
+                            val rightElbow_tmp =
+                                sharedViewModel.motorInfo[CareRobotMC.Right_Elbow_Encoder.byte]
+                            val leftElbow_tmp =
+                                sharedViewModel.motorInfo[CareRobotMC.Left_Elbow_Encoder.byte]
+                            if (rightElbow_tmp?.position!! > rightElbow_tmp.min_Range!! - 10 && rightElbow_tmp.position!! <= 94) {
+                                right_ElbowSet = false
+                                if (rightElbow_tmp.position!! > 92) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Elbow.byte,
+                                        Direction.CCW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Elbow.byte,
+                                        Direction.CCW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                sendProtocolToSerial(nuriMC.Data!!.clone())
+                                Thread.sleep(20)
+                            } else if (95 < rightElbow_tmp.position!! && rightElbow_tmp.position!! < rightElbow_tmp.max_Range!! + 10) {
+                                right_ElbowSet = false
+                                if (rightElbow_tmp.position!! < 98) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Elbow.byte,
+                                        Direction.CW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Elbow.byte,
+                                        Direction.CW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                sendProtocolToSerial(nuriMC.Data!!.clone())
+                                Thread.sleep(20)
+                            } else if (rightElbow_tmp.position!! > 94 && rightElbow_tmp.position!! < 95) {
+                                if (!right_ElbowSet) {
+                                    stopMotor(CareRobotMC.Right_Elbow.byte)
+                                }
+                                right_ElbowSet = true
+                            }
+
+                            if (leftElbow_tmp?.position!! > leftElbow_tmp.min_Range!! - 10 && leftElbow_tmp.position!! <= 264) {
+                                left_ElbowSet = false
+                                if (leftElbow_tmp.position!! > 262) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Elbow.byte,
+                                        Direction.CCW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Elbow.byte,
+                                        Direction.CCW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                sendProtocolToSerial(nuriMC.Data!!.clone())
+                                Thread.sleep(20)
+                            } else if (265 < leftElbow_tmp.position!! && leftElbow_tmp.position!! < leftElbow_tmp.max_Range!! + 10) {
+                                left_ElbowSet = false
+                                if (leftElbow_tmp.position!! < 268) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Elbow.byte,
+                                        Direction.CW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Elbow.byte,
+                                        Direction.CW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                sendProtocolToSerial(nuriMC.Data!!.clone())
+                                Thread.sleep(20)
+                            } else if (leftElbow_tmp.position!! > 264 && leftElbow_tmp.position!! < 265) {
+                                if (!left_ElbowSet) {
+                                    stopMotor(CareRobotMC.Left_Elbow.byte)
+                                }
+                                left_ElbowSet = true
+                            }
+
+                            if (right_ElbowSet && left_ElbowSet) {
+                                step_2 = false
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+
+                    runOnUiThread {
+                        sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY_HEAVY
+                        loadingView.dismiss()
+                    }
+                }
+                changeRobotPositionThread.start()
+            }
+
+            2 -> {
+                changeRobotPositionThread = Thread {
+                    while (step_1) {
+                        val rightShoulder_tmp =
+                            sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
+                        val leftShoulder_tmp =
+                            sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
+                        if (rightShoulder_tmp?.position!! > 180 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 10) {
+                            right_ShoulderSet = false
+                            if (rightShoulder_tmp.position!! < 183) {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Shoulder.byte,
+                                    Direction.CW.direction,
+                                    0.3f,
+                                    0.1f
+                                )
+                            } else {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Shoulder.byte,
+                                    Direction.CW.direction,
+                                    1f,
+                                    0.1f
+                                )
+                            }
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (rightShoulder_tmp.position!! > rightShoulder_tmp.min_Range!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 10) {
+                            right_ShoulderSet = false
+                            nuriMC.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Shoulder.byte,
+                                Direction.CCW.direction,
+                                1f,
+                                0.1f
+                            )
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (rightShoulder_tmp.position!! < 180) {
+                            right_ShoulderSet = false
+                            if (rightShoulder_tmp.position!! > 177) {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Shoulder.byte,
+                                    Direction.CCW.direction,
+                                    0.3f,
+                                    0.1f
+                                )
+                            } else {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Shoulder.byte,
+                                    Direction.CCW.direction,
+                                    1f,
+                                    0.1f
+                                )
+                            }
+                            Thread.sleep(20)
+                        } else if (rightShoulder_tmp.position!! > 179 && rightShoulder_tmp.position!! <= 180) {
+                            if (right_ShoulderSet) {
+                                stopMotor(CareRobotMC.Right_Shoulder.byte)
+                            }
+                            right_ShoulderSet = true
+                        }
+
+                        if (leftShoulder_tmp?.position!! < 180 && leftShoulder_tmp.position!! >= leftShoulder_tmp.max_Range!! - 10) {
+                            left_ShoulderSet = false
+                            if (leftShoulder_tmp.position!! > 175) {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Shoulder.byte,
+                                    Direction.CCW.direction,
+                                    0.3f,
+                                    0.1f
+                                )
+
+                            } else {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Shoulder.byte,
+                                    Direction.CCW.direction,
+                                    1f,
+                                    0.1f
+                                )
+                            }
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (leftShoulder_tmp.position!! < leftShoulder_tmp.min_Range!! + 10) {
+                            left_ShoulderSet = false
+                            nuriMC.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Shoulder.byte,
+                                Direction.CW.direction,
+                                2f,
+                                0.1f
+                            )
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (leftShoulder_tmp.position!! > 181) {
+                            left_ShoulderSet = false
+                            if (leftShoulder_tmp.position!! < 183) {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Shoulder.byte,
+                                    Direction.CW.direction,
+                                    0.3f,
+                                    0.1f
+                                )
+                            } else {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Shoulder.byte,
+                                    Direction.CW.direction,
+                                    1f,
+                                    0.1f
+                                )
+                            }
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (leftShoulder_tmp.position!! > 180 && leftShoulder_tmp.position!! < 181) {
+                            if (!left_ShoulderSet) {
+                                stopMotor(CareRobotMC.Left_Shoulder.byte)
+                            }
+                            left_ShoulderSet = true
+                        }
+
+                        if (right_ShoulderSet && left_ShoulderSet) {
+                            step_1 = false
+                        }
+                    }
+
+                    while (step_2) {
+                        val rightElbow_tmp =
+                            sharedViewModel.motorInfo[CareRobotMC.Right_Elbow_Encoder.byte]
+                        val leftElbow_tmp =
+                            sharedViewModel.motorInfo[CareRobotMC.Left_Elbow_Encoder.byte]
+
+                        if (rightElbow_tmp?.position!! > rightElbow_tmp.min_Range!! - 10 && rightElbow_tmp.position!! <= 94) {
+                            right_ElbowSet = false
+                            if (rightElbow_tmp.position!! > 92) {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Elbow.byte,
+                                    Direction.CCW.direction,
+                                    0.3f,
+                                    0.1f
+                                )
+                            } else {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Elbow.byte,
+                                    Direction.CCW.direction,
+                                    1f,
+                                    0.1f
+                                )
+                            }
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (95 < rightElbow_tmp.position!! && rightElbow_tmp.position!! < rightElbow_tmp.max_Range!! + 10) {
+                            right_ElbowSet = false
+                            if (rightElbow_tmp.position!! < 98) {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Elbow.byte,
+                                    Direction.CW.direction,
+                                    0.3f,
+                                    0.1f
+                                )
+                            } else {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Elbow.byte,
+                                    Direction.CW.direction,
+                                    1f,
+                                    0.1f
+                                )
+                            }
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (rightElbow_tmp.position!! > 94 && rightElbow_tmp.position!! < 95) {
+                            if (!right_ElbowSet) {
+                                stopMotor(CareRobotMC.Right_Elbow.byte)
+                            }
+                            right_ElbowSet = true
+                        }
+
+                        if (leftElbow_tmp?.position!! > leftElbow_tmp.min_Range!! - 10 && leftElbow_tmp.position!! <= 264) {
+                            left_ElbowSet = false
+                            if (leftElbow_tmp.position!! > 262) {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Elbow.byte,
+                                    Direction.CCW.direction,
+                                    0.3f,
+                                    0.1f
+                                )
+                            } else {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Elbow.byte,
+                                    Direction.CCW.direction,
+                                    1f,
+                                    0.1f
+                                )
+                            }
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (265 < leftElbow_tmp.position!! && leftElbow_tmp.position!! < leftElbow_tmp.max_Range!! + 10) {
+                            left_ElbowSet = false
+                            if (leftElbow_tmp.position!! < 268) {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Elbow.byte,
+                                    Direction.CW.direction,
+                                    0.3f,
+                                    0.1f
+                                )
+                            } else {
+                                nuriMC.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Elbow.byte,
+                                    Direction.CW.direction,
+                                    1f,
+                                    0.1f
+                                )
+                            }
+                            sendProtocolToSerial(nuriMC.Data!!.clone())
+                            Thread.sleep(20)
+                        } else if (leftElbow_tmp.position!! > 264 && leftElbow_tmp.position!! < 265) {
+                            if (!left_ElbowSet) {
+                                stopMotor(CareRobotMC.Left_Elbow.byte)
+                            }
+                            left_ElbowSet = true
+                        }
+
+                        if (right_ElbowSet && left_ElbowSet) {
+                            step_2 = false
+                        }
+                    }
+
+                    runOnUiThread {
+                        sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY_HEIGHT
+                        loadingView.dismiss()
+                    }
+                }
+                changeRobotPositionThread.start()
+            }
         }
-        setModeThread.start()
+
+    }
+
+    lateinit var observeWaistThread: Thread
+    var isInitePosition = true
+    var isSetPosition = true
+
+    var count = 0
+    private fun initWaist() {
+        loadingView.show()
+        val nuriMC = NurirobotMC()
+        sharedViewModel.controlDirection = Direction.CCW
+        nuriMC.ControlAcceleratedSpeed(
+            CareRobotMC.Waist.byte,
+            Direction.CCW.direction,
+            200f,
+            0.1f
+        )
+        sendProtocolToSerial(nuriMC.Data!!.clone())
+
+        observeWaistThread = Thread {
+            val sendParser = NurirobotMC()
+
+            while (isInitePosition) {
+                if (sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.proximity_Sensor!! ||
+                    sharedViewModel.motorInfo[CareRobotMC.Left_Elbow_Encoder.byte]?.proximity_Sensor!!
+                ) {
+                    if (sharedViewModel.controlDirection == Direction.CCW) {
+                        stopMotor(CareRobotMC.Waist.byte)
+                        Thread.sleep(500)
+                        for (i in 0..3) {
+                            sendParser.ResetPostion(CareRobotMC.Waist.byte)
+                            sendProtocolToSerial(sendParser.Data!!.clone())
+                            Thread.sleep(50)
+                        }
+                        isInitePosition = false
+                    }
+                }
+            }
+
+            var pos: Float = 0f
+            while (isSetPosition) {
+
+                synchronized(sharedViewModel.lockobj) {
+                    pos = sharedViewModel.motorInfo[CareRobotMC.Waist.byte]!!.position ?: -1f
+                }
+
+                if (pos == 0f) {
+/*                    nuriMC.ControlAcceleratedPos(
+                        CareRobotMC.Waist.byte,
+                        Direction.CW.direction,
+                        360f,
+                        0.1f
+                    )*/
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Waist.byte,
+                        Direction.CW.direction,
+                        360f,
+                        0.4f
+                    )
+                    sendProtocolToSerial(sendParser.Data!!.clone())
+                    Thread.sleep(50)
+                    count++
+                    Log.d("허리", "count : ${count}\t")
+                }
+                Thread.sleep(500)
+            }
+
+            runOnUiThread {
+                loadingView.dismiss()
+            }
+            Thread.sleep(20)
+        }
+        observeWaistThread.start()
     }
 
 }

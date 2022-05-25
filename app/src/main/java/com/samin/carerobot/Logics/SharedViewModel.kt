@@ -44,6 +44,8 @@ class SharedViewModel:ViewModel() {
     var controlPart = MutableLiveData<Byte?>()
     val motorInfo = ConcurrentHashMap<Byte,MotorInfo>()
     var controlDirection = Direction.CW
+//    val waistInfo = MutableLiveData<NuriPosSpeedAclCtrl>()
+    val waistInfo = MutableLiveData<MotorInfo>()
+    val lockobj = Object()
 
-    var right_Elbow_isUsable = MutableLiveData<Boolean>()
 }
