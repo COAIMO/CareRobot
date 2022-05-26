@@ -109,20 +109,20 @@ class NurirobotMC : ICommand {
     override fun GetDataStruct(): Any {
         return when (ProtocolMode.codesMap[Data!![5]]) {
             ProtocolMode.CTRLPosSpeed -> {
-                val nuripos = NuriPosSpeedAclCtrl()
-                nuripos.Protocol = Data!![5]
-                nuripos.ID = Data!![2]
-//                nuripos.Direction = Data!![6] as Direction
-                nuripos.Direction = Direction.codesMap[Data!![6]]
+//                val nuripos = NuriPosSpeedAclCtrl()
+//                nuripos.Protocol = Data!![5]
+//                nuripos.ID = Data!![2]
+////                nuripos.Direction = Data!![6] as Direction
+//                nuripos.Direction = Direction.codesMap[Data!![6]]
+////                nuripos.Pos =
+////                    ByteBuffer.wrap(Data!!.slice(6..7).reversed().toByteArray()).getFloat() * 0.01f
+////                nuripos.Speed =
+////                    ByteBuffer.wrap(Data!!.slice(8..9).reversed().toByteArray()).getFloat() * 0.1f
 //                nuripos.Pos =
-//                    ByteBuffer.wrap(Data!!.slice(6..7).reversed().toByteArray()).getFloat() * 0.01f
+//                    ByteBuffer.wrap(Data!!.slice(7..8).reversed().toByteArray()).getFloat() * 0.01f
 //                nuripos.Speed =
-//                    ByteBuffer.wrap(Data!!.slice(8..9).reversed().toByteArray()).getFloat() * 0.1f
-                nuripos.Pos =
-                    ByteBuffer.wrap(Data!!.slice(7..8).reversed().toByteArray()).getFloat() * 0.01f
-                nuripos.Speed =
-                    ByteBuffer.wrap(Data!!.slice(9..10).reversed().toByteArray()).getFloat() * 0.1f
-                nuripos
+//                    ByteBuffer.wrap(Data!!.slice(9..10).reversed().toByteArray()).getFloat() * 0.1f
+//                nuripos
             }
             ProtocolMode.CTRLAccPos -> {
                 val nuripos = NuriPosSpeedAclCtrl()

@@ -42,19 +42,29 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             if (exPositonhmap[arg[2]]!! < tmpInfo.position!!) {
                 tmpInfo.currnet_Direction = Direction.CCW
                 exDirection[arg[2]] = tmpInfo.currnet_Direction!!
-            } else if (exPositonhmap[arg[2]]!! >  tmpInfo.position!!) {
+            } else if (exPositonhmap[arg[2]]!! > tmpInfo.position!!) {
                 tmpInfo.currnet_Direction = Direction.CW
                 exDirection[arg[2]] = tmpInfo.currnet_Direction!!
             } else {
                 tmpInfo.currnet_Direction = exDirection[arg[2]]
             }
 
-            Log.d("허리","Direction : ${tmpInfo.currnet_Direction}\t Pos : ${tmpInfo.position}")
+            Log.d("허리", "Direction : ${tmpInfo.currnet_Direction}\t Pos : ${tmpInfo.position}")
             synchronized(viewModel.lockobj) {
                 viewModel.motorInfo[arg[2]] = tmpInfo
             }
             exPositonhmap[arg[2]] = tmpInfo.position!!
 
+        } else if (arg[2] == CareRobotMC.Sensor.byte) {
+            Log.d(
+                "tt",
+                "id : ${arg[2]} sensor: ${arg[11]}"
+            )
+            val tmpInfo = MotorInfo()
+            val sensorData = arg[11] != 0x00.toByte()
+            tmpInfo.encoder_id = arg[2]
+            tmpInfo.proximity_Sensor = sensorData
+            viewModel.motorInfo[arg[2]] = tmpInfo
         } else {
             val encorder_id = arg[2]
             val position =
@@ -75,7 +85,7 @@ class MotorControllerParser(viewModel: SharedViewModel) {
     }
 
 
-    private fun setMotorInfo(id: Byte, position: Float, sensor:Boolean) {
+    private fun setMotorInfo(id: Byte, position: Float, sensor: Boolean) {
         val tmpInfo = MotorInfo()
         tmpInfo.encoder_id = id
         tmpInfo.position = position
@@ -231,5 +241,5 @@ class MotorControllerParser(viewModel: SharedViewModel) {
         exPositonhmap[id] = position
     }
 
-    private fun setWaistInfo(){}
+    private fun setWaistInfo() {}
 }

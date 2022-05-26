@@ -9,10 +9,7 @@ import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbManager
-import android.os.Binder
-import android.os.Handler
-import android.os.IBinder
-import android.os.Message
+import android.os.*
 import android.util.Log
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
@@ -47,6 +44,17 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         private const val READ_WAIT_MILLIS = 2000
         var SERVICE_CONNECTED = false
         val RECEIVED_SERERIAL_DATA = 1
+        const val MSG_BIND_CLIENT = 2
+        const val MSG_UNBIND_CLIENT = 3
+        const val MSG_SERIAL_CONNECT = 4
+        const val MSG_SERIAL_SEND = 5
+        const val MSG_SERIAL_RECV = 6
+        const val MSG_SERIAL_DISCONNECT = 7
+        const val MSG_NO_SERIAL = 8
+        const val MSG_STOP_MOTOR = 9
+        const val MSG_ERROR = 10
+        const val MSG_SHARE_SETTING = 11
+
     }
 
     val binder = SerialServiceBinder()
@@ -58,12 +66,10 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
     var device: UsbDevice? = null
     var usbConnection: UsbDeviceConnection? = null
     private var usbIoManager: SerialInputOutputManager? = null
-    var mHandler = Handler()
     private val HEADER: ByteArray = byteArrayOf(0xff.toByte(), 0xFE.toByte())
     private var lastRecvTime: Long = System.currentTimeMillis()
     private var bufferIndex: Int = 0
     private var recvBuffer: ByteArray = ByteArray(1024)
-    var isUsedWaist = false
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (INTENT_ACTION_GRANT_USB.equals(intent?.action)) {
@@ -84,22 +90,19 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             } else if (intent?.action == UsbManager.ACTION_USB_DEVICE_DETACHED) {
                 val detachedIntent = Intent(ACTION_USB_DEVICE_DETACHED)
                 context?.sendBroadcast(detachedIntent)
-                if (serialPortConnected) {
+                if (!serialPortConnected) {
                     usbSerialPort?.close()
                     serialPortConnected = false
-                    isFeedBack = false
-                    feedBackMotorStateInfoThread?.join()
-                    feedBackMotorStateInfoThread?.interrupt()
                 }
-                mHandler.obtainMessage(
-                    2,
-                )
             }
         }
     }
 
     override fun onBind(intent: Intent): IBinder {
-        return binder
+        if (incomingHandler == null)
+            incomingHandler = IncomingHandler(this)
+        messenger = Messenger(incomingHandler)
+        return messenger.binder
     }
 
     inner class SerialServiceBinder : Binder() {
@@ -116,6 +119,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         }
     }
 
+    var mHandler = Handler()
     override fun onRunError(e: Exception?) {
         mHandler.post(Runnable {
             disconnect()
@@ -123,13 +127,13 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
     }
 
     override fun onCreate() {
-        GlobalScope.launch {
-            delay(1000L)
-            findUSBSerialDevice()
-            if (serialPortConnected) {
-                cancel()
-            }
-        }
+//        GlobalScope.launch {
+//            delay(5000L)
+//            findUSBSerialDevice()
+//            if (serialPortConnected) {
+//                cancel()
+//            }
+//        }
         setFilter()
         super.onCreate()
     }
@@ -141,10 +145,6 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         super.onDestroy()
     }
 
-    //activity랑 연결해줄 핸들러 셋 fun
-    fun setHandler(mHandler: Handler) {
-        this.mHandler = mHandler
-    }
 
     private fun setFilter() {
         val filter = IntentFilter()
@@ -159,19 +159,12 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
     private fun findUSBSerialDevice(hasPermission: Boolean = false) {
         usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
         if (usbManager.deviceList.isEmpty()) {
-            mHandler.postDelayed({
-                Toast.makeText(this, "connection failed: device not found", Toast.LENGTH_SHORT)
-                    .show()
-            }, 0)
+            incomingHandler?.sendMSG_NO_SERIAL()
             return
         }
         usbDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(usbManager)
         if (usbDrivers == null) {
-//            Log.d(serviceTAG, "connection failed: no driver for device")
-            mHandler.postDelayed({
-                Toast.makeText(this, "connection failed: no driver for device", Toast.LENGTH_SHORT)
-                    .show()
-            }, 0)
+            incomingHandler?.sendMSG_NO_SERIAL()
             return
         }
         if (usbDrivers!!.count() > 0) {
@@ -184,6 +177,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                 usbManager.requestPermission(device, intent)
             } else {
                 serialPortConnect()
+                incomingHandler?.sendConnected()
             }
         }
     }
@@ -204,12 +198,8 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             usbSerialPort!!.rts = true
             usbIoManager = SerialInputOutputManager(usbSerialPort, this)
             usbIoManager!!.readTimeout = 10
-//            usbIoManager!!.writeTimeout = 200
-//            usbIoManager!!.readBufferSize = 1000
             usbIoManager!!.start()
             serialPortConnected = true
-            isFeedBack = true
-            feedback()
         }
     }
 
@@ -228,11 +218,10 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
     }
 
     fun sendData(data: ByteArray) {
-//        usbSerialPort?.write(data, WRITE_WAIT_MILLIS)
         try {
             usbIoManager?.writeAsync(data)
             Log.d("로그", "send data : \n${HexDump.dumpHexString(data)}")
-        }catch (e:Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
         }
     }
@@ -295,8 +284,6 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                         //첫번째 헤더 앞부분 짤라냄.(drop) //첫번째 헤더부터 두번째 헤더 앞까지 짤라냄.(take)
                         val focusdata: ByteArray =
                             tmpdata.drop(chkPos).take(scndpos - chkPos).toByteArray()
-
-                        mHandler.obtainMessage(RECEIVED_SERERIAL_DATA, focusdata).sendToTarget()
                         recvData(focusdata)
                         Log.d(REVC, "parseReceiveData2 : ${HexDump.dumpHexString(focusdata)}")
 
@@ -337,15 +324,6 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
     }
 
     val mcIDMap = hashMapOf<Byte, Byte>()
-    val hashMap2 = HashMap<Byte, Byte>().apply {
-        1 to 1
-        2 to 2
-        3 to 3
-        4 to 4
-        5 to 5
-        6 to 6
-        7 to 7
-    }
 
     private fun recvData(data: ByteArray) {
         val receiveParser = NurirobotMC()
@@ -361,68 +339,89 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             }
             ProtocolMode.FEEDSpeed.byte -> {
                 val motorState = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
-//                Log.d(
-//                    "로그", "speed :${motorState.Speed} direction:${motorState.Direction}" +
-//                            "current : ${motorState.Current} pos : ${motorState.Pos} arrivetime : ${motorState.Arrivetime}"
-//                )
+
             }
             ProtocolMode.FEEDPos.byte -> {
-//                val motorState = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
-//                val msg = mHandler.obtainMessage(ProtocolMode.FEEDPos.byte.toInt(), motorState)
-//                mHandler.handleMessage(msg)
-//                Log.d(
-//                    "RECEIVE",
-//                    "ID:${motorState.ID} speed :${motorState.Speed} direction:${motorState.Direction}" +
-//                            "current : ${motorState.Current} pos : ${motorState.Pos!! / 4096 * 360 * 100} arrivetime : ${motorState.Arrivetime}"
-//                )
-
-                val msg = mHandler.obtainMessage(ProtocolMode.FEEDPos.byte.toInt(), data)
-                mHandler.handleMessage(msg)
+                val message = Message.obtain(null, ProtocolMode.FEEDPos.byte.toInt(), data)
+                incomingHandler?.sendMSG(message)
             }
         }
     }
 
 
-    //    val sendParser = NurirobotMC()
-    var feedBackPingThread: Thread? = null
-    var feedBackMotorStateInfoThread: Thread? = null
-    var isFeedBack = false
-    var isAnotherJob = false
 
-    fun feedback() {
-        feedBackMotorStateInfoThread = Thread {
-            val sendParser = NurirobotMC()
-            while (isFeedBack) {
-                try {
-                    while (isAnotherJob) {
-                        Thread.sleep(10)
-                    }
-                    for (encorderID in CareRobotMC.Left_Shoulder_Encoder.byte..CareRobotMC.Right_Elbow_Encoder.byte) {
-                        sendParser.Feedback(encorderID.toByte(), ProtocolMode.REQPos.byte)
-                        sendData(sendParser.Data!!.clone())
-                        Thread.sleep(20)
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+    private lateinit var messenger: Messenger
+    var incomingHandler: IncomingHandler? = null
+
+    inner class IncomingHandler(
+        service: Service,
+        private val context: Context = service.applicationContext
+    ) :
+        Handler(Looper.getMainLooper()) {
+
+        private val clients = mutableListOf<Messenger>()
+
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                MSG_BIND_CLIENT -> {
+                    clients.add(msg.replyTo)
+                    findUSBSerialDevice()
                 }
+                MSG_UNBIND_CLIENT -> clients.remove(msg.replyTo)
+                MSG_SERIAL_SEND -> {
+                    val t = serialPortConnected
+                    msg.data.getByteArray("")?.let { sendData(it) }
+                }
+                else -> super.handleMessage(msg)
             }
         }
-        feedBackMotorStateInfoThread?.start()
-    }
 
-
-    fun feedBackPing() {
-
-        feedBackPingThread = Thread {
-            val sendParser = NurirobotMC()
-            for (id in 1..12) {
-                sendParser.Feedback(id.toByte(), ProtocolMode.REQPing.byte)
-                val cloneData = sendParser.Data!!.clone()
-                sendData(cloneData)
-                Thread.sleep(20)
+        fun sendConnected() {
+            val message = Message.obtain(null, MSG_SERIAL_CONNECT, null)
+            clients.forEach {
+                it.send(message)
             }
         }
-        feedBackPingThread?.start()
+
+        fun sendUIDATA(data: ByteArray) {
+            val message = Message.obtain(null, MSG_SERIAL_RECV)
+            val bundle = Bundle()
+            bundle.putByteArray("", data)
+            message.data = bundle
+            clients.forEach {
+                it.send(message)
+            }
+        }
+
+        fun sendSettingDATA(data: ByteArray) {
+            val message = Message.obtain(null, MSG_SHARE_SETTING)
+            val bundle = Bundle()
+            bundle.putByteArray("", data)
+            message.data = bundle
+            clients.forEach {
+                it.send(message)
+            }
+        }
+
+        fun sendMSG_SERIAL_DISCONNECT() {
+            val message = Message.obtain(null, MSG_SERIAL_DISCONNECT)
+            clients.forEach {
+                it.send(message)
+            }
+        }
+
+        fun sendMSG_NO_SERIAL() {
+            val message = Message.obtain(null, MSG_NO_SERIAL)
+            clients.forEach {
+                it.send(message)
+            }
+        }
+
+        fun sendMSG(msg: Message) {
+            clients.forEach {
+                it.send(msg)
+            }
+        }
     }
 
 }

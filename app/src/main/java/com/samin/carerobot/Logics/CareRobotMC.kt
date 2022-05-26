@@ -16,7 +16,7 @@ enum class CareRobotMC(val byte: Byte) {
     Right_Shoulder_Encoder(13),
     Left_Elbow_Encoder(12),
     Right_Elbow_Encoder(14),
-    Shoulder(15),
+    Sensor(15),
     Elbow(16),
     Wheel(17),
     Eyes_Display(18);
