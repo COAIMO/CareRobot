@@ -72,6 +72,10 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             val sensorData = arg[11] == 1.toByte()
             hmapLastedDate[encorder_id] = time
             setMotorInfo(encorder_id, position, sensorData)
+            Log.d(
+                "tt",
+                "id : ${arg[2]} sensor: ${arg[11]}"
+            )
         }
 
     }

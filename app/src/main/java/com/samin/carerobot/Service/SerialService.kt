@@ -333,7 +333,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         receiveParser.GetDataStruct()
         when (receiveParser.packet) {
             ProtocolMode.FEEDPing.byte -> {
-                Log.d("SerialService", "CheckProductPing data : \n${HexDump.dumpHexString(data)}")
+                Log.d("ssf", "CheckProductPing data : \n${HexDump.dumpHexString(data)}")
                 val getID = receiveParser.Data!!.get(2)
                 mcIDMap.put(getID, getID)
             }
@@ -344,6 +344,9 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             ProtocolMode.FEEDPos.byte -> {
                 val message = Message.obtain(null, ProtocolMode.FEEDPos.byte.toInt(), data)
                 incomingHandler?.sendMSG(message)
+            }
+            ProtocolMode.FEEDFirmware.byte ->{
+                Log.d("ssf", "CheckProductPing data : \n${HexDump.dumpHexString(data)}")
             }
         }
     }

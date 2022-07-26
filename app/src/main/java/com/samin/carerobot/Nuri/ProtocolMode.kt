@@ -174,7 +174,21 @@ enum class ProtocolMode(val byte: Byte) {
     /// <summary>
     /// 펌웨어 버전 피드백(수신)
     /// </summary>
-    FEEDFirmware(0xFD.toByte());
+    FEEDFirmware(0xFD.toByte()),
+
+    /**
+     * Feedback of Face
+     */
+    FEEDFace(0xDF.toByte()),
+    /**
+     * Request of Face
+     */
+    REQFace(0xAF.toByte()),
+
+    /**
+     * Set Face
+     */
+    SETFace(0x41.toByte());
     companion object : EnumCodesMap<ProtocolMode, Byte> by EnumCodesMap({ it.byte })
 
 }

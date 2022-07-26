@@ -25,7 +25,7 @@
         android:id="@+id/iv_app_logo"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:src="@drawable/dito_ic"
+        android:src="@drawable/aya_logo_ic"
         app:layout_constraintBottom_toBottomOf="@id/iv_select_robot"
         app:layout_constraintEnd_toEndOf="@id/iv_select_robot"
         app:layout_constraintHeight_default="percent"
@@ -34,7 +34,7 @@
         app:layout_constraintTop_toTopOf="@id/iv_select_robot"
         app:layout_constraintVertical_bias="0.18"
         app:layout_constraintWidth_default="percent"
-        app:layout_constraintWidth_percent="0.3" />
+        app:layout_constraintWidth_percent="0.4" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/et_user_ID"

@@ -256,7 +256,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                             if (sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.proximity_Sensor!! ||
-                                sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.proximity_Sensor!!
+                                sharedViewModel.motorInfo[CareRobotMC.Left_Elbow_Encoder.byte]?.proximity_Sensor!!
                             ) {
                                 if (sharedViewModel.controlDirection == Direction.CCW) {
                                     val msg = dataHandler.obtainMessage(
@@ -329,6 +329,7 @@ class MainActivity : AppCompatActivity() {
     private fun ttsSpeak(strTTS: String) {
 
     }
+    var expression = 0
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (event != null) {
@@ -338,11 +339,21 @@ class MainActivity : AppCompatActivity() {
                 if (event.repeatCount == 0) {
                     when (keyCode) {
                         KeyEvent.KEYCODE_BUTTON_A -> {
+                            controllerPad.isUsable = true
+                            isAnotherJob = true
 
+                            sendParser.setExpression(CareRobotMC.Eyes_Display.byte, expression.toByte())
+                            if (controllerPad.isUsable) {
+                                Log.d("Test", "${HexDump.dumpHexString(sendParser.Data)}")
+                                sendProtocolToSerial(sendParser.Data!!.clone())
+                            }
+                            expression++
+                            if(expression >= 7) expression = 0
+                            isAnotherJob = false
                         }
                         KeyEvent.KEYCODE_BUTTON_B -> {
                             controllerPad.isUsable = true
-                            sharedViewModel.controlPart.value = CareRobotMC.Elbow.byte
+                            sharedViewModel.controlPart.value = CareRobotMC.Leg_Angle.byte
                         }
                         KeyEvent.KEYCODE_BUTTON_X -> {
                             controllerPad.isUsable = true
@@ -525,6 +536,21 @@ class MainActivity : AppCompatActivity() {
                         }
                         isAnotherJob = false
                     }
+                    CareRobotMC.Leg_Angle.byte ->{
+                        isAnotherJob = true
+                        val tmp = getLegDirectionRPM(it)
+                        sendParser.ControlAcceleratedSpeed(
+                            CareRobotMC.Leg_Angle.byte,
+                            (if (tmp.LeftDirection == Direction.CW) 0x01 else 0x00).toByte(),
+                            tmp.Left,
+                            0.1f
+                        )
+                        sharedViewModel.controlDirection = tmp.LeftDirection
+                        if (controllerPad.isUsable) {
+                            sendProtocolToSerial(sendParser.Data!!.clone())
+                        }
+                        isAnotherJob = false
+                    }
 
                 }
             }
@@ -556,7 +582,8 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    val MaxForward: Float = 40f / 10   //1326.9645
+    val MaxForward: Float = 40f / 5   //1326.9645
+//    val MaxForward: Float = 40f   //1326.9645
 
     private fun getRPMMath(coordinate: JoystickCoordinate): MotorRPMInfo {
         val ret: MotorRPMInfo = MotorRPMInfo()
@@ -713,6 +740,32 @@ class MainActivity : AppCompatActivity() {
 
 //        sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte].
 
+        return ret
+    }
+
+    private fun getLegDirectionRPM(coordinate: JoystickCoordinate): MotorRPMInfo {
+        val ret: MotorRPMInfo = MotorRPMInfo()
+        var left = 0f
+        var right = 0f
+
+        val joy_x = coordinate.x
+        val joy_y = coordinate.y * -1f
+        val r = abs(round(sqrt(joy_x.pow(2) + joy_y.pow(2)) * 100) / 100f)
+
+        left = 50 * r
+        right = 50 * r
+
+        if (joy_y > 0) {
+            ret.Left = left
+            ret.Right = right
+            ret.LeftDirection = Direction.CW
+            ret.RightDirection = Direction.CCW
+        } else {
+            ret.Left = left
+            ret.Right = right
+            ret.LeftDirection = Direction.CCW
+            ret.RightDirection = Direction.CW
+        }
         return ret
     }
 

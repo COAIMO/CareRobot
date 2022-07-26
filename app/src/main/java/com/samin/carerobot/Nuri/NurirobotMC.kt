@@ -3,6 +3,7 @@ package com.jeongmin.nurimotortester
 import android.util.Log
 import com.jeongmin.nurimotortester.Nuri.*
 import com.samin.carerobot.Logics.HexDump
+import com.samin.carerobot.Nuri.FaceProtocol
 import com.samin.carerobot.Nuri.ICommand
 import java.lang.Math.round
 import java.nio.ByteBuffer
@@ -456,6 +457,13 @@ class NurirobotMC : ICommand {
                 nuriVersion.ID = Data!![2]
                 nuriVersion.Version = Data!![6]
                 nuriVersion
+            }
+            ProtocolMode.SETFace -> {
+                val nuriID = FaceProtocol()
+                nuriID.Protocol = Data!![5]
+                nuriID.ID = Data!![2]
+                nuriID.Expression = Data!![6]
+                nuriID
             }
             else -> {
             }
@@ -1095,5 +1103,46 @@ class NurirobotMC : ICommand {
         BuildProtocol(
             arg.ID!!, 0x03, 0xFD.toByte(), byteArrayOf(arg.Version!!), isSend
         )
+    }
+
+    // 표정
+    fun setExpression(id: Byte, exp: Byte) {
+        val nuriProtocol = FaceProtocol()
+        nuriProtocol.ID = id
+        nuriProtocol.Expression = exp
+        prot_SetExpression(nuriProtocol)
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun prot_SetExpression(arg: FaceProtocol) {
+        val data = ByteArray(1)
+        data[0] = arg.Expression!!
+        BuildProtocol(arg.ID!!, 0x03, ProtocolMode.SETFace.byte.toByte(), data)
+    }
+
+    // 피드백 표정
+    fun feedbackExpression(id: Byte, exp: Byte) {
+        val nuriProtocol = FaceProtocol()
+        nuriProtocol.ID = id
+        nuriProtocol.Expression = exp
+        prot_FeedbackExpression(nuriProtocol)
+    }
+
+    @ExperimentalUnsignedTypes
+    private fun prot_FeedbackExpression(arg: FaceProtocol) {
+        val data = ByteArray(1)
+        data[0] = arg.Expression!!
+        BuildProtocol(arg.ID!!, 0x03, ProtocolMode.FEEDFace.byte.toByte(), data)
+    }
+
+    fun reqFaceExpression(id: Byte){
+        val nuriProtocol = NuriProtocol()
+        nuriProtocol.ID = id
+        protReqExpression(nuriProtocol)
+    }
+
+    @ExperimentalUnsignedTypes
+    fun protReqExpression(arg: NuriProtocol) {
+        BuildProtocol(arg.ID!!, 0x02, ProtocolMode.REQFace.byte.toByte(), byteArrayOf())
     }
 }
