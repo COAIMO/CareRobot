@@ -182,17 +182,17 @@ class ControlFragment : Fragment() {
                 mBinding.btnSelectedBothShoulder.isChecked = true
             }
         }
-        when (selectedElbowMode) {
-            ControlMode.Left.byte -> {
-                mBinding.btnSelectedLeftElbow.isChecked = true
-            }
-            ControlMode.Right.byte -> {
-                mBinding.btnSelectedRightElbow.isChecked = true
-            }
-            ControlMode.Both.byte -> {
-                mBinding.btnSelectedBothElbow.isChecked = true
-            }
-        }
+//        when (selectedElbowMode) {
+//            ControlMode.Left.byte -> {
+//                mBinding.btnSelectedLeftElbow.isChecked = true
+//            }
+//            ControlMode.Right.byte -> {
+//                mBinding.btnSelectedRightElbow.isChecked = true
+//            }
+//            ControlMode.Both.byte -> {
+//                mBinding.btnSelectedBothElbow.isChecked = true
+//            }
+//        }
     }
 
     private fun setButtonClickEvent() {
@@ -242,28 +242,28 @@ class ControlFragment : Fragment() {
         mBinding.btnStop3.setOnClickListener {
             onClick(mBinding.btnStop3)
         }
-        mBinding.elbowRadioGroup.setOnCheckedChangeListener { group, checkedId ->
-            when (checkedId) {
-                R.id.btn_selected_LeftElbow -> {
-                    selectedElbowMode = ControlMode.Left.byte
-                }
-                R.id.btn_selected_RightElbow -> {
-                    selectedElbowMode = ControlMode.Right.byte
-                }
-                R.id.btn_selected_BothElbow -> {
-                    selectedElbowMode = ControlMode.Both.byte
-                }
-            }
-        }
-        mBinding.btnElbowUp.setOnClickListener {
-            onClick(mBinding.btnElbowUp)
-        }
-        mBinding.btnElbowDown.setOnClickListener {
-            onClick(mBinding.btnElbowDown)
-        }
-        mBinding.btnStop4.setOnClickListener {
-            onClick(mBinding.btnStop4)
-        }
+//        mBinding.elbowRadioGroup.setOnCheckedChangeListener { group, checkedId ->
+//            when (checkedId) {
+//                R.id.btn_selected_LeftElbow -> {
+//                    selectedElbowMode = ControlMode.Left.byte
+//                }
+//                R.id.btn_selected_RightElbow -> {
+//                    selectedElbowMode = ControlMode.Right.byte
+//                }
+//                R.id.btn_selected_BothElbow -> {
+//                    selectedElbowMode = ControlMode.Both.byte
+//                }
+//            }
+//        }
+//        mBinding.btnElbowUp.setOnClickListener {
+//            onClick(mBinding.btnElbowUp)
+//        }
+//        mBinding.btnElbowDown.setOnClickListener {
+//            onClick(mBinding.btnElbowDown)
+//        }
+//        mBinding.btnStop4.setOnClickListener {
+//            onClick(mBinding.btnStop4)
+//        }
     }
 
     private fun onClick(view: View) {
@@ -279,7 +279,7 @@ class ControlFragment : Fragment() {
                 )
                 nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
                 nuriMC.ControlAcceleratedSpeed(
-                    CareRobotMC.Left_Wheel.byte,
+                    CareRobotMC.Right_Wheel.byte,
                     Direction.CW.direction,
                     5f,
                     0.1f
@@ -297,7 +297,7 @@ class ControlFragment : Fragment() {
                 )
                 nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
                 nuriMC.ControlAcceleratedSpeed(
-                    CareRobotMC.Left_Wheel.byte,
+                    CareRobotMC.Right_Wheel.byte,
                     Direction.CCW.direction,
                     5f,
                     0.1f
@@ -436,20 +436,22 @@ class ControlFragment : Fragment() {
             }
             mBinding.btnWaistUp -> {
 //                nuriMC.ControlPosSpeed(CareRobotMC.Waist.byte, Direction.CW.direction, 360f, 0.1f)
+                sharedViewModel.controlDirection = Direction.CW
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Waist.byte,
-                    Direction.CCW.direction,
-                    200f,
+                    Direction.CW.direction,
+                    70f,
                     0.1f
                 )
                 activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
             }
             mBinding.btnWaistDown -> {
 //                nuriMC.ControlPosSpeed(CareRobotMC.Waist.byte, Direction.CCW.direction, 360f, 0.1f)
+                sharedViewModel.controlDirection = Direction.CCW
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Waist.byte,
-                    Direction.CW.direction,
-                    200f,
+                    Direction.CCW.direction,
+                    70f,
                     0.1f
                 )
                 activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
@@ -457,89 +459,89 @@ class ControlFragment : Fragment() {
             mBinding.btnStop3 -> {
                 stopMotor(CareRobotMC.Waist.byte)
             }
-            mBinding.btnElbowUp -> {
-                when (selectedElbowMode) {
-                    ControlMode.Left.byte -> {
-                        nuriMC.ControlAcceleratedSpeed(
-                            CareRobotMC.Left_Elbow.byte,
-                            Direction.CW.direction,
-                            1f,
-                            0.1f
-                        )
-                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
-                    }
-                    ControlMode.Right.byte -> {
-                        nuriMC.ControlAcceleratedSpeed(
-                            CareRobotMC.Right_Elbow.byte,
-                            Direction.CCW.direction,
-                            1f,
-                            0.1f
-                        )
-                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
-                    }
-                    ControlMode.Both.byte -> {
-                        val sedate = ByteArray(20)
-                        nuriMC.ControlAcceleratedSpeed(
-                            CareRobotMC.Left_Elbow.byte,
-                            Direction.CW.direction,
-                            1f,
-                            0.1f
-                        )
-                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
-                        nuriMC.ControlAcceleratedSpeed(
-                            CareRobotMC.Right_Elbow.byte,
-                            Direction.CCW.direction,
-                            1f,
-                            0.1f
-                        )
-                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                        activity?.sendProtocolToSerial(sedate)
-                    }
-                }
-            }
-            mBinding.btnElbowDown -> {
-                when (selectedElbowMode) {
-                    ControlMode.Left.byte -> {
-                        nuriMC.ControlAcceleratedSpeed(
-                            CareRobotMC.Left_Elbow.byte,
-                            Direction.CCW.direction,
-                            1f,
-                            0.1f
-                        )
-                        activity?.sendProtocolToSerial(nuriMC.Data!!)
-                    }
-                    ControlMode.Right.byte -> {
-                        nuriMC.ControlAcceleratedSpeed(
-                            CareRobotMC.Right_Elbow.byte,
-                            Direction.CW.direction,
-                            1f,
-                            0.1f
-                        )
-                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
-                    }
-                    ControlMode.Both.byte -> {
-                        val sedate = ByteArray(20)
-                        nuriMC.ControlAcceleratedSpeed(
-                            CareRobotMC.Left_Elbow.byte,
-                            Direction.CCW.direction,
-                            1f,
-                            0.1f
-                        )
-                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
-                        nuriMC.ControlAcceleratedSpeed(
-                            CareRobotMC.Right_Elbow.byte,
-                            Direction.CW.direction,
-                            1f,
-                            0.1f
-                        )
-                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                        activity?.sendProtocolToSerial(sedate)
-                    }
-                }
-            }
-            mBinding.btnStop4 -> {
-                stopMotor(CareRobotMC.Left_Elbow.byte, CareRobotMC.Right_Elbow.byte)
-            }
+//            mBinding.btnElbowUp -> {
+//                when (selectedElbowMode) {
+//                    ControlMode.Left.byte -> {
+//                        nuriMC.ControlAcceleratedSpeed(
+//                            CareRobotMC.Left_Elbow.byte,
+//                            Direction.CW.direction,
+//                            1f,
+//                            0.1f
+//                        )
+//                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
+//                    }
+//                    ControlMode.Right.byte -> {
+//                        nuriMC.ControlAcceleratedSpeed(
+//                            CareRobotMC.Right_Elbow.byte,
+//                            Direction.CCW.direction,
+//                            1f,
+//                            0.1f
+//                        )
+//                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
+//                    }
+//                    ControlMode.Both.byte -> {
+//                        val sedate = ByteArray(20)
+//                        nuriMC.ControlAcceleratedSpeed(
+//                            CareRobotMC.Left_Elbow.byte,
+//                            Direction.CW.direction,
+//                            1f,
+//                            0.1f
+//                        )
+//                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+//                        nuriMC.ControlAcceleratedSpeed(
+//                            CareRobotMC.Right_Elbow.byte,
+//                            Direction.CCW.direction,
+//                            1f,
+//                            0.1f
+//                        )
+//                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                        activity?.sendProtocolToSerial(sedate)
+//                    }
+//                }
+//            }
+//            mBinding.btnElbowDown -> {
+//                when (selectedElbowMode) {
+//                    ControlMode.Left.byte -> {
+//                        nuriMC.ControlAcceleratedSpeed(
+//                            CareRobotMC.Left_Elbow.byte,
+//                            Direction.CCW.direction,
+//                            1f,
+//                            0.1f
+//                        )
+//                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+//                    }
+//                    ControlMode.Right.byte -> {
+//                        nuriMC.ControlAcceleratedSpeed(
+//                            CareRobotMC.Right_Elbow.byte,
+//                            Direction.CW.direction,
+//                            1f,
+//                            0.1f
+//                        )
+//                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
+//                    }
+//                    ControlMode.Both.byte -> {
+//                        val sedate = ByteArray(20)
+//                        nuriMC.ControlAcceleratedSpeed(
+//                            CareRobotMC.Left_Elbow.byte,
+//                            Direction.CCW.direction,
+//                            1f,
+//                            0.1f
+//                        )
+//                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+//                        nuriMC.ControlAcceleratedSpeed(
+//                            CareRobotMC.Right_Elbow.byte,
+//                            Direction.CW.direction,
+//                            1f,
+//                            0.1f
+//                        )
+//                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                        activity?.sendProtocolToSerial(sedate)
+//                    }
+//                }
+//            }
+//            mBinding.btnStop4 -> {
+//                stopMotor(CareRobotMC.Left_Elbow.byte, CareRobotMC.Right_Elbow.byte)
+//            }
         }
 
     }

@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/all_mode_button.xml" value="0.1" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/aya_logo_ic.xml" value="0.1" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/back_ic.xml" value="0.3605" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/behavior_mode_button.xml" value="0.421" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/carry_mode_button.xml" value="0.421" />

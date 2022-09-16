@@ -5,10 +5,10 @@ import com.jeongmin.nurimotortester.Nuri.Direction
 import com.jeongmin.nurimotortester.Nuri.NuriPosSpeedAclCtrl
 import com.jeongmin.nurimotortester.NurirobotMC
 import com.samin.carerobot.Logics.CareRobotMC
+import com.samin.carerobot.Logics.HexDump
 import com.samin.carerobot.Logics.MotorInfo
 import com.samin.carerobot.Logics.SharedViewModel
 import java.lang.Math.abs
-import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
 
@@ -23,15 +23,14 @@ class MotorControllerParser(viewModel: SharedViewModel) {
 
     fun parser(arg: ByteArray) {
         val time = System.currentTimeMillis()
-
-        if (arg[2] == CareRobotMC.Waist.byte) {
+//        arg[2] == CareRobotMC.Waist.byte
+        if (arg[2] in 1..7) {
             val tmpInfo = MotorInfo()
             hmapLastedDate[arg[2]] = time
             receiveParser.Data = arg
             val tmp = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
             tmpInfo.motor_id = tmp.ID
             tmpInfo.position = tmp.Pos
-//            viewModel.waistInfo.postValue(tmp)
 
             var exPosition = exPositonhmap[arg[2]]
             if (exPosition == null) {
@@ -49,33 +48,52 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                 tmpInfo.currnet_Direction = exDirection[arg[2]]
             }
 
-            Log.d("허리", "Direction : ${tmpInfo.currnet_Direction}\t Pos : ${tmpInfo.position}")
+            Log.d("허리", "ID: ${tmpInfo.motor_id} Direction : ${tmpInfo.currnet_Direction}\t Pos : ${tmpInfo.position}")
             synchronized(viewModel.lockobj) {
                 viewModel.motorInfo[arg[2]] = tmpInfo
             }
             exPositonhmap[arg[2]] = tmpInfo.position!!
+            viewModel.posInfos[arg[2]] = tmpInfo.position!!
 
-        } else if (arg[2] == CareRobotMC.Sensor.byte) {
+        } else if (arg[2] == CareRobotMC.Waist_Sensor.byte) {
             Log.d(
-                "tt",
+                "로봇",
                 "id : ${arg[2]} sensor: ${arg[11]}"
             )
             val tmpInfo = MotorInfo()
             val sensorData = arg[11] != 0x00.toByte()
             tmpInfo.encoder_id = arg[2]
             tmpInfo.proximity_Sensor = sensorData
+            tmpInfo.sensorData = arg[11]
             viewModel.motorInfo[arg[2]] = tmpInfo
-        } else {
+        }
+        else if (arg[2] == 10.toByte()){
+            Log.d("leg", HexDump.dumpHexString(arg))
+            Log.d("leg_sensor", "${arg[11]}")
+            val tmpInfo = MotorInfo()
+            tmpInfo.encoder_id = arg[2]
+            tmpInfo.proximity_Sensor = arg[11] != 0x00.toByte()
+            tmpInfo.sensorData = arg[11]
+            viewModel.motorInfo[arg[2]] = tmpInfo
+
+        }else if (arg[2] == 8.toByte()){
+            receiveParser.Data = arg
+            val tmp = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
+            val tmpInfo = MotorInfo()
+            tmpInfo.motor_id =  tmp.ID
+            tmpInfo.currnet_Direction = tmp.Direction
+            tmpInfo.position = tmp.Pos
+
+            viewModel.motorInfo[arg[2]] = tmpInfo
+        }
+        else {
             val encorder_id = arg[2]
             val position =
                 (littleEndianConversion(arg!!.slice(7..8).toByteArray()) / 4096f * 360f)
             val sensorData = arg[11] == 1.toByte()
+            viewModel.posInfos[encorder_id] = position
             hmapLastedDate[encorder_id] = time
             setMotorInfo(encorder_id, position, sensorData)
-            Log.d(
-                "tt",
-                "id : ${arg[2]} sensor: ${arg[11]}"
-            )
         }
 
     }
@@ -104,8 +122,8 @@ class MotorControllerParser(viewModel: SharedViewModel) {
         when (id) {
             CareRobotMC.Left_Shoulder_Encoder.byte -> {
                 tmpInfo.motor_id = CareRobotMC.Left_Shoulder.byte
-                tmpInfo.max_Range = 150f
-                tmpInfo.min_Range = 42f
+                tmpInfo.max_Range = 180f
+                tmpInfo.min_Range = 0f
                 if (exPositonhmap[id]!! < position) {
                     tmpInfo.currnet_Direction = Direction.CCW
                     exDirection[id] = tmpInfo.currnet_Direction!!
@@ -158,36 +176,36 @@ class MotorControllerParser(viewModel: SharedViewModel) {
 //                    }
                 }
             }
-            CareRobotMC.Left_Elbow_Encoder.byte -> {
-                tmpInfo.motor_id = CareRobotMC.Left_Elbow.byte
-                tmpInfo.max_Range = 345f
-                tmpInfo.min_Range = 170f
-                if (exPositonhmap[id]!! < position) {
-                    tmpInfo.currnet_Direction = Direction.CCW
-                    exDirection[id] = tmpInfo.currnet_Direction!!
-                } else if (exPositonhmap[id]!! > position) {
-                    tmpInfo.currnet_Direction = Direction.CW
-                    exDirection[id] = tmpInfo.currnet_Direction!!
-                } else {
-                    tmpInfo.currnet_Direction = exDirection[id]
-                }
-
-                // 에러 범위 안인가?
-                if (tmpInfo.position!! < tmpInfo.min_Range!!) {
-                    if (viewModel.controlDirection != Direction.CCW) {
-                        tmpInfo.min_Alert = true
-                    }
-                } else if (tmpInfo.position!! > tmpInfo.max_Range!!) {
-                    if (viewModel.controlDirection != Direction.CW) {
-                        tmpInfo.max_Alert = true
-                    }
-                }
-
-            }
+//            CareRobotMC.Left_Elbow_Encoder.byte -> {
+//                tmpInfo.motor_id = CareRobotMC.Left_Elbow.byte
+//                tmpInfo.max_Range = 345f
+//                tmpInfo.min_Range = 170f
+//                if (exPositonhmap[id]!! < position) {
+//                    tmpInfo.currnet_Direction = Direction.CCW
+//                    exDirection[id] = tmpInfo.currnet_Direction!!
+//                } else if (exPositonhmap[id]!! > position) {
+//                    tmpInfo.currnet_Direction = Direction.CW
+//                    exDirection[id] = tmpInfo.currnet_Direction!!
+//                } else {
+//                    tmpInfo.currnet_Direction = exDirection[id]
+//                }
+//
+//                // 에러 범위 안인가?
+//                if (tmpInfo.position!! < tmpInfo.min_Range!!) {
+//                    if (viewModel.controlDirection != Direction.CCW) {
+//                        tmpInfo.min_Alert = true
+//                    }
+//                } else if (tmpInfo.position!! > tmpInfo.max_Range!!) {
+//                    if (viewModel.controlDirection != Direction.CW) {
+//                        tmpInfo.max_Alert = true
+//                    }
+//                }
+//
+//            }
             CareRobotMC.Right_Shoulder_Encoder.byte -> {
                 tmpInfo.motor_id = CareRobotMC.Right_Shoulder.byte
-                tmpInfo.min_Range = 210f
-                tmpInfo.max_Range = 318f
+                tmpInfo.min_Range = 180f
+                tmpInfo.max_Range = 360f
                 if (exPositonhmap[id]!! < position) {
                     tmpInfo.currnet_Direction = Direction.CCW
                     exDirection[id] = tmpInfo.currnet_Direction!!
@@ -203,6 +221,7 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                     val max = tmpInfo.max_Range!! - tmpInfo.position!!
                     // min 또는 max에 가깝게 있는가?
                     if (abs(min) < abs(max)) {
+
                         //min이랑 가까울때
                         if (viewModel.controlDirection != Direction.CW) {
                             tmpInfo.min_Alert = true
@@ -215,30 +234,10 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                     }
                 }
             }
-            CareRobotMC.Right_Elbow_Encoder.byte -> {
-                tmpInfo.motor_id = CareRobotMC.Left_Shoulder.byte
-                tmpInfo.max_Range = 190f
-                tmpInfo.min_Range = 15f
-                if (exPositonhmap[id]!! < position) {
-                    tmpInfo.currnet_Direction = Direction.CCW
-                    exDirection[id] = tmpInfo.currnet_Direction!!
-                } else if (exPositonhmap[id]!! > position) {
-                    tmpInfo.currnet_Direction = Direction.CW
-                    exDirection[id] = tmpInfo.currnet_Direction!!
-                } else {
-                    tmpInfo.currnet_Direction = exDirection[id]
-                }
-                // 에러 범위 안인가?
-                if (tmpInfo.position!! < tmpInfo.min_Range!!) {
-                    if (viewModel.controlDirection != Direction.CCW) {
-                        tmpInfo.min_Alert = true
-                    }
-                } else if (tmpInfo.position!! > tmpInfo.max_Range!!) {
-                    if (viewModel.controlDirection != Direction.CW) {
-                        tmpInfo.max_Alert = true
-                    }
-                }
-            }
+//
+
+
+
         }
 
         viewModel.motorInfo[id] = tmpInfo

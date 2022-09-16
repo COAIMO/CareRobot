@@ -43,6 +43,7 @@ class SharedViewModel:ViewModel() {
     var right_Joystick = MutableLiveData<JoystickCoordinate>()
     var controlPart = MutableLiveData<Byte?>()
     val motorInfo = ConcurrentHashMap<Byte,MotorInfo>()
+    val posInfos = ConcurrentHashMap<Byte, Float>()
     var controlDirection = Direction.CW
 //    val waistInfo = MutableLiveData<NuriPosSpeedAclCtrl>()
     val waistInfo = MutableLiveData<MotorInfo>()
