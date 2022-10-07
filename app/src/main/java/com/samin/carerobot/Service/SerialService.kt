@@ -264,7 +264,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                                 tmpdata.drop(chkPos).dropLast(grabageDataSize).toByteArray()
                             recvData(focusdata)
                             bufferIndex = 0;
-//                            Log.d(REVC, "parseReceiveData1 : ${HexDump.dumpHexString(focusdata)}")
+                            Log.d(REVC, "parseReceiveData1 : ${HexDump.dumpHexString(focusdata)}")
 
                         } else {
                             //해당 전문보다 데이터가 작을경우
@@ -343,6 +343,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             }
             ProtocolMode.FEEDPos.byte -> {
                 val message = Message.obtain(null, ProtocolMode.FEEDPos.byte.toInt(), data)
+                Log.d("확인", "${HexDump.dumpHexString(data)}")
                 incomingHandler?.sendMSG(message)
             }
             ProtocolMode.FEEDFirmware.byte ->{

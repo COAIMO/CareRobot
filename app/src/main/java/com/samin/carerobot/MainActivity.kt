@@ -511,7 +511,7 @@ class MainActivity : AppCompatActivity() {
                             controllerPad.isUsable = false
                             for (i in 0..2) {
                                 stopMotor(CareRobotMC.Left_Shoulder.byte)
-                                Thread.sleep(20)
+                                    Thread.sleep(20)
                             }
                             sharedViewModel.controlPart.value = null
                         }
@@ -545,8 +545,15 @@ class MainActivity : AppCompatActivity() {
                 stopRobot()
                 return@observe
             } else {
-                val tmpRPM = getRPMMath(it)
-                moveWheelchair(tmpRPM)
+                if (sharedViewModel.controlPart.value == CareRobotMC.Wheel.byte){
+                    val tmpRPM = getRPMMath(it)
+                    moveWheelchair(tmpRPM)
+                }else{
+                    for (i in 0..2) {
+                        stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
+                        Thread.sleep(20)
+                    }
+                }
             }
         }
         sharedViewModel.right_Joystick.observe(this) {
@@ -658,9 +665,12 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    val MaxForward: Float = 40f / 5   //1326.9645
-//    val MaxForward: Float = 40f   //1326.9645
+    //원래 속도
+//    val MaxForward: Float = 40f / 5   //1326.9645
+    //분당 약 30m
+    val MaxForward: Float = 50f   //1326.9645
 
+    //기존 방향과 반대
     private fun getRPMMath(coordinate: JoystickCoordinate): MotorRPMInfo {
         val ret: MotorRPMInfo = MotorRPMInfo()
         var left = 0f
@@ -680,50 +690,50 @@ class MainActivity : AppCompatActivity() {
             //우회전
             left = MaxForward * r * joy_x
             right = MaxForward * r * joy_x * 0.75f
-            ret.LeftDirection = Direction.CW
-            ret.RightDirection = Direction.CCW
-        } else if (joy_x > 0 && joy_y < 0) {
-            //후진 우회전
-            left = -1 * MaxForward * r * joy_x
-            right = -1 * MaxForward * r * joy_x * 0.75f
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CW
+        } else if (joy_x > 0 && joy_y < 0) {
+            //후진 우회전
+            left = -1 * MaxForward/2 * r * joy_x
+            right = -1 * MaxForward/2 * r * joy_x * 0.75f
+            ret.LeftDirection = Direction.CW
+            ret.RightDirection = Direction.CCW
         } else if (joy_x < 0 && joy_y > 0) {
             //좌회전
             left = MaxForward * r * joy_x * 0.75f
             right = MaxForward * r * joy_x
-            ret.LeftDirection = Direction.CW
-            ret.RightDirection = Direction.CCW
-        } else if (joy_x < 0 && joy_y < 0) {
-            //후진 좌회전
-            left = -1 * MaxForward * r * joy_x * 0.75f
-            right = -1 * MaxForward * r * joy_x
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CW
+        } else if (joy_x < 0 && joy_y < 0) {
+            //후진 좌회전
+            left = -1 * MaxForward/2 * r * joy_x * 0.75f
+            right = -1 * MaxForward/2 * r * joy_x
+            ret.LeftDirection = Direction.CW
+            ret.RightDirection = Direction.CCW
         } else if (joy_x == 0f && joy_y > 0) {
             //전진
             left = MaxForward * r
             right = MaxForward * r
-            ret.LeftDirection = Direction.CW
-            ret.RightDirection = Direction.CCW
+            ret.LeftDirection = Direction.CCW
+            ret.RightDirection = Direction.CW
         } else if (joy_x == 0f && joy_y < 0) {
             //후진
             left = MaxForward * r / 2
             right = MaxForward * r / 2
-            ret.LeftDirection = Direction.CCW
-            ret.RightDirection = Direction.CW
+            ret.LeftDirection = Direction.CW
+            ret.RightDirection = Direction.CCW
         } else if (joy_y == 0f && joy_x > 0) {
             //제자리 우회전
-            left = MaxForward * r / 2
-            right = MaxForward * r / 2
-            ret.LeftDirection = Direction.CW
-            ret.RightDirection = Direction.CW
-        } else if (joy_y == 0f && joy_x < 0) {
-            //제자리 좌회전
-            left = MaxForward * r / 2
-            right = MaxForward * r / 2
+            left = MaxForward * r / 5
+            right = MaxForward * r / 5
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CCW
+        } else if (joy_y == 0f && joy_x < 0) {
+            //제자리 좌회전
+            left = MaxForward * r / 5
+            right = MaxForward * r / 5
+            ret.LeftDirection = Direction.CW
+            ret.RightDirection = Direction.CW
         }
 
         Log.d(

@@ -273,14 +273,14 @@ class ControlFragment : Fragment() {
                 val sedate = ByteArray(20)
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Left_Wheel.byte,
-                    Direction.CCW.direction,
+                    Direction.CW.direction,
                     5f,
                     0.1f
                 )
                 nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Right_Wheel.byte,
-                    Direction.CW.direction,
+                    Direction.CCW.direction,
                     5f,
                     0.1f
                 )
@@ -291,14 +291,14 @@ class ControlFragment : Fragment() {
                 val sedate = ByteArray(20)
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Left_Wheel.byte,
-                    Direction.CW.direction,
+                    Direction.CCW.direction,
                     5f,
                     0.1f
                 )
                 nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Right_Wheel.byte,
-                    Direction.CCW.direction,
+                    Direction.CW.direction,
                     5f,
                     0.1f
                 )
