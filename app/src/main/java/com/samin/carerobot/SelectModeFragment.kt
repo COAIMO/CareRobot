@@ -1,6 +1,10 @@
 package com.samin.carerobot
 
 import android.content.Context
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.AnimationDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -55,6 +59,7 @@ class SelectModeFragment : Fragment() {
         }
     }
 
+    var isAnimate: Boolean = false
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -63,7 +68,26 @@ class SelectModeFragment : Fragment() {
         setFragment()
         setButtonClickEvent()
         (parentFragment as MainFragment).initTopNaviButton()
+        val animation = mBinding.ivMic.drawable as AnimatedVectorDrawable
+//        animation.start()
+//
+        animation.registerAnimationCallback(object : Animatable2.AnimationCallback() {
+            override fun onAnimationEnd(drawable: Drawable?) {
+                if (isAnimate) {
+                    animation.start()
+                }
+            }
+        })
 
+        mBinding.ivMic.setOnClickListener {
+            if (isAnimate) {
+                isAnimate = false
+                (mBinding.ivMic.drawable as AnimatedVectorDrawable).stop()
+            }else{
+                (mBinding.ivMic.drawable as AnimatedVectorDrawable).start()
+                isAnimate = true
+            }
+        }
         return mBinding.root
     }
 
