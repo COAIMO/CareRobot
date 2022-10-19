@@ -62,4 +62,6 @@ class LoaderView @JvmOverloads constructor(
     override fun reDraw() {
         invalidate()
     }
+
+
 }

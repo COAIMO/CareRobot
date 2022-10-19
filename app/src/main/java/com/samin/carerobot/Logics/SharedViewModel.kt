@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.jeongmin.nurimotortester.Nuri.Direction
 import com.jeongmin.nurimotortester.Nuri.NuriPosSpeedAclCtrl
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicInteger
 
 class SharedViewModel:ViewModel() {
     companion object{
@@ -48,5 +49,11 @@ class SharedViewModel:ViewModel() {
 //    val waistInfo = MutableLiveData<NuriPosSpeedAclCtrl>()
     val waistInfo = MutableLiveData<MotorInfo>()
     val lockobj = Object()
+    val isControlMap = ConcurrentHashMap<Byte,Boolean>()
+    val isControl = AtomicInteger(0)
+
+    val waistStateMap = ConcurrentHashMap<Byte, Int>()
+    val sendProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
+    val exProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
 
 }

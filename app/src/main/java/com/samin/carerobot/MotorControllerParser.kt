@@ -48,13 +48,19 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                 tmpInfo.currnet_Direction = exDirection[arg[2]]
             }
 
-            Log.d("허리", "ID: ${tmpInfo.motor_id} Direction : ${tmpInfo.currnet_Direction}\t Pos : ${tmpInfo.position}")
             synchronized(viewModel.lockobj) {
                 viewModel.motorInfo[arg[2]] = tmpInfo
             }
             exPositonhmap[arg[2]] = tmpInfo.position!!
             viewModel.posInfos[arg[2]] = tmpInfo.position!!
 
+            if (tmp.ID == CareRobotMC.Waist.byte) {
+                Log.d(
+                    "허리허리",
+                    "ID: ${tmp.ID} Direction : ${tmp.Direction}\t Pos : ${tmp.Speed}"
+                )
+                viewModel.waistStateMap[tmp.ID!!] = tmp.Speed!!.toInt()
+            }
         } else if (arg[2] == CareRobotMC.Waist_Sensor.byte) {
             Log.d(
                 "로봇",
@@ -66,8 +72,8 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             tmpInfo.proximity_Sensor = sensorData
             tmpInfo.sensorData = arg[11]
             viewModel.motorInfo[arg[2]] = tmpInfo
-        }
-        else if (arg[2] == 10.toByte()){
+            viewModel.waistStateMap[tmpInfo.encoder_id!!] = tmpInfo.sensorData!!.toInt()
+        } else if (arg[2] == 10.toByte()) {
             Log.d("leg", HexDump.dumpHexString(arg))
             Log.d("leg_sensor", "${arg[11]}")
             val tmpInfo = MotorInfo()
@@ -76,17 +82,16 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             tmpInfo.sensorData = arg[11]
             viewModel.motorInfo[arg[2]] = tmpInfo
 
-        }else if (arg[2] == 8.toByte()){
+        } else if (arg[2] == 8.toByte()) {
             receiveParser.Data = arg
             val tmp = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
             val tmpInfo = MotorInfo()
-            tmpInfo.motor_id =  tmp.ID
+            tmpInfo.motor_id = tmp.ID
             tmpInfo.currnet_Direction = tmp.Direction
             tmpInfo.position = tmp.Pos
 
             viewModel.motorInfo[arg[2]] = tmpInfo
-        }
-        else {
+        } else {
             val encorder_id = arg[2]
             val position =
                 (littleEndianConversion(arg!!.slice(7..8).toByteArray()) / 4096f * 360f)
@@ -235,7 +240,6 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                 }
             }
 //
-
 
 
         }
