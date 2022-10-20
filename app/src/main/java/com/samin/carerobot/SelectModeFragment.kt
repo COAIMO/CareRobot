@@ -14,6 +14,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
 import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.databinding.FragmentSelectModeBinding
+import java.util.*
+import kotlin.concurrent.timer
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -47,6 +49,7 @@ class SelectModeFragment : Fragment() {
 
     override fun onDetach() {
         super.onDetach()
+        uiTimer.cancel()
         activity = null
         onBackPressedCallback.remove()
     }
@@ -69,8 +72,7 @@ class SelectModeFragment : Fragment() {
         setButtonClickEvent()
         (parentFragment as MainFragment).initTopNaviButton()
         val animation = mBinding.ivMic.drawable as AnimatedVectorDrawable
-//        animation.start()
-//
+
         animation.registerAnimationCallback(object : Animatable2.AnimationCallback() {
             override fun onAnimationEnd(drawable: Drawable?) {
                 if (isAnimate) {
@@ -88,6 +90,7 @@ class SelectModeFragment : Fragment() {
                 isAnimate = true
             }
         }
+        setUITimer()
         return mBinding.root
     }
 
@@ -130,6 +133,22 @@ class SelectModeFragment : Fragment() {
             (parentFragment as MainFragment).selectedModeFragment
         ).commit()
 
+    }
+
+    lateinit var uiTimer:Timer
+    var mentIndex = 0
+
+    private fun setUITimer(){
+       uiTimer = timer(period = 4000, initialDelay = 1000){
+           mentIndex++
+           if (mentIndex > 1) mentIndex = 0
+           activity?.runOnUiThread {
+               when (mentIndex){
+                   0 -> mBinding.tvMainment.text = getString(R.string.main_ment)
+                   1 -> mBinding.tvMainment.text = getString(R.string.mic_off_ment)
+               }
+           }
+       }
     }
 
     companion object {

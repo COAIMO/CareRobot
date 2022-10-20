@@ -14,9 +14,9 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.CareRobot">
         <service
-                android:name=".UsbSerialService"
+                android:name=".Service.UsbSerialService"
                 android:enabled="true"
-                android:exported="true"></service>
+                android:exported="true"/>
         <service
                 android:name=".Service.SerialService"
                 android:enabled="true"

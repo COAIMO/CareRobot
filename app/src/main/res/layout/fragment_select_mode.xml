@@ -46,10 +46,11 @@
             app:layout_constraintWidth_percent="0.5" />
 
     <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_Mainment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="아래 버튼중에서\n원하는 기능을 선택하세요."
+            android:text="@string/main_ment"
             android:textColor="@color/main_textColor"
             android:textSize="30sp"
             android:textStyle="bold"

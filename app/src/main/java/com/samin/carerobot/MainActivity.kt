@@ -18,7 +18,9 @@ import com.jeongmin.nurimotortester.Nuri.ProtocolMode
 import com.jeongmin.nurimotortester.NurirobotMC
 import com.samin.carerobot.LoadingPage.LoadingDialog
 import com.samin.carerobot.Logics.*
+import com.samin.carerobot.Nuri.MovementMode
 import com.samin.carerobot.Service.SerialService
+import com.samin.carerobot.Service.UsbSerialService
 import com.samin.carerobot.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import java.util.*
@@ -80,7 +82,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        bindMessengerService()
+//        bindMessengerService()
+        bindUsbSerialService()
     }
 
     override fun onResume() {
@@ -90,7 +93,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unbindMessengerService()
+//        unbindMessengerService()
+        unbindUsbSerialService()
     }
 
     private fun setFragment() {
@@ -134,8 +138,8 @@ class MainActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
                 UsbManager.ACTION_USB_DEVICE_DETACHED ->{
-                    unbindMessengerService()
-                    android.os.Process.killProcess(android.os.Process.myPid())
+//                    unbindMessengerService()
+//                    android.os.Process.killProcess(android.os.Process.myPid())
                 }
                 BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
                     for (i in 0..2) {
@@ -168,6 +172,86 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(broadcastReceiver, filter)
     }
 
+    private val usbSerialHandler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            when (msg.what) {
+                UsbSerialService.MSG_STOP_ROBOT ->{
+                    for (i in 0..2){
+                        stopRobot()
+                    }
+                }
+                UsbSerialService.MSG_MOVE_ROBOT ->{
+                    when(msg.obj as Byte){
+                        MovementMode.GO_forward.byte->{
+
+                        }
+                        MovementMode.GO_backward.byte->{
+
+                        }
+                        MovementMode.TURN_Left.byte->{
+
+                        }
+                        MovementMode.TURN_Right.byte->{
+
+                        }
+                        MovementMode.UP_Lift.byte->{
+
+                        }
+                        MovementMode.DOWN_Lift.byte->{
+
+                        }
+                    }
+
+                }
+//                SerialService.MSG_SERIAL_CONNECT -> {
+////                    loadingView.show()
+//                    isFeedBack = true
+//                    feedback()
+//                    Thread.sleep(1000)
+//                    observeMotorState()
+//                    observeWasteState()
+//                    Thread.sleep(1000)
+////                    initWaistPosition()
+////                    initsetLegPosition()
+//
+//                }
+//                ProtocolMode.FEEDPos.byte.toInt() -> {
+//                    motorControllerParser.parser(msg.obj as ByteArray)
+//                }
+                else -> super.handleMessage(msg)
+            }
+        }
+    }
+    private val usbSerialClient = Messenger(usbSerialHandler)
+    private var usbSerialService: Messenger? = null
+    private val usbSerialServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            usbSerialService = Messenger(service).apply {
+                send(Message.obtain(null, UsbSerialService.MSG_BIND_CLIENT, 0, 0).apply {
+                    replyTo = usbSerialClient
+                })
+            }
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            usbSerialService = null
+        }
+    }
+
+    private fun bindUsbSerialService() {
+        Intent(this, UsbSerialService::class.java).run {
+            bindService(this, usbSerialServiceConnection, Service.BIND_AUTO_CREATE)
+        }
+    }
+
+    private fun unbindUsbSerialService() {
+        usbSerialService?.send(
+            Message.obtain(null, UsbSerialService.MSG_UNBIND_CLIENT, 0, 0).apply {
+                replyTo = usbSerialClient
+            })
+        unbindService(usbSerialServiceConnection)
+    }
+
     private val serialSVCIPCHandler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
@@ -190,6 +274,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
     private val serialSVCIPCClient = Messenger(serialSVCIPCHandler)
     private var serialSVCIPCService: Messenger? = null
     private val serialSVCIPCServiceConnection = object : ServiceConnection {
