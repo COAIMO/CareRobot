@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
 import com.samin.carerobot.Logics.SharedViewModel
+import com.samin.carerobot.Nuri.PC_Protocol
+import com.samin.carerobot.Nuri.SpeechMode
 import com.samin.carerobot.databinding.FragmentMainBinding
 
 // TODO: Rename parameter arguments, choose names that match
@@ -383,20 +385,34 @@ class MainFragment : Fragment() {
         }
     }
 
+    val pcProtocol = PC_Protocol()
+
     private fun onClick(view: View) {
         initTopNaviButton()
         when (view) {
             mBinding.topNavi.btnModeCarry -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY
+                pcProtocol.setSpeech(SpeechMode.TOUCH_CARRYMODE.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
             }
             mBinding.topNavi.btnModeBehavior -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                pcProtocol.setSpeech(SpeechMode.TOUCH_BEHAVIORMODE.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
             }
             mBinding.topNavi.btnModeChange -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                pcProtocol.setSpeech(SpeechMode.TOUCH_CHANGEMODE.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
             }
             mBinding.topNavi.btnModeAll -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                pcProtocol.setSpeech(SpeechMode.TOUCH_ALLMODE.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
             }
             mBinding.topNavi.btnLogout -> {
                 activity?.sharedPreference!!.loginState(false)

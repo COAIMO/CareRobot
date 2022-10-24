@@ -3,6 +3,8 @@ package com.samin.carerobot
 import android.app.Service
 import android.bluetooth.BluetoothDevice
 import android.content.*
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.usb.UsbManager
 import android.os.*
 import android.speech.tts.TextToSpeech
@@ -31,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var loginFragment: LoginFragment
     lateinit var newAccountFragment: NewAccountFragment
     lateinit var mainFragment: MainFragment
+    lateinit var heartDialogFragment: HeartDialogFragment
     lateinit var sharedPreference: SharedPreference
     lateinit var controllerPad: ControllerPad
     private lateinit var sharedViewModel: SharedViewModel
@@ -57,7 +60,6 @@ class MainActivity : AppCompatActivity() {
         moveRobot()
         loadingView = LoadingDialog(this)
         getGameControllerIds()
-
     }
 
     fun getGameControllerIds(): List<Int> {
@@ -103,6 +105,7 @@ class MainActivity : AppCompatActivity() {
             .replace(R.id.HostFragment_container, loginFragment).commit()
         newAccountFragment = NewAccountFragment()
         mainFragment = MainFragment()
+        heartDialogFragment = HeartDialogFragment()
     }
 
     fun onFragmentChange(index: Int) {
@@ -138,8 +141,8 @@ class MainActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
                 UsbManager.ACTION_USB_DEVICE_DETACHED ->{
-//                    unbindMessengerService()
-//                    android.os.Process.killProcess(android.os.Process.myPid())
+                    unbindUsbSerialService()
+                    android.os.Process.killProcess(android.os.Process.myPid())
                 }
                 BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
                     for (i in 0..2) {
@@ -175,6 +178,12 @@ class MainActivity : AppCompatActivity() {
     private val usbSerialHandler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
+                UsbSerialService.SERIALPORT_READY ->{
+                    isFeedBack = true
+                    feedback()
+                    observeMotorState()
+                    observeWasteState()
+                }
                 UsbSerialService.MSG_STOP_ROBOT ->{
                     for (i in 0..2){
                         stopRobot()
@@ -183,41 +192,123 @@ class MainActivity : AppCompatActivity() {
                 UsbSerialService.MSG_MOVE_ROBOT ->{
                     when(msg.obj as Byte){
                         MovementMode.GO_forward.byte->{
-
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Wheel.byte,
+                                Direction.CCW.direction,
+                                MaxForward,
+                                3f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
+                                sendParser.Data!!.clone()
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Wheel.byte,
+                                Direction.CW.direction,
+                                MaxForward,
+                                3f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                                sendParser.Data!!.clone()
                         }
                         MovementMode.GO_backward.byte->{
-
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Wheel.byte,
+                                Direction.CW.direction,
+                                MaxForward/2,
+                                2f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
+                                sendParser.Data!!.clone()
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Wheel.byte,
+                                Direction.CCW.direction,
+                                MaxForward/2,
+                                2f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                                sendParser.Data!!.clone()
                         }
                         MovementMode.TURN_Left.byte->{
-
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Wheel.byte,
+                                Direction.CW.direction,
+                                MaxForward/7,
+                                0.1f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
+                                sendParser.Data!!.clone()
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Wheel.byte,
+                                Direction.CW.direction,
+                                MaxForward/7,
+                                0.1f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                                sendParser.Data!!.clone()
                         }
                         MovementMode.TURN_Right.byte->{
-
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Wheel.byte,
+                                Direction.CCW.direction,
+                                MaxForward/7,
+                                0.1f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
+                                sendParser.Data!!.clone()
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Wheel.byte,
+                                Direction.CCW.direction,
+                                MaxForward/7,
+                                0.1f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                                sendParser.Data!!.clone()
                         }
                         MovementMode.UP_Lift.byte->{
-
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Waist.byte,
+                                Direction.CW.direction,
+                                70f,
+                                0.1f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
+                                sendParser.Data!!.clone()
                         }
                         MovementMode.DOWN_Lift.byte->{
-
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Waist.byte,
+                                Direction.CCW.direction,
+                                70f,
+                                0.1f
+                            )
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
+                                sendParser.Data!!.clone()
                         }
                     }
 
                 }
-//                SerialService.MSG_SERIAL_CONNECT -> {
-////                    loadingView.show()
-//                    isFeedBack = true
-//                    feedback()
-//                    Thread.sleep(1000)
-//                    observeMotorState()
-//                    observeWasteState()
-//                    Thread.sleep(1000)
-////                    initWaistPosition()
-////                    initsetLegPosition()
-//
-//                }
-//                ProtocolMode.FEEDPos.byte.toInt() -> {
-//                    motorControllerParser.parser(msg.obj as ByteArray)
-//                }
+                UsbSerialService.MSG_SET_SPEED -> {
+                    when(msg.obj as Byte){
+                        0x00.toByte() ->{
+                            MaxForward = 50f
+                        }
+                        0x01.toByte() ->{
+                            MaxForward = 25f
+                        }
+                    }
+                }
+                UsbSerialService.MSG_ERROR ->{
+                    Toast.makeText(this@MainActivity, "USB가 정상적으로 연결되었는지 확인해주세요.",Toast.LENGTH_LONG).show()
+                    Thread.sleep(3000)
+                    unbindUsbSerialService()
+                    android.os.Process.killProcess(android.os.Process.myPid())
+                }
+                UsbSerialService.MSG_ROBOT_SERIAL_SEND -> {
+                    sendProtocolToRobot(msg.obj as ByteArray)
+                    Log.d("send", "handler_send : ${HexDump.toHexString(msg.obj as ByteArray)}\t")
+                }
+                ProtocolMode.FEEDPos.byte.toInt() -> {
+                    motorControllerParser.parser(msg.obj as ByteArray)
+                }
                 else -> super.handleMessage(msg)
             }
         }
@@ -257,19 +348,19 @@ class MainActivity : AppCompatActivity() {
             when (msg.what) {
                 SerialService.MSG_SERIAL_CONNECT -> {
 //                    loadingView.show()
-                    isFeedBack = true
-                    feedback()
-                    Thread.sleep(1000)
-                    observeMotorState()
-                    observeWasteState()
-                    Thread.sleep(1000)
+//                    isFeedBack = true
+//                    feedback()
+//                    Thread.sleep(1000)
+//                    observeMotorState()
+//                    observeWasteState()
+//                    Thread.sleep(1000)
 //                    initWaistPosition()
 //                    initsetLegPosition()
 
                 }
-                ProtocolMode.FEEDPos.byte.toInt() -> {
-                    motorControllerParser.parser(msg.obj as ByteArray)
-                }
+//                ProtocolMode.FEEDPos.byte.toInt() -> {
+//                    motorControllerParser.parser(msg.obj as ByteArray)
+//                }
                 else -> super.handleMessage(msg)
             }
         }
@@ -919,8 +1010,7 @@ class MainActivity : AppCompatActivity() {
     //원래 속도
 //    val MaxForward: Float = 40f / 5   //1326.9645
     //분당 약 30m
-    val MaxForward: Float = 50f   //1326.9645
-
+    var MaxForward: Float = 50f   //1326.9645
     //기존 방향과 반대
     private fun getRPMMath(coordinate: JoystickCoordinate): MotorRPMInfo {
         val ret: MotorRPMInfo = MotorRPMInfo()
@@ -1142,7 +1232,6 @@ class MainActivity : AppCompatActivity() {
         for (i in CareRobotMC.Left_Shoulder.byte..CareRobotMC.Left_Wheel.byte) {
             sendParser.ControlAcceleratedSpeed(i.toByte(), Direction.CCW.direction, 0f, 0.1f)
             sharedViewModel.sendProtocolMap[i.toByte()] = sendParser.Data!!.clone()
-
 //            sendProtocolToSerial(nuriMC.Data!!.clone())
 //            Thread.sleep(20)
         }
@@ -1755,115 +1844,6 @@ class MainActivity : AppCompatActivity() {
         changeRobotPositionThread.join()
     }
 
-    lateinit var observeWaistThread: Thread
-    var isInitePosition = true
-    var isSetPosition = true
-    var count = 0
-
-    lateinit var observeLegStateThread: Thread
-    private var setLeg = false
-    private var initLeg = false
-    private fun initsetLegPosition() {
-        observeLegStateThread = Thread {
-            setLeg = false
-            initLeg = false
-            val nuriMC = NurirobotMC()
-            while (true) {
-                if (sharedViewModel.motorInfo[CareRobotMC.Leg_Sensor.byte] == null) {
-                    Thread.sleep(1000)
-                } else {
-                    val first_legInfo = sharedViewModel.motorInfo[CareRobotMC.Leg_Sensor.byte]
-                    Log.d("이정민", "${first_legInfo?.sensorData}")
-                    Thread.sleep(5)
-                    if (first_legInfo!!.sensorData == 0.toByte()) {
-                        while (!initLeg) {
-                            val init_legInfo =
-                                sharedViewModel.motorInfo[CareRobotMC.Leg_Sensor.byte]
-                            if (init_legInfo!!.sensorData == 0.toByte()) {
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Leg_Angle.byte,
-                                    Direction.CCW.direction,
-                                    0.5f,
-                                    0.1f
-                                )
-                                val data = nuriMC.Data!!.clone()
-                                val msg =
-                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-                                dataHandler.sendMessage(msg)
-                                Thread.sleep(15)
-                            } else {
-                                Log.d("이정민", "모우기 stopMotor")
-                                stopMotor(CareRobotMC.Leg_Angle.byte)
-                                initLeg = true
-                                setLeg = true
-                                break
-                            }
-
-                        }
-                    } else {
-                        while (!initLeg) {
-                            val init_legInfo =
-                                sharedViewModel.motorInfo[CareRobotMC.Leg_Sensor.byte]
-                            if (init_legInfo!!.sensorData == 1.toByte()) {
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Leg_Angle.byte,
-                                    Direction.CW.direction,
-                                    0.5f,
-                                    0.1f
-                                )
-                                val data = nuriMC.Data!!.clone()
-                                val msg =
-                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-                                dataHandler.sendMessage(msg)
-                                Thread.sleep(15)
-                            } else {
-                                Log.d(
-                                    "이정민", "벌리기 " +
-                                            "stopMotor"
-                                )
-                                stopMotor(CareRobotMC.Leg_Angle.byte)
-                                initLeg = true
-                                setLeg = true
-                                break
-                            }
-
-                        }
-                    }
-
-                    if (setLeg) {
-//                        nuriMC.ControlPosSpeed(
-//                            CareRobotMC.Leg_Angle.byte,
-//                            Direction.CCW.direction,
-//                            25f,
-//                            2f
-//                        )
-//                        val data = nuriMC.Data!!.clone()
-//                        val msg =
-//                            dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-//                        dataHandler.sendMessage(msg)
-                        Thread.sleep(1000)
-                        for (i in 0..10) {
-                            nuriMC.ResetPostion(CareRobotMC.Leg_Angle.byte)
-                            val data = nuriMC.Data!!.clone()
-                            val msg =
-                                dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-                            dataHandler.sendMessage(msg)
-                            Log.d("이정민", "두번째 끝:${i}")
-                            Thread.sleep(100)
-                        }
-                        runOnUiThread {
-                            loadingView.dismiss()
-                        }
-                        break
-                    }
-
-                }
-
-            }
-        }
-        observeLegStateThread.start()
-    }
-
     var feedBackMotorStateInfoThread: Thread? = null
     var isFeedBack = false
     var isAnotherJob = false
@@ -1902,8 +1882,8 @@ class MainActivity : AppCompatActivity() {
                             sendParser.Feedback(i, ProtocolMode.REQPos.byte)
                             val data = sendParser.Data!!.clone()
                             val msg =
-                                dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-                            dataHandler.sendMessage(msg)
+                                usbSerialHandler.obtainMessage(UsbSerialService.MSG_ROBOT_SERIAL_SEND, data)
+                            usbSerialHandler.sendMessage(msg)
                             Log.d(
                                 "feedback",
                                 "handler_send : ${HexDump.toHexString(msg.obj as ByteArray)}\t"
@@ -1916,11 +1896,11 @@ class MainActivity : AppCompatActivity() {
                         for (i in sharedViewModel.sendProtocolMap) {
                             if (!sharedViewModel.exProtocolMap[i.key].contentEquals(i.value)) {
                                 val msg =
-                                    dataHandler.obtainMessage(
-                                        SerialService.MSG_SERIAL_SEND,
+                                    usbSerialHandler.obtainMessage(
+                                        UsbSerialService.MSG_ROBOT_SERIAL_SEND,
                                         i.value
                                     )
-                                dataHandler.sendMessage(msg)
+                                usbSerialHandler.sendMessage(msg)
                             } else {
                                 if (sharedViewModel.isControl.get() == CareRobotMC.Waist_Sensor.byte.toInt())
                                     if (!feedbackWaistList.contains(i.key))
@@ -1929,8 +1909,8 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Feedback(i.key, ProtocolMode.REQPos.byte)
                                 val data = sendParser.Data!!.clone()
                                 val msg =
-                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-                                dataHandler.sendMessage(msg)
+                                    usbSerialHandler.obtainMessage(UsbSerialService.MSG_ROBOT_SERIAL_SEND, data)
+                                usbSerialHandler.sendMessage(msg)
                                 sharedViewModel.sendProtocolMap[i.key] = data
                             }
 
@@ -1966,105 +1946,47 @@ class MainActivity : AppCompatActivity() {
         feedBackMotorStateInfoThread?.start()
     }
 
-    val dataHandler = object : Handler(Looper.getMainLooper()) {
-        override fun handleMessage(msg: Message) {
-            when (msg.what) {
-                SerialService.MSG_SERIAL_SEND -> {
-                    sendProtocolToSerial(msg.obj as ByteArray)
-                    Log.d("send", "handler_send : ${HexDump.toHexString(msg.obj as ByteArray)}\t")
-
-                }
-                SerialService.MSG_STOP_MOTOR -> {
-                    stopMotor(msg.obj as Byte)
-                }
-                SerialService.MSG_ERROR -> {
-                    Toast.makeText(
-                        this@MainActivity,
-                        "시리얼 포트가 정상 연결되었습니다.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-        }
-    }
-
-    lateinit var initWaistThread: Thread
-    private var setWaist = false
-    private var initWaist = false
-    private fun initWaistPosition() {
-        initWaistThread = Thread {
-            setWaist = false
-            initWaist = false
-            val nuriMC = NurirobotMC()
-            while (true) {
-                if (sharedViewModel.motorInfo[CareRobotMC.Waist_Sensor.byte] == null &&
-                    sharedViewModel.motorInfo[CareRobotMC.Waist.byte] == null
-                ) {
-                    Thread.sleep(200)
-                } else {
-                    sharedViewModel.motorInfo[CareRobotMC.Waist_Sensor.byte]
-                    Thread.sleep(5)
-                    // 센서 신호가 안들어올때
-                    if (sharedViewModel.motorInfo[CareRobotMC.Waist_Sensor.byte]!!.sensorData
-                        == 0.toByte()
-                    ) {
-                        while (!initWaist) {
-                            val sensorInfo =
-                                sharedViewModel.motorInfo[CareRobotMC.Waist_Sensor.byte]
-                            // 센서 신호가 안들어올때
-                            if (sensorInfo!!.sensorData == 0.toByte()) {
-                                //1. 허리를 위로 올림
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Waist.byte,
-                                    Direction.CW.direction,
-                                    2f,
-                                    1f
-                                )
-                                val data = nuriMC.Data!!.clone()
-                                val msg =
-                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-                                dataHandler.sendMessage(msg)
-                            } else {
-                                //2. 센서 신호가 들어올때 모터를 멈추고 while문 빠져나감
-                                Log.d("이정민", "모우기 stopMotor")
-                                stopMotor(CareRobotMC.Waist.byte)
-                                initWaist = true
-                                break
-                            }
-                            Thread.sleep(20)
-                        }
-
-//                        while (initWaist){
-//                            val motorInfo = sharedViewModel.motorInfo[CareRobotMC.Waist.byte]
+//    val dataHandler = object : Handler(Looper.getMainLooper()) {
+//        override fun handleMessage(msg: Message) {
+//            when (msg.what) {
+//                SerialService.MSG_SERIAL_SEND -> {
+//                    sendProtocolToSerial(msg.obj as ByteArray)
+//                    Log.d("send", "handler_send : ${HexDump.toHexString(msg.obj as ByteArray)}\t")
 //
-//                            setWaist = true
-//                        }
+//                }
+//                SerialService.MSG_STOP_MOTOR -> {
+//                    stopMotor(msg.obj as Byte)
+//                }
+//                SerialService.MSG_ERROR -> {
+//                    Toast.makeText(
+//                        this@MainActivity,
+//                        "시리얼 포트가 정상 연결되었습니다.",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
+//            }
+//        }
+//    }
 
-                    }
 
-
-                    if (setWaist) {
-                        Thread.sleep(1000)
-                        for (i in 0..10) {
-                            nuriMC.ResetPostion(CareRobotMC.Waist.byte)
-                            val data = nuriMC.Data!!.clone()
-                            val msg =
-                                dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-                            dataHandler.sendMessage(msg)
-                            Log.d("이정민", "두번째 끝:${i}")
-                            Thread.sleep(100)
-                        }
-                        runOnUiThread {
-                            loadingView.dismiss()
-                        }
-                        break
-                    }
-
-                }
-
-            }
-        }
-        initWaistThread.start()
+    fun showHeartAnimation(){
+        heartDialogFragment.show(supportFragmentManager,"")
     }
+    fun sendProtocolToPC(data: ByteArray) {
+        val msg = Message.obtain(null, UsbSerialService.MSG_PC_SERIAL_SEND)
+        val bundle = Bundle()
+        bundle.putByteArray("", data)
+        msg.data = bundle
+        usbSerialService?.send(msg)
+    }
+
+    fun sendProtocolToRobot(data: ByteArray) {
+        val msg = Message.obtain(null, UsbSerialService.MSG_ROBOT_SERIAL_SEND)
+        val bundle = Bundle()
+        bundle.putByteArray("", data)
+        msg.data = bundle
+        usbSerialService?.send(msg)
+    }
+
 
 }

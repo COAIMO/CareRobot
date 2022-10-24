@@ -62,7 +62,7 @@ enum class PC_ProtocolMode(val byte: Byte) {
     StopRobot(0x00),
     MoveRobot(0x01),
     SETSPEED(0x02),
-    FEEDSPEECH(0xAF.toByte());
+    FEEDSPEECH(0x03.toByte());
 
 
 

@@ -6,13 +6,19 @@ import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.AnimationDrawable
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.MutableLiveData
 import com.samin.carerobot.Logics.SharedViewModel
+import com.samin.carerobot.Nuri.PC_Protocol
+import com.samin.carerobot.Nuri.SpeechMode
 import com.samin.carerobot.databinding.FragmentSelectModeBinding
 import java.util.*
 import kotlin.concurrent.timer
@@ -35,7 +41,7 @@ class SelectModeFragment : Fragment() {
     private var activity: MainActivity? = null
     private lateinit var selectedModeFragment: SelectedModeFragment
     private val sharedViewModel by activityViewModels<SharedViewModel>()
-
+    private val sendParser = PC_Protocol()
     override fun onAttach(context: Context) {
         super.onAttach(context)
         activity = getActivity() as MainActivity
@@ -49,7 +55,8 @@ class SelectModeFragment : Fragment() {
 
     override fun onDetach() {
         super.onDetach()
-        uiTimer.cancel()
+        uiTimer?.cancel()
+        micAutoOffTimer?.cancel()
         activity = null
         onBackPressedCallback.remove()
     }
@@ -62,6 +69,7 @@ class SelectModeFragment : Fragment() {
         }
     }
 
+    val pcProtocol = PC_Protocol()
     var isAnimate: Boolean = false
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -72,6 +80,8 @@ class SelectModeFragment : Fragment() {
         setButtonClickEvent()
         (parentFragment as MainFragment).initTopNaviButton()
         val animation = mBinding.ivMic.drawable as AnimatedVectorDrawable
+        ment.value = getString(R.string.main_ment)
+        activity?.showHeartAnimation()
 
         animation.registerAnimationCallback(object : Animatable2.AnimationCallback() {
             override fun onAnimationEnd(drawable: Drawable?) {
@@ -83,12 +93,44 @@ class SelectModeFragment : Fragment() {
 
         mBinding.ivMic.setOnClickListener {
             if (isAnimate) {
+                setUITimer()
+                micAutoOffTimer?.cancel()
+                ment.value = getString(R.string.mic_off_ment)
+                pcProtocol.setSpeech(SpeechMode.TOUCH_MIC_OFF.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
                 isAnimate = false
+                sharedViewModel.usingMic.value = false
                 (mBinding.ivMic.drawable as AnimatedVectorDrawable).stop()
-            }else{
-                (mBinding.ivMic.drawable as AnimatedVectorDrawable).start()
+            } else {
+                uiTimer?.purge()
+                uiTimer?.cancel()
+                ment.value = getString(R.string.mic_on_ment)
+                pcProtocol.setSpeech(SpeechMode.TOUCH_MIC_ON.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
                 isAnimate = true
+                sharedViewModel.usingMic.value = true
+                (mBinding.ivMic.drawable as AnimatedVectorDrawable).start()
             }
+        }
+
+        sharedViewModel.usingMic.observe(viewLifecycleOwner) {
+            if (it)
+                micAutoOffTimer = timer(period = 20000, initialDelay = 15000) {
+                    pcProtocol.setSpeech(SpeechMode.TOUCH_MIC_OFF.byte)
+                    val data = pcProtocol.Data!!.clone()
+                    activity?.sendProtocolToPC(data)
+                    isAnimate = false
+                    setUITimer()
+                    sharedViewModel.usingMic.postValue(false)
+                    (mBinding.ivMic.drawable as AnimatedVectorDrawable).stop()
+                    this.cancel()
+                }
+        }
+
+        ment.observe(viewLifecycleOwner) {
+            mBinding.tvMainment.text = it
         }
         setUITimer()
         return mBinding.root
@@ -111,21 +153,43 @@ class SelectModeFragment : Fragment() {
         mBinding.btnAllMode.setOnClickListener {
             onClick(mBinding.btnAllMode)
         }
+        mBinding.ivHeart1.setOnClickListener {
+            pcProtocol.setSpeech(SpeechMode.TOUCH_BUTTON_1.byte)
+            val data = pcProtocol.Data!!.clone()
+            activity?.sendProtocolToPC(data)
+        }
+        mBinding.ivHeart2.setOnClickListener {
+            pcProtocol.setSpeech(SpeechMode.TOUCH_BUTTON_2.byte)
+            val data = pcProtocol.Data!!.clone()
+            activity?.sendProtocolToPC(data)
+        }
     }
 
     private fun onClick(view: View) {
         when (view) {
             mBinding.btnCarryMode -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY
+                pcProtocol.setSpeech(SpeechMode.TOUCH_CARRYMODE.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
             }
             mBinding.btnBehaviorMode -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
+                pcProtocol.setSpeech(SpeechMode.TOUCH_BEHAVIORMODE.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
             }
             mBinding.btnChangeMode -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
+                pcProtocol.setSpeech(SpeechMode.TOUCH_CHANGEMODE.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
             }
             mBinding.btnAllMode -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
+                pcProtocol.setSpeech(SpeechMode.TOUCH_ALLMODE.byte)
+                val data = pcProtocol.Data!!.clone()
+                activity?.sendProtocolToPC(data)
             }
         }
         (parentFragment as MainFragment).childFragmentManager.beginTransaction().replace(
@@ -135,20 +199,51 @@ class SelectModeFragment : Fragment() {
 
     }
 
-    lateinit var uiTimer:Timer
+    var uiTimer: Timer? = null
+    var micAutoOffTimer: Timer? = null
     var mentIndex = 0
 
-    private fun setUITimer(){
-       uiTimer = timer(period = 4000, initialDelay = 1000){
-           mentIndex++
-           if (mentIndex > 1) mentIndex = 0
-           activity?.runOnUiThread {
-               when (mentIndex){
-                   0 -> mBinding.tvMainment.text = getString(R.string.main_ment)
-                   1 -> mBinding.tvMainment.text = getString(R.string.mic_off_ment)
-               }
-           }
-       }
+    private fun setUITimer() {
+        uiTimer = timer(period = 4000, initialDelay = 1000) {
+            mentIndex++
+            if (mentIndex > 1) mentIndex = 0
+            when (mentIndex) {
+//                0 -> mBinding.tvMainment.text = getString(R.string.main_ment)
+//                1 -> mBinding.tvMainment.text = getString(R.string.mic_off_ment)
+                0 -> {
+                    val msg = handler.obtainMessage().apply {
+                        what = 0
+                    }
+                    handler.sendMessage(msg)
+                }
+                1 -> {
+                    val msg = handler.obtainMessage().apply {
+                        what = 1
+                    }
+                    handler.sendMessage(msg)
+                }
+            }
+        }
+    }
+
+    val ment = MutableLiveData<String>()
+    val handler = object : Handler(Looper.getMainLooper()) {
+        override fun handleMessage(msg: Message) {
+            try {
+                when (msg.what) {
+                    0 -> {
+                        ment.value = getString(R.string.main_ment)
+                    }
+                    1 -> {
+                        ment.value = getString(R.string.mic_off_ment)
+                    }
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            super.handleMessage(msg)
+        }
     }
 
     companion object {

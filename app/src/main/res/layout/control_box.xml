@@ -92,17 +92,17 @@
 
 
     <ImageView
-        android:id="@+id/iv_shoulderMove"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:src="@drawable/shoulder_move"
-        android:background="@drawable/seperate_line"
-        app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.24"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/iv_wheelMove"
-        app:layout_constraintWidth_default="percent"
-        app:layout_constraintWidth_percent="0.35" />
+            android:id="@+id/iv_shoulderMove"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:src="@drawable/shoulder_move"
+            android:background="@drawable/seperate_line"
+            app:layout_constraintHeight_default="percent"
+            app:layout_constraintHeight_percent="0.24"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/iv_wheelMove"
+            app:layout_constraintWidth_default="percent"
+            app:layout_constraintWidth_percent="0.35" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/wheel_turn_control_layout"

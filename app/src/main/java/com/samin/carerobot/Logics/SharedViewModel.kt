@@ -55,5 +55,6 @@ class SharedViewModel:ViewModel() {
     val waistStateMap = ConcurrentHashMap<Byte, Int>()
     val sendProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
     val exProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
+    val usingMic = MutableLiveData<Boolean>()
 
 }

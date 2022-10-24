@@ -18,7 +18,9 @@
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/forward_ic.xml" value="0.3605" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/go_back_ic.xml" value="0.306" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/go_forward_ic.xml" value="0.306" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/heart_animation.xml" value="0.1545" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/home_ic.xml" value="0.3605" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/ic_heart_1.xml" value="0.13" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/ic_logout_ic.xml" value="0.3605" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/join_robot_ic.xml" value="0.269" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/drawable/login_edittext_background.xml" value="0.421" />
@@ -44,6 +46,7 @@
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_carry_mode.xml" value="0.27057291666666666" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_control.xml" value="0.22" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_find_account_info.xml" value="0.14817708333333332" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_heart_dialog.xml" value="0.15520833333333334" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_login.xml" value="0.14817708333333332" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_main.xml" value="0.1" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/fragment_new_account.xml" value="0.1" />
@@ -53,7 +56,7 @@
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/join_layout.xml" value="0.2" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/loading_dialog_veiw.xml" value="0.23333333333333334" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/login_layout.xml" value="0.18" />
-        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/selected_mode_layout.xml" value="0.33" />
+        <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/selected_mode_layout.xml" value="0.16" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/subtop_navigationbar.xml" value="0.33" />
         <entry key="..\:/Users/nuri0/CareRobot/app/src/main/res/layout/top_navigationbar.xml" value="0.2" />
       </map>

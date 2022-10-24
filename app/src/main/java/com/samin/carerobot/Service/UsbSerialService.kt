@@ -27,7 +27,9 @@ import com.samin.carerobot.Nuri.MovementMode
 import com.samin.carerobot.Nuri.PC_Protocol
 import com.samin.carerobot.Nuri.PC_ProtocolMode
 import com.samin.carerobot.Nuri.PCtoRobotMovement
+import kotlinx.coroutines.*
 import java.io.IOException
+import java.lang.Runnable
 
 class UsbSerialService : Service() {
     companion object {
@@ -48,8 +50,9 @@ class UsbSerialService : Service() {
         const val MSG_BIND_CLIENT = 2
         const val MSG_UNBIND_CLIENT = 3
         const val MSG_SERIAL_CONNECT = 4
-        const val MSG_SERIAL_SEND = 5
-        const val MSG_SERIAL_RECV = 6
+
+        //        const val MSG_SERIAL_SEND = 5
+//        const val MSG_SERIAL_RECV = 6
         const val MSG_SERIAL_DISCONNECT = 7
         const val MSG_NO_SERIAL = 8
         const val MSG_STOP_MOTOR = 9
@@ -60,9 +63,10 @@ class UsbSerialService : Service() {
         const val SERIALPORT_READY = 14
         const val MSG_STOP_ROBOT = 15
         const val MSG_MOVE_ROBOT = 16
+        const val MSG_SET_SPEED = 17
 
-        const val MSG_ROBOT_SERIAL_SEND = 14
-        const val MSG_PC_SERIAL_SEND = 15
+        const val MSG_ROBOT_SERIAL_SEND = 18
+        const val MSG_PC_SERIAL_SEND = 19
     }
 
     private var usbSerialPort_1: UsbSerialPort? = null
@@ -402,6 +406,7 @@ class UsbSerialService : Service() {
     }
 
     private fun disconnect() {
+        isFirst = true
         serialPort_1Connected = false
         serialPort_2Connected = false
         usbIoManager_1 = null
@@ -660,29 +665,10 @@ class UsbSerialService : Service() {
                 PC_ProtocolMode.MoveRobot.byte -> {
                     val message = Message.obtain(null, MSG_MOVE_ROBOT, receiveParser.Data!![6])
                     incomingHandler?.sendMSG(message)
-                    when(receiveParser.Data!![6]){
-                        MovementMode.GO_forward.byte->{
-
-                        }
-                        MovementMode.GO_backward.byte->{
-
-                        }
-                        MovementMode.TURN_Left.byte->{
-
-                        }
-                        MovementMode.TURN_Right.byte->{
-
-                        }
-                        MovementMode.UP_Lift.byte->{
-
-                        }
-                        MovementMode.DOWN_Lift.byte->{
-
-                        }
-                    }
                 }
                 PC_ProtocolMode.SETSPEED.byte -> {
-
+                    val message = Message.obtain(null, MSG_SET_SPEED, receiveParser.Data!![6])
+                    incomingHandler?.sendMSG(message)
                 }
                 PC_ProtocolMode.FEEDSPEECH.byte -> {
 
@@ -698,14 +684,53 @@ class UsbSerialService : Service() {
         CareRobotMC.Waist_Sensor.byte
     )
 
+    lateinit var checkPortThread: Thread
     private fun checkPort() {
         val sendParser = NurirobotMC()
-        for (i in feedbackallList) {
-            sendParser.Feedback(i, ProtocolMode.REQPing.byte)
-            val data = sendParser.Data!!.clone()
-            port1_SendData(data)
-            port2_SendData(data)
-            Thread.sleep(100)
+        val startTime = System.currentTimeMillis()
+        CoroutineScope(Dispatchers.IO).launch {
+            async {
+                while (true) {
+                    if (isFirst){
+                        val curr = System.currentTimeMillis()
+                        for (i in feedbackallList) {
+                            sendParser.Feedback(i, ProtocolMode.REQPing.byte)
+                            val data = sendParser.Data!!.clone()
+                            port1_SendData(data)
+                            delay(100)
+                        }
+
+                        if (curr > startTime + 3000) {
+                            disconnect()
+                            delay(500)
+                            serialPortConnect(PORT2_BAUD_RATE, PORT1_BAUD_RATE)
+                            delay(500)
+                            break
+                        }
+                    }else break
+                }
+            }.await()
+            async {
+                val startTime_2 = System.currentTimeMillis()
+
+                while (true) {
+                    if (isFirst){
+                        val curr = System.currentTimeMillis()
+                        for (i in feedbackallList) {
+                            sendParser.Feedback(i, ProtocolMode.REQPing.byte)
+                            val data = sendParser.Data!!.clone()
+                            port2_SendData(data)
+                            delay(100)
+                        }
+
+                        if (curr > startTime_2 + 3000) {
+                            val message = Message.obtain(null, MSG_ERROR)
+                            incomingHandler?.sendMSG(message)
+                            break
+                        }
+                    }else break
+                }
+            }
         }
 
     }
@@ -725,19 +750,37 @@ class UsbSerialService : Service() {
                     findUSBSerialDevice()
                 }
                 MSG_UNBIND_CLIENT -> clients.remove(msg.replyTo)
-                MSG_SERIAL_SEND -> {
-                    val t = serialPortConnected
+//                MSG_SERIAL_SEND -> {
+//                    val t = serialPortConnected
 //                    msg.data.getByteArray("")?.let { sendData(it) }
-                }
-                SERIALPORT_CHK_CONNECTED -> {
-                    Toast.makeText(context, msg.obj.toString(), Toast.LENGTH_SHORT).show()
-                }
+//                }
+//                SERIALPORT_CHK_CONNECTED -> {
+//                    Toast.makeText(context, msg.obj.toString(), Toast.LENGTH_SHORT).show()
+//                }
 
                 SERIALPORT_CONNECT -> checkPort()
                 SERIALPORT_READY -> {
                     isFirst = false
+                    sendSerialReady()
+                }
+
+                MSG_PC_SERIAL_SEND -> {
+                    msg.data.getByteArray("").let {
+                        pc_SendData(it!!)
+                    }
+                }
+                MSG_ROBOT_SERIAL_SEND -> {
+                    msg.data.getByteArray("").let {
+                        robot_SendData(it!!)
+                    }
                 }
                 else -> super.handleMessage(msg)
+            }
+        }
+        fun sendSerialReady(){
+            val message = Message.obtain(null, SERIALPORT_READY, null)
+            clients.forEach {
+                it.send(message)
             }
         }
 
@@ -794,22 +837,28 @@ class UsbSerialService : Service() {
     inner class Port1_SerialListener() : SerialInputOutputManager.Listener {
         private lateinit var ioManager: SerialInputOutputManager
         override fun onNewData(data: ByteArray?) {
-            if (data != null) {
-                if (isFirst) {
-                    parseCheckData(data)
-                } else {
-                    if (usbIoManager_1 == robotIOManager) {
-                        parseReceiveRobotData(data)
+            try {
+                if (data != null) {
+                    if (isFirst) {
+                        parseCheckData(data)
                     } else {
-                        parseReceivePCData(data)
+                        if (usbIoManager_1 == robotIOManager) {
+                            parseReceiveRobotData(data)
+                        } else {
+                            parseReceivePCData(data)
+                        }
                     }
+                    Log.d("TEST", "port1_recv : ${HexDump.dumpHexString(data)}")
                 }
-                Log.d("TEST", "port1_recv : ${HexDump.dumpHexString(data)}")
+            } catch (e: Exception) {
             }
         }
 
         override fun onRunError(e: java.lang.Exception?) {
-            TODO("Not yet implemented")
+            try {
+                e?.printStackTrace()
+            } catch (e: Exception) {
+            }
         }
 
         private fun parseCheckData(data: ByteArray) {
@@ -905,24 +954,29 @@ class UsbSerialService : Service() {
     }
 
     inner class Port2_SerialListener() : SerialInputOutputManager.Listener {
-        private lateinit var ioManager: SerialInputOutputManager
         override fun onNewData(data: ByteArray?) {
-            if (data != null) {
-                if (isFirst) {
-                    parseCheckData(data)
-                } else {
-                    if (usbIoManager_2 == robotIOManager) {
-                        parseReceiveRobotData(data)
+            try {
+                if (data != null) {
+                    if (isFirst) {
+                        parseCheckData(data)
                     } else {
-                        parseReceivePCData(data)
+                        if (usbIoManager_2 == robotIOManager) {
+                            parseReceiveRobotData(data)
+                        } else {
+                            parseReceivePCData(data)
+                        }
                     }
+                    Log.d("TEST", "port2_recv : ${HexDump.dumpHexString(data)}")
                 }
-                Log.d("TEST", "port2_recv : ${HexDump.dumpHexString(data)}")
+            } catch (e: Exception) {
             }
         }
 
         override fun onRunError(e: java.lang.Exception?) {
-            TODO("Not yet implemented")
+            try {
+                e?.printStackTrace()
+            } catch (e: Exception) {
+            }
         }
 
         private fun parseCheckData(data: ByteArray) {

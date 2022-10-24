@@ -90,4 +90,7 @@ class PC_Protocol : ICommand {
         }
 
     }
+    fun setSpeech(data:Byte){
+        BuildProtocol(0x01, 0x03, 0x03.toByte(), byteArrayOf(data))
+    }
 }
