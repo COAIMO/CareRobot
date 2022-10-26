@@ -833,7 +833,7 @@ class MainActivity : AppCompatActivity() {
 
     //원래 속도
 //    val MaxForward: Float = 40f / 5   //1326.9645
-    //분당 약 30m
+    //분당 약 18m
     val MaxForward: Float = 29f   //1326.9645
 
     //기존 방향과 반대
@@ -884,8 +884,8 @@ class MainActivity : AppCompatActivity() {
             ret.RightDirection = Direction.CW
         } else if (joy_x == 0f && joy_y < 0) {
             //후진
-            left = MaxForward * r * 0.66f
-            right = MaxForward * r * 0.66f
+            left = MaxForward * r *0.66f
+            right = MaxForward * r *0.66f
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CCW
         } else if (joy_y == 0f && joy_x > 0) {
