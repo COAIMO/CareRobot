@@ -834,7 +834,7 @@ class MainActivity : AppCompatActivity() {
     //원래 속도
 //    val MaxForward: Float = 40f / 5   //1326.9645
     //분당 약 30m
-    val MaxForward: Float = 50f   //1326.9645
+    val MaxForward: Float = 29f   //1326.9645
 
     //기존 방향과 반대
     private fun getRPMMath(coordinate: JoystickCoordinate): MotorRPMInfo {
@@ -884,8 +884,8 @@ class MainActivity : AppCompatActivity() {
             ret.RightDirection = Direction.CW
         } else if (joy_x == 0f && joy_y < 0) {
             //후진
-            left = MaxForward * r / 2
-            right = MaxForward * r / 2
+            left = MaxForward * r * 0.66f
+            right = MaxForward * r * 0.66f
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CCW
         } else if (joy_y == 0f && joy_x > 0) {
