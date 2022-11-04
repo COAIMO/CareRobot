@@ -270,40 +270,46 @@ class ControlFragment : Fragment() {
         val nuriMC = NurirobotMC()
         when (view) {
             mBinding.btnGoBack -> {
-                val sedate = ByteArray(20)
+//                val sedate = ByteArray(20)
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Left_Wheel.byte,
                     Direction.CW.direction,
                     5f,
                     0.1f
                 )
-                nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+//                nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] = nuriMC.Data!!.clone()
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Right_Wheel.byte,
                     Direction.CCW.direction,
                     5f,
                     0.1f
                 )
-                nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                activity?.sendProtocolToSerial(sedate)
+                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                    nuriMC.Data!!.clone()
+//                nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                activity?.sendProtocolToSerial(sedate)
             }
             mBinding.btnGoForward -> {
-                val sedate = ByteArray(20)
+//                val sedate = ByteArray(20)
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Left_Wheel.byte,
                     Direction.CCW.direction,
                     5f,
                     0.1f
                 )
-                nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+//                nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] = nuriMC.Data!!.clone()
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Right_Wheel.byte,
                     Direction.CW.direction,
                     5f,
                     0.1f
                 )
-                nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                activity?.sendProtocolToSerial(sedate)
+//                nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                activity?.sendProtocolToSerial(sedate)
+                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                    nuriMC.Data!!.clone()
             }
             mBinding.btnTurnLeft -> {
                 val sedate = ByteArray(20)
@@ -313,36 +319,42 @@ class ControlFragment : Fragment() {
                     5f,
                     0.1f
                 )
-                nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+//                nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] = nuriMC.Data!!.clone()
                 nuriMC.ControlAcceleratedSpeed(
-                    CareRobotMC.Left_Wheel.byte,
+                    CareRobotMC.Right_Wheel.byte,
                     Direction.CW.direction,
                     5f,
                     0.1f
                 )
-                nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                activity?.sendProtocolToSerial(sedate)
+//                nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                activity?.sendProtocolToSerial(sedate)
+                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                    nuriMC.Data!!.clone()
             }
             mBinding.btnTurnRight -> {
-                val sedate = ByteArray(20)
+//                val sedate = ByteArray(20)
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Left_Wheel.byte,
                     Direction.CCW.direction,
                     5f,
                     0.1f
                 )
-                nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+//                nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] = nuriMC.Data!!.clone()
                 nuriMC.ControlAcceleratedSpeed(
-                    CareRobotMC.Left_Wheel.byte,
+                    CareRobotMC.Right_Wheel.byte,
                     Direction.CCW.direction,
                     5f,
                     0.1f
                 )
-                nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-                activity?.sendProtocolToSerial(sedate)
+//                nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                activity?.sendProtocolToSerial(sedate)
+                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                    nuriMC.Data!!.clone()
             }
             mBinding.btnStop1 -> {
-                stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
+                activity?.stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
             }
             mBinding.btnRotateLeft -> {
                 when (selectedShoulderMode) {
@@ -354,7 +366,9 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.controlDirection = Direction.CW
-                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+//                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+                        sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                            nuriMC.Data!!.clone()
                     }
                     ControlMode.Right.byte -> {
                         nuriMC.ControlAcceleratedSpeed(
@@ -364,26 +378,32 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.controlDirection = Direction.CW
-                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+//                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+                        sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                            nuriMC.Data!!.clone()
                     }
                     ControlMode.Both.byte -> {
-                        val sedate = ByteArray(20)
+//                        val sedate = ByteArray(20)
                         nuriMC.ControlAcceleratedSpeed(
                             CareRobotMC.Left_Shoulder.byte,
                             Direction.CW.direction,
                             1f,
                             0.1f
                         )
-                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+//                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+                        sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                            nuriMC.Data!!.clone()
                         nuriMC.ControlAcceleratedSpeed(
                             CareRobotMC.Right_Shoulder.byte,
                             Direction.CW.direction,
                             1f,
                             0.1f
                         )
-                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                        activity?.sendProtocolToSerial(sedate)
                         sharedViewModel.controlDirection = Direction.CW
-                        activity?.sendProtocolToSerial(sedate)
+                        sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                            nuriMC.Data!!.clone()
                     }
                 }
             }
@@ -397,7 +417,9 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.controlDirection = Direction.CCW
-                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+//                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+                        sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                            nuriMC.Data!!.clone()
                     }
                     ControlMode.Right.byte -> {
                         nuriMC.ControlAcceleratedSpeed(
@@ -407,32 +429,38 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.controlDirection = Direction.CCW
-                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+//                        activity?.sendProtocolToSerial(nuriMC.Data!!)
+                        sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                            nuriMC.Data!!.clone()
                     }
                     ControlMode.Both.byte -> {
-                        val sedate = ByteArray(20)
+//                        val sedate = ByteArray(20)
                         nuriMC.ControlAcceleratedSpeed(
                             CareRobotMC.Left_Shoulder.byte,
                             Direction.CCW.direction,
                             1f,
                             0.1f
                         )
-                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+//                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
+                        sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                            nuriMC.Data!!.clone()
                         nuriMC.ControlAcceleratedSpeed(
                             CareRobotMC.Right_Shoulder.byte,
                             Direction.CCW.direction,
                             1f,
                             0.1f
                         )
-                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
+//                        activity?.sendProtocolToSerial(sedate)
                         sharedViewModel.controlDirection = Direction.CCW
-                        activity?.sendProtocolToSerial(sedate)
+                        sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                            nuriMC.Data!!.clone()
                     }
                 }
 
             }
             mBinding.btnStop2 -> {
-                stopMotor(CareRobotMC.Left_Shoulder.byte, CareRobotMC.Right_Shoulder.byte)
+                activity?.stopMotor(CareRobotMC.Left_Shoulder.byte, CareRobotMC.Right_Shoulder.byte)
             }
             mBinding.btnWaistUp -> {
 //                nuriMC.ControlPosSpeed(CareRobotMC.Waist.byte, Direction.CW.direction, 360f, 0.1f)
@@ -443,7 +471,9 @@ class ControlFragment : Fragment() {
                     70f,
                     0.1f
                 )
-                activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
+//                activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
+                sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
+                    nuriMC.Data!!.clone()
             }
             mBinding.btnWaistDown -> {
 //                nuriMC.ControlPosSpeed(CareRobotMC.Waist.byte, Direction.CCW.direction, 360f, 0.1f)
@@ -454,110 +484,13 @@ class ControlFragment : Fragment() {
                     70f,
                     0.1f
                 )
-                activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
+//                activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
+                sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
+                    nuriMC.Data!!.clone()
             }
             mBinding.btnStop3 -> {
-                stopMotor(CareRobotMC.Waist.byte)
+                activity?.stopMotor(CareRobotMC.Waist.byte)
             }
-//            mBinding.btnElbowUp -> {
-//                when (selectedElbowMode) {
-//                    ControlMode.Left.byte -> {
-//                        nuriMC.ControlAcceleratedSpeed(
-//                            CareRobotMC.Left_Elbow.byte,
-//                            Direction.CW.direction,
-//                            1f,
-//                            0.1f
-//                        )
-//                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
-//                    }
-//                    ControlMode.Right.byte -> {
-//                        nuriMC.ControlAcceleratedSpeed(
-//                            CareRobotMC.Right_Elbow.byte,
-//                            Direction.CCW.direction,
-//                            1f,
-//                            0.1f
-//                        )
-//                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
-//                    }
-//                    ControlMode.Both.byte -> {
-//                        val sedate = ByteArray(20)
-//                        nuriMC.ControlAcceleratedSpeed(
-//                            CareRobotMC.Left_Elbow.byte,
-//                            Direction.CW.direction,
-//                            1f,
-//                            0.1f
-//                        )
-//                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
-//                        nuriMC.ControlAcceleratedSpeed(
-//                            CareRobotMC.Right_Elbow.byte,
-//                            Direction.CCW.direction,
-//                            1f,
-//                            0.1f
-//                        )
-//                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-//                        activity?.sendProtocolToSerial(sedate)
-//                    }
-//                }
-//            }
-//            mBinding.btnElbowDown -> {
-//                when (selectedElbowMode) {
-//                    ControlMode.Left.byte -> {
-//                        nuriMC.ControlAcceleratedSpeed(
-//                            CareRobotMC.Left_Elbow.byte,
-//                            Direction.CCW.direction,
-//                            1f,
-//                            0.1f
-//                        )
-//                        activity?.sendProtocolToSerial(nuriMC.Data!!)
-//                    }
-//                    ControlMode.Right.byte -> {
-//                        nuriMC.ControlAcceleratedSpeed(
-//                            CareRobotMC.Right_Elbow.byte,
-//                            Direction.CW.direction,
-//                            1f,
-//                            0.1f
-//                        )
-//                        activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
-//                    }
-//                    ControlMode.Both.byte -> {
-//                        val sedate = ByteArray(20)
-//                        nuriMC.ControlAcceleratedSpeed(
-//                            CareRobotMC.Left_Elbow.byte,
-//                            Direction.CCW.direction,
-//                            1f,
-//                            0.1f
-//                        )
-//                        nuriMC.Data!!.copyInto(sedate, 0, 0, nuriMC.Data!!.size)
-//                        nuriMC.ControlAcceleratedSpeed(
-//                            CareRobotMC.Right_Elbow.byte,
-//                            Direction.CW.direction,
-//                            1f,
-//                            0.1f
-//                        )
-//                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-//                        activity?.sendProtocolToSerial(sedate)
-//                    }
-//                }
-//            }
-//            mBinding.btnStop4 -> {
-//                stopMotor(CareRobotMC.Left_Elbow.byte, CareRobotMC.Right_Elbow.byte)
-//            }
-        }
-
-    }
-
-    private fun stopMotor(id_1: Byte, id_2: Byte? = null) {
-        val nuriMC = NurirobotMC()
-        if (id_2 == null) {
-            nuriMC.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
-            activity?.sendProtocolToSerial(nuriMC.Data!!.clone())
-        } else {
-            val sedate = ByteArray(20)
-            nuriMC.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
-            nuriMC.Data!!.clone().copyInto(sedate, 0, 0, nuriMC.Data!!.size)
-            nuriMC.ControlAcceleratedSpeed(id_2, Direction.CCW.direction, 0f, 0.1f)
-            nuriMC.Data!!.clone().copyInto(sedate, 10, 0, nuriMC.Data!!.size)
-            activity?.sendProtocolToSerial(sedate)
         }
     }
 

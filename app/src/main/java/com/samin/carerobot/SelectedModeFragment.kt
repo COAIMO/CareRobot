@@ -155,7 +155,8 @@ class SelectedModeFragment : Fragment() {
         laodingView = LoadingDialog(requireContext())
         when (view) {
             mBinding.btnHeavy -> {
-                activity?.robotModeChange(1, SharedViewModel.MODE_CARRY_HEAVY)
+//                activity?.robotModeChange(1, SharedViewModel.MODE_CARRY_HEAVY)
+                sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY_HEAVY
             }
             mBinding.btnHeight -> {
                 activity?.robotModeChange(1, SharedViewModel.MODE_CARRY_HEIGHT)
