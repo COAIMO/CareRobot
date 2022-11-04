@@ -65,6 +65,9 @@ class HeartDialogFragment : DialogFragment() {
         val animation = mBinding.ivHeart.drawable as AnimationDrawable
         animation.start()
 
+        mBinding.ivHeart.setOnClickListener {
+            this@HeartDialogFragment.dismiss()
+        }
         return mBinding.root
     }
     val pcProtocol = PC_Protocol()

@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity() {
                     "USB Permission Not granted",
                     Toast.LENGTH_SHORT
                 ).show()
-                UsbManager.ACTION_USB_DEVICE_DETACHED ->{
+                UsbManager.ACTION_USB_DEVICE_DETACHED -> {
                     unbindUsbSerialService()
                     android.os.Process.killProcess(android.os.Process.myPid())
                 }
@@ -178,20 +178,20 @@ class MainActivity : AppCompatActivity() {
     private val usbSerialHandler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
             when (msg.what) {
-                UsbSerialService.SERIALPORT_READY ->{
+                UsbSerialService.SERIALPORT_READY -> {
                     isFeedBack = true
                     feedback()
                     observeMotorState()
                     observeWasteState()
                 }
-                UsbSerialService.MSG_STOP_ROBOT ->{
-                    for (i in 0..2){
+                UsbSerialService.MSG_STOP_ROBOT -> {
+                    for (i in 0..2) {
                         stopRobot()
                     }
                 }
-                UsbSerialService.MSG_MOVE_ROBOT ->{
-                    when(msg.obj as Byte){
-                        MovementMode.GO_forward.byte->{
+                UsbSerialService.MSG_MOVE_ROBOT -> {
+                    when (msg.obj as Byte) {
+                        MovementMode.GO_forward.byte -> {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CCW.direction,
@@ -209,11 +209,11 @@ class MainActivity : AppCompatActivity() {
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
                                 sendParser.Data!!.clone()
                         }
-                        MovementMode.GO_backward.byte->{
+                        MovementMode.GO_backward.byte -> {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CW.direction,
-                                MaxForward/2,
+                                MaxForward / 2,
                                 2f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
@@ -221,17 +221,17 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
                                 Direction.CCW.direction,
-                                MaxForward/2,
+                                MaxForward / 2,
                                 2f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
                                 sendParser.Data!!.clone()
                         }
-                        MovementMode.TURN_Left.byte->{
+                        MovementMode.TURN_Left.byte -> {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CW.direction,
-                                MaxForward/7,
+                                MaxForward / 7,
                                 0.1f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
@@ -239,17 +239,17 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
                                 Direction.CW.direction,
-                                MaxForward/7,
+                                MaxForward / 7,
                                 0.1f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
                                 sendParser.Data!!.clone()
                         }
-                        MovementMode.TURN_Right.byte->{
+                        MovementMode.TURN_Right.byte -> {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CCW.direction,
-                                MaxForward/7,
+                                MaxForward / 7,
                                 0.1f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
@@ -257,13 +257,13 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
                                 Direction.CCW.direction,
-                                MaxForward/7,
+                                MaxForward / 7,
                                 0.1f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
                                 sendParser.Data!!.clone()
                         }
-                        MovementMode.UP_Lift.byte->{
+                        MovementMode.UP_Lift.byte -> {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Waist.byte,
                                 Direction.CW.direction,
@@ -273,7 +273,7 @@ class MainActivity : AppCompatActivity() {
                             sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
                                 sendParser.Data!!.clone()
                         }
-                        MovementMode.DOWN_Lift.byte->{
+                        MovementMode.DOWN_Lift.byte -> {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Waist.byte,
                                 Direction.CCW.direction,
@@ -287,17 +287,21 @@ class MainActivity : AppCompatActivity() {
 
                 }
                 UsbSerialService.MSG_SET_SPEED -> {
-                    when(msg.obj as Byte){
-                        0x00.toByte() ->{
-                            MaxForward = 50f
+                    when (msg.obj as Byte) {
+                        0x00.toByte() -> {
+                            MaxForward = 29f
                         }
-                        0x01.toByte() ->{
-                            MaxForward = 25f
+                        0x01.toByte() -> {
+                            MaxForward = 15f
                         }
                     }
                 }
-                UsbSerialService.MSG_ERROR ->{
-                    Toast.makeText(this@MainActivity, "USB가 정상적으로 연결되었는지 확인해주세요.",Toast.LENGTH_LONG).show()
+                UsbSerialService.MSG_ERROR -> {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "USB가 정상적으로 연결되었는지 확인해주세요.",
+                        Toast.LENGTH_LONG
+                    ).show()
                     Thread.sleep(3000)
                     unbindUsbSerialService()
                     android.os.Process.killProcess(android.os.Process.myPid())
@@ -1009,8 +1013,9 @@ class MainActivity : AppCompatActivity() {
 
     //원래 속도
 //    val MaxForward: Float = 40f / 5   //1326.9645
-    //분당 약 30m
-    var MaxForward: Float = 50f   //1326.9645
+    //분당 약 18m
+    var MaxForward: Float = 29f   //1326.9645
+
     //기존 방향과 반대
     private fun getRPMMath(coordinate: JoystickCoordinate): MotorRPMInfo {
         val ret: MotorRPMInfo = MotorRPMInfo()
@@ -1059,8 +1064,8 @@ class MainActivity : AppCompatActivity() {
             ret.RightDirection = Direction.CW
         } else if (joy_x == 0f && joy_y < 0) {
             //후진
-            left = MaxForward * r / 2
-            right = MaxForward * r / 2
+            left = MaxForward * r * 0.66f
+            right = MaxForward * r * 0.66f
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CCW
         } else if (joy_y == 0f && joy_x > 0) {
@@ -1228,8 +1233,23 @@ class MainActivity : AppCompatActivity() {
 //        isAnotherJob = false
     }
 
+    val stopList = listOf<Byte>(
+        CareRobotMC.Right_Wheel.byte,
+        CareRobotMC.Left_Wheel.byte,
+        CareRobotMC.Waist.byte,
+        CareRobotMC.Left_Shoulder.byte,
+        CareRobotMC.Right_Shoulder.byte
+    )
+
     private fun stopRobot() {
-        for (i in CareRobotMC.Left_Shoulder.byte..CareRobotMC.Left_Wheel.byte) {
+//        for (i in CareRobotMC.Left_Shoulder.byte..CareRobotMC.Left_Wheel.byte) {
+//            sendParser.ControlAcceleratedSpeed(i.toByte(), Direction.CCW.direction, 0f, 0.1f)
+//            sharedViewModel.sendProtocolMap[i.toByte()] = sendParser.Data!!.clone()
+////            sendProtocolToSerial(nuriMC.Data!!.clone())
+////            Thread.sleep(20)
+//        }
+
+        for (i in stopList) {
             sendParser.ControlAcceleratedSpeed(i.toByte(), Direction.CCW.direction, 0f, 0.1f)
             sharedViewModel.sendProtocolMap[i.toByte()] = sendParser.Data!!.clone()
 //            sendProtocolToSerial(nuriMC.Data!!.clone())
@@ -1838,7 +1858,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun cancelRobotChange(){
+    fun cancelRobotChange() {
         stopRobot()
         changeRobotPositionThread.interrupt()
         changeRobotPositionThread.join()
@@ -1882,7 +1902,10 @@ class MainActivity : AppCompatActivity() {
                             sendParser.Feedback(i, ProtocolMode.REQPos.byte)
                             val data = sendParser.Data!!.clone()
                             val msg =
-                                usbSerialHandler.obtainMessage(UsbSerialService.MSG_ROBOT_SERIAL_SEND, data)
+                                usbSerialHandler.obtainMessage(
+                                    UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                                    data
+                                )
                             usbSerialHandler.sendMessage(msg)
                             Log.d(
                                 "feedback",
@@ -1909,7 +1932,10 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Feedback(i.key, ProtocolMode.REQPos.byte)
                                 val data = sendParser.Data!!.clone()
                                 val msg =
-                                    usbSerialHandler.obtainMessage(UsbSerialService.MSG_ROBOT_SERIAL_SEND, data)
+                                    usbSerialHandler.obtainMessage(
+                                        UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                                        data
+                                    )
                                 usbSerialHandler.sendMessage(msg)
                                 sharedViewModel.sendProtocolMap[i.key] = data
                             }
@@ -1969,9 +1995,10 @@ class MainActivity : AppCompatActivity() {
 //    }
 
 
-    fun showHeartAnimation(){
-        heartDialogFragment.show(supportFragmentManager,"")
+    fun showHeartAnimation() {
+        heartDialogFragment.show(supportFragmentManager, "")
     }
+
     fun sendProtocolToPC(data: ByteArray) {
         val msg = Message.obtain(null, UsbSerialService.MSG_PC_SERIAL_SEND)
         val bundle = Bundle()
