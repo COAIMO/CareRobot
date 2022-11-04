@@ -461,9 +461,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun ttsSpeak(strTTS: String) {
 
-    }
 
     var expression = 0
 
