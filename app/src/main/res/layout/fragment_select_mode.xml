@@ -235,4 +235,43 @@
             app:layout_constraintStart_toStartOf="@id/iv_heart1"
             app:layout_constraintTop_toBottomOf="@id/iv_heart1"
             android:layout_marginTop="50dp" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@+id/btn_behavior_mode"
+            app:layout_constraintBottom_toTopOf="@id/radio_group"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:text="[속도 단계]" />
+
+    <RadioGroup
+            android:id="@+id/radio_group"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toEndOf="@id/btn_all_mode"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/btn_behavior_mode"
+            android:orientation="vertical">
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/btn_1stSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="1단계" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/btn_2ndSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="2단계" />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/btn_3rdSpeed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="3단계" />
+    </RadioGroup>
 </androidx.constraintlayout.widget.ConstraintLayout>

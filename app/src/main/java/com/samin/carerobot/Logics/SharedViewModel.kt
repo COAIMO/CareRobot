@@ -56,5 +56,6 @@ class SharedViewModel:ViewModel() {
     val sendProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
     val exProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
     val usingMic = MutableLiveData<Boolean>()
+    var wheelMaxSpeed :Float = WheelSpeed.First.speed
 
 }

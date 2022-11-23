@@ -3,8 +3,6 @@ package com.samin.carerobot
 import android.app.Service
 import android.bluetooth.BluetoothDevice
 import android.content.*
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.hardware.usb.UsbManager
 import android.os.*
 import android.speech.tts.TextToSpeech
@@ -24,7 +22,6 @@ import com.samin.carerobot.Nuri.MovementMode
 import com.samin.carerobot.Service.SerialService
 import com.samin.carerobot.Service.UsbSerialService
 import com.samin.carerobot.databinding.ActivityMainBinding
-import kotlinx.coroutines.*
 import java.util.*
 import kotlin.math.*
 
@@ -195,7 +192,7 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CCW.direction,
-                                MaxForward,
+                                sharedViewModel.wheelMaxSpeed,
                                 3f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
@@ -203,7 +200,7 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
                                 Direction.CW.direction,
-                                MaxForward,
+                                sharedViewModel.wheelMaxSpeed,
                                 3f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
@@ -213,7 +210,7 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CW.direction,
-                                MaxForward / 2,
+                                sharedViewModel.wheelMaxSpeed / 2,
                                 2f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
@@ -221,7 +218,7 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
                                 Direction.CCW.direction,
-                                MaxForward / 2,
+                                sharedViewModel.wheelMaxSpeed / 2,
                                 2f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
@@ -231,7 +228,7 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CW.direction,
-                                MaxForward / 7,
+                                sharedViewModel.wheelMaxSpeed / 7,
                                 0.1f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
@@ -239,7 +236,7 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
                                 Direction.CW.direction,
-                                MaxForward / 7,
+                                sharedViewModel.wheelMaxSpeed / 7,
                                 0.1f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
@@ -249,7 +246,7 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CCW.direction,
-                                MaxForward / 7,
+                                sharedViewModel.wheelMaxSpeed / 7,
                                 0.1f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
@@ -257,7 +254,7 @@ class MainActivity : AppCompatActivity() {
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
                                 Direction.CCW.direction,
-                                MaxForward / 7,
+                                sharedViewModel.wheelMaxSpeed / 7,
                                 0.1f
                             )
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
@@ -289,10 +286,10 @@ class MainActivity : AppCompatActivity() {
                 UsbSerialService.MSG_SET_SPEED -> {
                     when (msg.obj as Byte) {
                         0x00.toByte() -> {
-                            MaxForward = 29f
+                            sharedViewModel.wheelMaxSpeed = WheelSpeed.First.speed
                         }
                         0x01.toByte() -> {
-                            MaxForward = 15f
+                            sharedViewModel.wheelMaxSpeed = WheelSpeed.Second.speed
                         }
                     }
                 }
@@ -1014,7 +1011,7 @@ class MainActivity : AppCompatActivity() {
     //원래 속도
 //    val MaxForward: Float = 40f / 5   //1326.9645
     //분당 약 18m
-    var MaxForward: Float = 29f   //1326.9645
+//    var `sharedViewModel.wheelMaxSpeed`: Float = 29f   //1326.9645
 
     //기존 방향과 반대
     private fun getRPMMath(coordinate: JoystickCoordinate): MotorRPMInfo {
@@ -1034,50 +1031,50 @@ class MainActivity : AppCompatActivity() {
 
         if (joy_x > 0 && joy_y > 0) {
             //우회전
-            left = MaxForward * r * joy_x
-            right = MaxForward * r * joy_x * 0.75f
+            left = sharedViewModel.wheelMaxSpeed * r * joy_x
+            right = sharedViewModel.wheelMaxSpeed * r * joy_x * 0.75f
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CW
         } else if (joy_x > 0 && joy_y < 0) {
             //후진 우회전
-            left = -1 * MaxForward / 2 * r * joy_x
-            right = -1 * MaxForward / 2 * r * joy_x * 0.75f
+            left = -1 * sharedViewModel.wheelMaxSpeed / 2 * r * joy_x
+            right = -1 * sharedViewModel.wheelMaxSpeed / 2 * r * joy_x * 0.75f
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CCW
         } else if (joy_x < 0 && joy_y > 0) {
             //좌회전
-            left = MaxForward * r * joy_x * 0.75f
-            right = MaxForward * r * joy_x
+            left = sharedViewModel.wheelMaxSpeed * r * joy_x * 0.75f
+            right = sharedViewModel.wheelMaxSpeed * r * joy_x
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CW
         } else if (joy_x < 0 && joy_y < 0) {
             //후진 좌회전
-            left = -1 * MaxForward / 2 * r * joy_x * 0.75f
-            right = -1 * MaxForward / 2 * r * joy_x
+            left = -1 * sharedViewModel.wheelMaxSpeed / 2 * r * joy_x * 0.75f
+            right = -1 * sharedViewModel.wheelMaxSpeed / 2 * r * joy_x
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CCW
         } else if (joy_x == 0f && joy_y > 0) {
             //전진
-            left = MaxForward * r
-            right = MaxForward * r
+            left = sharedViewModel.wheelMaxSpeed * r
+            right = sharedViewModel.wheelMaxSpeed * r
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CW
         } else if (joy_x == 0f && joy_y < 0) {
             //후진
-            left = MaxForward * r * 0.66f
-            right = MaxForward * r * 0.66f
+            left = sharedViewModel.wheelMaxSpeed * r * 0.66f
+            right = sharedViewModel.wheelMaxSpeed * r * 0.66f
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CCW
         } else if (joy_y == 0f && joy_x > 0) {
             //제자리 우회전
-            left = MaxForward * r / 7
-            right = MaxForward * r / 7
+            left = sharedViewModel.wheelMaxSpeed * r / 7
+            right = sharedViewModel.wheelMaxSpeed * r / 7
             ret.LeftDirection = Direction.CCW
             ret.RightDirection = Direction.CCW
         } else if (joy_y == 0f && joy_x < 0) {
             //제자리 좌회전
-            left = MaxForward * r / 7
-            right = MaxForward * r / 7
+            left = sharedViewModel.wheelMaxSpeed * r / 7
+            right = sharedViewModel.wheelMaxSpeed * r / 7
             ret.LeftDirection = Direction.CW
             ret.RightDirection = Direction.CW
         }
@@ -1241,7 +1238,7 @@ class MainActivity : AppCompatActivity() {
         CareRobotMC.Right_Shoulder.byte
     )
 
-    private fun stopRobot() {
+    fun stopRobot() {
 //        for (i in CareRobotMC.Left_Shoulder.byte..CareRobotMC.Left_Wheel.byte) {
 //            sendParser.ControlAcceleratedSpeed(i.toByte(), Direction.CCW.direction, 0f, 0.1f)
 //            sharedViewModel.sendProtocolMap[i.toByte()] = sendParser.Data!!.clone()

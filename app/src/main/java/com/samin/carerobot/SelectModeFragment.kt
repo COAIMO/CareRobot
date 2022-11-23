@@ -13,10 +13,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RadioGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
 import com.samin.carerobot.Logics.SharedViewModel
+import com.samin.carerobot.Logics.WheelSpeed
 import com.samin.carerobot.Nuri.PC_Protocol
 import com.samin.carerobot.Nuri.SpeechMode
 import com.samin.carerobot.databinding.FragmentSelectModeBinding
@@ -133,6 +135,15 @@ class SelectModeFragment : Fragment() {
             mBinding.tvMainment.text = it
         }
         setUITimer()
+
+        when(sharedViewModel.wheelMaxSpeed){
+            WheelSpeed.First.speed ->
+                mBinding.btn1stSpeed.isChecked = true
+            WheelSpeed.Second.speed ->
+                mBinding.btn2ndSpeed.isChecked = true
+            WheelSpeed.Third.speed ->
+                mBinding.btn3rdSpeed.isChecked = true
+        }
         return mBinding.root
     }
 
@@ -162,6 +173,21 @@ class SelectModeFragment : Fragment() {
             pcProtocol.setSpeech(SpeechMode.TOUCH_BUTTON_2.byte)
             val data = pcProtocol.Data!!.clone()
             activity?.sendProtocolToPC(data)
+            activity?.stopRobot()
+        }
+        mBinding.radioGroup.setOnCheckedChangeListener{ group, checkId ->
+            when(checkId){
+                R.id.btn_1stSpeed ->{
+                    sharedViewModel.wheelMaxSpeed = WheelSpeed.First.speed
+                }
+                R.id.btn_2ndSpeed ->{
+                    sharedViewModel.wheelMaxSpeed = WheelSpeed.Second.speed
+                }
+                R.id.btn_3rdSpeed ->{
+                    sharedViewModel.wheelMaxSpeed = WheelSpeed.Third.speed
+                }
+            }
+
         }
     }
 
