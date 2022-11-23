@@ -189,9 +189,10 @@ class MainActivity : AppCompatActivity() {
                 UsbSerialService.MSG_MOVE_ROBOT -> {
                     when (msg.obj as Byte) {
                         MovementMode.GO_forward.byte -> {
+                            sharedViewModel.isControl.set(CareRobotMC.Wheel.byte.toInt())
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
-                                Direction.CCW.direction,
+                                Direction.CW.direction,
                                 sharedViewModel.wheelMaxSpeed,
                                 3f
                             )
@@ -199,7 +200,7 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Data!!.clone()
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
-                                Direction.CW.direction,
+                                Direction.CCW.direction,
                                 sharedViewModel.wheelMaxSpeed,
                                 3f
                             )
@@ -207,9 +208,10 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Data!!.clone()
                         }
                         MovementMode.GO_backward.byte -> {
+                            sharedViewModel.isControl.set(CareRobotMC.Wheel.byte.toInt())
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
-                                Direction.CW.direction,
+                                Direction.CCW.direction,
                                 sharedViewModel.wheelMaxSpeed / 2,
                                 2f
                             )
@@ -217,7 +219,7 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Data!!.clone()
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Wheel.byte,
-                                Direction.CCW.direction,
+                                Direction.CW.direction,
                                 sharedViewModel.wheelMaxSpeed / 2,
                                 2f
                             )
@@ -225,6 +227,7 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Data!!.clone()
                         }
                         MovementMode.TURN_Left.byte -> {
+                            sharedViewModel.isControl.set(CareRobotMC.Wheel.byte.toInt())
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CW.direction,
@@ -243,6 +246,7 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Data!!.clone()
                         }
                         MovementMode.TURN_Right.byte -> {
+                            sharedViewModel.isControl.set(CareRobotMC.Wheel.byte.toInt())
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Wheel.byte,
                                 Direction.CCW.direction,
@@ -261,6 +265,7 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Data!!.clone()
                         }
                         MovementMode.UP_Lift.byte -> {
+                            sharedViewModel.isControl.set(CareRobotMC.Waist_Sensor.byte.toInt())
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Waist.byte,
                                 Direction.CW.direction,
@@ -271,6 +276,7 @@ class MainActivity : AppCompatActivity() {
                                 sendParser.Data!!.clone()
                         }
                         MovementMode.DOWN_Lift.byte -> {
+                            sharedViewModel.isControl.set(CareRobotMC.Waist_Sensor.byte.toInt())
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Waist.byte,
                                 Direction.CCW.direction,
@@ -1014,6 +1020,7 @@ class MainActivity : AppCompatActivity() {
 //    var `sharedViewModel.wheelMaxSpeed`: Float = 29f   //1326.9645
 
     //기존 방향과 반대
+    //TODO
     private fun getRPMMath(coordinate: JoystickCoordinate): MotorRPMInfo {
         val ret: MotorRPMInfo = MotorRPMInfo()
         var left = 0f
