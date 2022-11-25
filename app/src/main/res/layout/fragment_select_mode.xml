@@ -222,13 +222,13 @@
             android:scaleType="fitXY"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/btn_all_mode"
-            app:layout_constraintTop_toTopOf="@id/btn_all_mode" />
+            app:layout_constraintTop_toTopOf="@id/btn_change_mode" />
 
     <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/iv_heart2"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@drawable/heart"
+            android:layout_width="170dp"
+            android:layout_height="170dp"
+            android:src="@drawable/stop_image"
             android:background="@android:color/transparent"
             android:scaleType="fitXY"
             app:layout_constraintEnd_toEndOf="@id/iv_heart1"

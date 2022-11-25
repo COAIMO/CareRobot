@@ -286,6 +286,51 @@ class MainActivity : AppCompatActivity() {
                             sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
                                 sendParser.Data!!.clone()
                         }
+                        MovementMode.LEFT_SHOULDER_UP.byte -> {
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Shoulder.byte,
+                                Direction.CW.direction,
+                                1f,
+                                0.1f
+                            )
+                            sharedViewModel.controlDirection = Direction.CW
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                sendParser.Data!!.clone()
+                        }
+                        MovementMode.LEFT_SHOULDER_DOWN.byte -> {
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Shoulder.byte,
+                                Direction.CCW.direction,
+                                1f,
+                                0.1f
+                            )
+                            sharedViewModel.controlDirection = Direction.CCW
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                sendParser.Data!!.clone()
+                        }
+                        MovementMode.RIGHT_SHOULDER_UP.byte -> {
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Shoulder.byte,
+                                Direction.CCW.direction,
+                                1f,
+                                0.1f
+                            )
+                            sharedViewModel.controlDirection = Direction.CCW
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                sendParser.Data!!.clone()
+                        }
+                        MovementMode.RIGHT_SHOULDER_DOWN.byte -> {
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Shoulder.byte,
+                                Direction.CW.direction,
+                                1f,
+                                0.1f
+                            )
+                            sharedViewModel.controlDirection = Direction.CW
+                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                sendParser.Data!!.clone()
+                        }
+
                     }
 
                 }
@@ -537,8 +582,17 @@ class MainActivity : AppCompatActivity() {
 //                    }
                     if (sharedViewModel.motorInfo.isNullOrEmpty()) {
                         Thread.sleep(1000)
+                        sharedViewModel.waistStateMap[CareRobotMC.Waist_Sensor.byte] = 5
                     } else {
                         for ((key, value) in sharedViewModel.waistStateMap) {
+                            if (sharedViewModel.waistlstRecvTime[key] != null){
+                                if (sharedViewModel.waistlstRecvTime[key]!! + 800 < System.currentTimeMillis()) {
+                                    sharedViewModel.waistStateMap[CareRobotMC.Waist_Sensor.byte] = 5
+                                }
+                            }else{
+                                sharedViewModel.waistStateMap[CareRobotMC.Waist_Sensor.byte] = 5
+                            }
+
                             when (key) {
                                 CareRobotMC.Waist_Sensor.byte -> {
                                     Log.d("허리센서", "${value}")
@@ -1921,6 +1975,7 @@ class MainActivity : AppCompatActivity() {
 
                     } else {
                         for (i in sharedViewModel.sendProtocolMap) {
+                            //이전 보낸 데이터와 현재 데이터가 같이 않을경우
                             if (!sharedViewModel.exProtocolMap[i.key].contentEquals(i.value)) {
                                 val msg =
                                     usbSerialHandler.obtainMessage(
@@ -1928,10 +1983,13 @@ class MainActivity : AppCompatActivity() {
                                         i.value
                                     )
                                 usbSerialHandler.sendMessage(msg)
+                                //데이터를 보낸다.
                             } else {
+                                //이전 보낸 데이터와 현재 데이터가 같을경우
                                 if (sharedViewModel.isControl.get() == CareRobotMC.Waist_Sensor.byte.toInt())
                                     if (!feedbackWaistList.contains(i.key))
                                         continue
+                                // 컨트롤 부분이 허리 센서가 아닐경우 계속
 
                                 sendParser.Feedback(i.key, ProtocolMode.REQPos.byte)
                                 val data = sendParser.Data!!.clone()
@@ -1941,6 +1999,7 @@ class MainActivity : AppCompatActivity() {
                                         data
                                     )
                                 usbSerialHandler.sendMessage(msg)
+                                Log.d("보내는거","${HexDump.toHexString(data)}")
                                 sharedViewModel.sendProtocolMap[i.key] = data
                             }
 

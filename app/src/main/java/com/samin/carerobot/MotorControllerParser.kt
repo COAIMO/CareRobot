@@ -59,7 +59,7 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                     "허리허리",
                     "ID: ${tmp.ID} Direction : ${tmp.Direction}\t Pos : ${tmp.Speed}"
                 )
-                viewModel.waistStateMap[tmp.ID!!] = tmp.Speed!!.toInt()
+//                viewModel.waistStateMap[tmp.ID!!] = tmp.Speed!!.toInt()
             }
         } else if (arg[2] == CareRobotMC.Waist_Sensor.byte) {
             Log.d(
@@ -72,6 +72,7 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             tmpInfo.proximity_Sensor = sensorData
             tmpInfo.sensorData = arg[11]
             viewModel.motorInfo[arg[2]] = tmpInfo
+            viewModel.waistlstRecvTime[arg[2]] = System.currentTimeMillis()
             viewModel.waistStateMap[tmpInfo.encoder_id!!] = tmpInfo.sensorData!!.toInt()
         } else if (arg[2] == 10.toByte()) {
             Log.d("leg", HexDump.dumpHexString(arg))
