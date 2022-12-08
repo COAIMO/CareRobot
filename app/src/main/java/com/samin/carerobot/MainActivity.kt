@@ -57,6 +57,7 @@ class MainActivity : AppCompatActivity() {
         moveRobot()
         loadingView = LoadingDialog(this)
         getGameControllerIds()
+        setControllerobserveThread()
     }
 
     fun getGameControllerIds(): List<Int> {
@@ -585,11 +586,11 @@ class MainActivity : AppCompatActivity() {
                         sharedViewModel.waistStateMap[CareRobotMC.Waist_Sensor.byte] = 5
                     } else {
                         for ((key, value) in sharedViewModel.waistStateMap) {
-                            if (sharedViewModel.waistlstRecvTime[key] != null){
+                            if (sharedViewModel.waistlstRecvTime[key] != null) {
                                 if (sharedViewModel.waistlstRecvTime[key]!! + 800 < System.currentTimeMillis()) {
                                     sharedViewModel.waistStateMap[CareRobotMC.Waist_Sensor.byte] = 5
                                 }
-                            }else{
+                            } else {
                                 sharedViewModel.waistStateMap[CareRobotMC.Waist_Sensor.byte] = 5
                             }
 
@@ -668,254 +669,429 @@ class MainActivity : AppCompatActivity() {
         return if (ControllerPad.isJoyStick(event!!)) {
             // Process the movements starting from the
             // earliest historical position in the batch
-            (0 until event.historySize).forEach { i ->
-                // Process the event at historical position i
-                controllerPad.processJoystickInput(event, i)
-            }
+//            (0 until event.historySize).forEach { i ->
+//                // Process the event at historical position i
+//                Log.d("tag","$i")
+//                controllerPad.processJoystickInput(event, i)
+//                controllerEvent = event
+//            }
             // Process the current movement sample in the batch (position -1)
-            controllerPad.processJoystickInput(event, -1)
+//            controllerPad.processJoystickInput(event, -1)
+            controllerEvent = event
+
             true
         } else {
             super.onGenericMotionEvent(event)
         }
     }
 
-    private var tts: TextToSpeech? = null
-
-    private fun initTextToSpeech() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return
-        }
-        tts = TextToSpeech(this) {
-            if (it == TextToSpeech.SUCCESS) {
-                val result = tts?.setLanguage(Locale.KOREAN)
-                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    return@TextToSpeech
+    var controllerEvent: MotionEvent? = null
+    var controllerobserveThread: Thread? = null
+    private fun setControllerobserveThread() {
+        controllerobserveThread = Thread {
+            while (true) {
+                try {
+                    if (controllerEvent != null) {
+                        controllerPad.processJoystickInput(controllerEvent!!, -1)
+                    }
+                    Thread.sleep(20)
+                }catch (e:Exception){
+                    e.printStackTrace()
                 }
-            } else {
-
             }
         }
+        controllerobserveThread?.start()
     }
 
-    private fun ttsSpeak(strTTS: String) {
-
-    }
 
     var expression = 0
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
-        if (event != null) {
-            if (ControllerPad.isGamePad(event)) {
-                if (event.repeatCount == 0) {
-                    when (keyCode) {
-                        KeyEvent.KEYCODE_BUTTON_A -> {
-                            controllerPad.isUsable = true
-                            isAnotherJob = true
-
-                            sendParser.setExpression(
-                                CareRobotMC.Eyes_Display.byte,
-                                expression.toByte()
-                            )
-                            if (controllerPad.isUsable) {
-//                                Log.d("Test", "${HexDump.dumpHexString(sendParser.Data)}")
-                                sharedViewModel.sendProtocolMap[CareRobotMC.Eyes_Display.byte] =
-                                    sendParser.Data!!.clone()
-//                                sendProtocolToSerial(sendParser.Data!!.clone())
-                            }
-                            expression++
-                            if (expression >= 7) expression = 0
-                            isAnotherJob = false
-                        }
-                        KeyEvent.KEYCODE_BUTTON_B -> {
-                            controllerPad.isUsable = true
-                            sharedViewModel.isControl.set(CareRobotMC.Leg_Angle.byte.toInt())
-                            sharedViewModel.controlPart.value = CareRobotMC.Leg_Angle.byte
-                        }
-                        KeyEvent.KEYCODE_BUTTON_X -> {
-                            controllerPad.isUsable = true
-                            sharedViewModel.isControl.set(CareRobotMC.Wheel.byte.toInt())
-                            sharedViewModel.controlPart.value = CareRobotMC.Wheel.byte
-                        }
-                        KeyEvent.KEYCODE_BUTTON_Y -> {
-                            controllerPad.isUsable = true
-                            sharedViewModel.isControl.set(CareRobotMC.Waist_Sensor.byte.toInt())
-                            sharedViewModel.controlPart.value = CareRobotMC.Waist.byte
-                        }
-                        KeyEvent.KEYCODE_BUTTON_R1 -> {
-                            controllerPad.isUsable = true
-                            sharedViewModel.isControl.set(CareRobotMC.Right_Shoulder.byte.toInt())
-                            sharedViewModel.controlPart.value = CareRobotMC.Right_Shoulder.byte
-                        }
-                        KeyEvent.KEYCODE_BUTTON_L1 -> {
-                            controllerPad.isUsable = true
-                            sharedViewModel.isControl.set(CareRobotMC.Left_Shoulder.byte.toInt())
-                            sharedViewModel.controlPart.value = CareRobotMC.Left_Shoulder.byte
-                        }
-                        KeyEvent.KEYCODE_BUTTON_R2 -> {
-//                            robotModeChange(1, 1)
-//                            controllerPad.isUsable = true
-
-//                            isAnotherJob = true
-//
-//
-//                            sendParser.ControlPosSpeed(
-//                                CareRobotMC.Leg_Angle.byte,
-//                                Direction.CW.direction,
-//                                10f,
-//                                2f
-//                            )
-//                            if (controllerPad.isUsable) {
-//                                Log.d("Test", "${HexDump.dumpHexString(sendParser.Data)}")
-//                                sendProtocolToSerial(sendParser.Data!!.clone())
-//                            }
-//                            isAnotherJob = false
-                        }
-                        KeyEvent.KEYCODE_BUTTON_L2 -> {
+//    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+//        if (event != null) {
+//            if (ControllerPad.isGamePad(event)) {
+//                if (event.repeatCount == 0) {
+//                    when (keyCode) {
+//                        KeyEvent.KEYCODE_BUTTON_A -> {
 //                            controllerPad.isUsable = true
 //                            isAnotherJob = true
 //
-////                            모우기
-//                            sendParser.ControlPosSpeed(
-//                                CareRobotMC.Leg_Angle.byte,
-//                                Direction.CCW.direction,
-//                                25f,
-//                                2f
+//                            sendParser.setExpression(
+//                                CareRobotMC.Eyes_Display.byte,
+//                                expression.toByte()
 //                            )
 //                            if (controllerPad.isUsable) {
-//                                Log.d("Test", "${HexDump.dumpHexString(sendParser.Data)}")
-//                                sendProtocolToSerial(sendParser.Data!!.clone())
+////                                Log.d("Test", "${HexDump.dumpHexString(sendParser.Data)}")
+//                                sharedViewModel.sendProtocolMap[CareRobotMC.Eyes_Display.byte] =
+//                                    sendParser.Data!!.clone()
+////                                sendProtocolToSerial(sendParser.Data!!.clone())
 //                            }
+//                            expression++
+//                            if (expression >= 7) expression = 0
 //                            isAnotherJob = false
-                        }
-                        else -> {
-                            keyCode.takeIf { isFireKey(it) }?.run {
-//                                handled = true
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
-    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
-        if (event != null) {
-            var handled = false
-            if (ControllerPad.isGamePad(event)) {
-                if (event.repeatCount == 0) {
-                    when (keyCode) {
-                        KeyEvent.KEYCODE_BUTTON_A -> {
-                            controllerPad.isUsable = false
-                            sharedViewModel.isControl.set(0)
-                            sharedViewModel.controlPart.value = null
-                        }
-                        KeyEvent.KEYCODE_BUTTON_B -> {
-                            controllerPad.isUsable = false
-                            sharedViewModel.isControl.set(0)
-//                            for (i in 0..2) {
-//                                stopMotor(CareRobotMC.Leg_Angle.byte)
-//                                Thread.sleep(20)
-//                            }
-//                            sendParser.ControlAcceleratedSpeed(CareRobotMC.Leg_Angle.byte, Direction.CCW.direction, 0f, 0.1f)
-//                            sharedViewModel.sendProtocolMap[CareRobotMC.Leg_Angle.byte] = sendParser.Data!!.clone()
-                            sharedViewModel.controlPart.value = null
-                        }
-                        KeyEvent.KEYCODE_BUTTON_X -> {
-                            controllerPad.isUsable = false
-                            sharedViewModel.isControl.set(0)
-//                            for (i in 0..2) {
-//                                stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
-//                                Thread.sleep(20)
-//                            }
-                            sendParser.ControlAcceleratedSpeed(
-                                CareRobotMC.Left_Wheel.byte,
-                                Direction.CCW.direction,
-                                0f,
-                                0.1f
-                            )
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
-                                sendParser.Data!!.clone()
-                            sendParser.ControlAcceleratedSpeed(
-                                CareRobotMC.Right_Wheel.byte,
-                                Direction.CCW.direction,
-                                0f,
-                                0.1f
-                            )
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
-                                sendParser.Data!!.clone()
-                            sharedViewModel.controlPart.value = null
-                        }
-                        KeyEvent.KEYCODE_BUTTON_Y -> {
-                            controllerPad.isUsable = false
-                            sharedViewModel.isControl.set(0)
-//                            for (i in 0..2) {
-//                                stopMotor(CareRobotMC.Waist.byte)
-//                                Thread.sleep(20)
-//                            }
-                            sendParser.ControlAcceleratedSpeed(
-                                CareRobotMC.Waist.byte,
-                                Direction.CCW.direction,
-                                0f,
-                                0.1f
-                            )
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
-                                sendParser.Data!!.clone()
-                            sharedViewModel.controlPart.value = null
-                        }
-                        KeyEvent.KEYCODE_BUTTON_R1 -> {
-                            controllerPad.isUsable = false
-                            sharedViewModel.isControl.set(0)
-//                            for (i in 0..2) {
-//                                stopMotor(CareRobotMC.Right_Shoulder.byte)
-//                                Thread.sleep(20)
-//                            }
-                            sendParser.ControlAcceleratedSpeed(
-                                CareRobotMC.Right_Shoulder.byte,
-                                Direction.CCW.direction,
-                                0f,
-                                0.1f
-                            )
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
-                                sendParser.Data!!.clone()
-                            sharedViewModel.controlPart.value = null
-                        }
-                        KeyEvent.KEYCODE_BUTTON_L1 -> {
-                            controllerPad.isUsable = false
-                            sharedViewModel.isControl.set(0)
-//                            for (i in 0..2) {
-//                                stopMotor(CareRobotMC.Left_Shoulder.byte)
-//                                Thread.sleep(20)
-//                            }
-                            sendParser.ControlAcceleratedSpeed(
-                                CareRobotMC.Left_Shoulder.byte,
-                                Direction.CCW.direction,
-                                0f,
-                                0.1f
-                            )
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
-                                sendParser.Data!!.clone()
-                            sharedViewModel.controlPart.value = null
-                        }
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_B -> {
+//                            controllerPad.isUsable = true
+//                            sharedViewModel.isControl.set(CareRobotMC.Leg_Angle.byte.toInt())
+//                            sharedViewModel.controlPart.value = CareRobotMC.Leg_Angle.byte
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_X -> {
+//                            controllerPad.isUsable = true
+//                            sharedViewModel.isControl.set(CareRobotMC.Wheel.byte.toInt())
+//                            sharedViewModel.controlPart.value = CareRobotMC.Wheel.byte
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_Y -> {
+//                            controllerPad.isUsable = true
+//                            sharedViewModel.isControl.set(CareRobotMC.Waist_Sensor.byte.toInt())
+//                            sharedViewModel.controlPart.value = CareRobotMC.Waist.byte
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_R1 -> {
+//                            controllerPad.isUsable = true
+//                            sharedViewModel.isControl.set(CareRobotMC.Right_Shoulder.byte.toInt())
+//                            sharedViewModel.controlPart.value = CareRobotMC.Right_Shoulder.byte
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_L1 -> {
+//                            controllerPad.isUsable = true
+//                            sharedViewModel.isControl.set(CareRobotMC.Left_Shoulder.byte.toInt())
+//                            sharedViewModel.controlPart.value = CareRobotMC.Left_Shoulder.byte
+//                        }
 //                        KeyEvent.KEYCODE_BUTTON_R2 -> {
-//                            controllerPad.isUsable = false
-//                            sharedViewModel.controlPart.value = null
+////                            robotModeChange(1, 1)
+////                            controllerPad.isUsable = true
+//
+////                            isAnotherJob = true
+////
+////
+////                            sendParser.ControlPosSpeed(
+////                                CareRobotMC.Leg_Angle.byte,
+////                                Direction.CW.direction,
+////                                10f,
+////                                2f
+////                            )
+////                            if (controllerPad.isUsable) {
+////                                Log.d("Test", "${HexDump.dumpHexString(sendParser.Data)}")
+////                                sendProtocolToSerial(sendParser.Data!!.clone())
+////                            }
+////                            isAnotherJob = false
 //                        }
 //                        KeyEvent.KEYCODE_BUTTON_L2 -> {
+////                            controllerPad.isUsable = true
+////                            isAnotherJob = true
+////
+//////                            모우기
+////                            sendParser.ControlPosSpeed(
+////                                CareRobotMC.Leg_Angle.byte,
+////                                Direction.CCW.direction,
+////                                25f,
+////                                2f
+////                            )
+////                            if (controllerPad.isUsable) {
+////                                Log.d("Test", "${HexDump.dumpHexString(sendParser.Data)}")
+////                                sendProtocolToSerial(sendParser.Data!!.clone())
+////                            }
+////                            isAnotherJob = false
+//                        }
+//                        else -> {
+//                            keyCode.takeIf { isFireKey(it) }?.run {
+////                                handled = true
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return super.onKeyDown(keyCode, event)
+//    }
+//
+//    override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
+//        if (event != null) {
+//            var handled = false
+//            if (ControllerPad.isGamePad(event)) {
+//                if (event.repeatCount == 0) {
+//                    when (keyCode) {
+//                        KeyEvent.KEYCODE_BUTTON_A -> {
 //                            controllerPad.isUsable = false
+//                            sharedViewModel.isControl.set(0)
 //                            sharedViewModel.controlPart.value = null
 //                        }
-                        else -> {
-                            keyCode.takeIf { isFireKey(it) }?.run {
-                                handled = true
+//                        KeyEvent.KEYCODE_BUTTON_B -> {
+//                            controllerPad.isUsable = false
+//                            sharedViewModel.isControl.set(0)
+////                            for (i in 0..2) {
+////                                stopMotor(CareRobotMC.Leg_Angle.byte)
+////                                Thread.sleep(20)
+////                            }
+////                            sendParser.ControlAcceleratedSpeed(CareRobotMC.Leg_Angle.byte, Direction.CCW.direction, 0f, 0.1f)
+////                            sharedViewModel.sendProtocolMap[CareRobotMC.Leg_Angle.byte] = sendParser.Data!!.clone()
+//                            sharedViewModel.controlPart.value = null
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_X -> {
+//                            controllerPad.isUsable = false
+//                            sharedViewModel.isControl.set(0)
+////                            for (i in 0..2) {
+////                                stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
+////                                Thread.sleep(20)
+////                            }
+//                            sendParser.ControlAcceleratedSpeed(
+//                                CareRobotMC.Left_Wheel.byte,
+//                                Direction.CCW.direction,
+//                                0f,
+//                                0.1f
+//                            )
+//                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
+//                                sendParser.Data!!.clone()
+//                            sendParser.ControlAcceleratedSpeed(
+//                                CareRobotMC.Right_Wheel.byte,
+//                                Direction.CCW.direction,
+//                                0f,
+//                                0.1f
+//                            )
+//                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+//                                sendParser.Data!!.clone()
+//                            sharedViewModel.controlPart.value = null
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_Y -> {
+//                            controllerPad.isUsable = false
+//                            sharedViewModel.isControl.set(0)
+////                            for (i in 0..2) {
+////                                stopMotor(CareRobotMC.Waist.byte)
+////                                Thread.sleep(20)
+////                            }
+//                            sendParser.ControlAcceleratedSpeed(
+//                                CareRobotMC.Waist.byte,
+//                                Direction.CCW.direction,
+//                                0f,
+//                                0.1f
+//                            )
+//                            sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
+//                                sendParser.Data!!.clone()
+//                            sharedViewModel.controlPart.value = null
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_R1 -> {
+//                            controllerPad.isUsable = false
+//                            sharedViewModel.isControl.set(0)
+////                            for (i in 0..2) {
+////                                stopMotor(CareRobotMC.Right_Shoulder.byte)
+////                                Thread.sleep(20)
+////                            }
+//                            sendParser.ControlAcceleratedSpeed(
+//                                CareRobotMC.Right_Shoulder.byte,
+//                                Direction.CCW.direction,
+//                                0f,
+//                                0.1f
+//                            )
+//                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+//                                sendParser.Data!!.clone()
+//                            sharedViewModel.controlPart.value = null
+//                        }
+//                        KeyEvent.KEYCODE_BUTTON_L1 -> {
+//                            controllerPad.isUsable = false
+//                            sharedViewModel.isControl.set(0)
+////                            for (i in 0..2) {
+////                                stopMotor(CareRobotMC.Left_Shoulder.byte)
+////                                Thread.sleep(20)
+////                            }
+//                            sendParser.ControlAcceleratedSpeed(
+//                                CareRobotMC.Left_Shoulder.byte,
+//                                Direction.CCW.direction,
+//                                0f,
+//                                0.1f
+//                            )
+//                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+//                                sendParser.Data!!.clone()
+//                            sharedViewModel.controlPart.value = null
+//                        }
+////                        KeyEvent.KEYCODE_BUTTON_R2 -> {
+////                            controllerPad.isUsable = false
+////                            sharedViewModel.controlPart.value = null
+////                        }
+////                        KeyEvent.KEYCODE_BUTTON_L2 -> {
+////                            controllerPad.isUsable = false
+////                            sharedViewModel.controlPart.value = null
+////                        }
+//                        else -> {
+//                            keyCode.takeIf { isFireKey(it) }?.run {
+//                                handled = true
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        return super.onKeyUp(keyCode, event)
+//    }
+
+    override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
+        if (event != null) {
+            val eventAction = event.action
+            val keyCode = event.keyCode
+            var handled = false
+            if (ControllerPad.isGamePad(event)) {
+                Log.d("컨트롤", "무시된다 ${keyCode} ${eventAction}")
+                if (eventAction == KeyEvent.ACTION_UP) {
+                    if (event.repeatCount == 0) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_BUTTON_A -> {
+                                controllerPad.isUsable = false
+                                sharedViewModel.isControl.set(0)
+                                sharedViewModel.controlPart.value = null
+                            }
+                            KeyEvent.KEYCODE_BUTTON_B -> {
+                                controllerPad.isUsable = false
+                                sharedViewModel.isControl.set(0)
+                                sharedViewModel.controlPart.value = null
+                            }
+                            KeyEvent.KEYCODE_BUTTON_X -> {
+                                controllerPad.isUsable = false
+                                sharedViewModel.isControl.set(0)
+                                sendParser.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Wheel.byte,
+                                    Direction.CCW.direction,
+                                    0f,
+                                    0.1f
+                                )
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
+                                    sendParser.Data!!.clone()
+                                sendParser.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Wheel.byte,
+                                    Direction.CCW.direction,
+                                    0f,
+                                    0.1f
+                                )
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                                    sendParser.Data!!.clone()
+                                sharedViewModel.controlPart.value = null
+                            }
+                            KeyEvent.KEYCODE_DEL -> {
+                                controllerPad.isUsable = false
+                                sharedViewModel.isControl.set(0)
+                                sendParser.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Wheel.byte,
+                                    Direction.CCW.direction,
+                                    0f,
+                                    0.1f
+                                )
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Wheel.byte] =
+                                    sendParser.Data!!.clone()
+                                sendParser.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Wheel.byte,
+                                    Direction.CCW.direction,
+                                    0f,
+                                    0.1f
+                                )
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Wheel.byte] =
+                                    sendParser.Data!!.clone()
+                                sharedViewModel.controlPart.value = null
+                            }
+                            KeyEvent.KEYCODE_BUTTON_Y -> {
+                                controllerPad.isUsable = false
+                                sharedViewModel.isControl.set(0)
+                                sendParser.ControlAcceleratedSpeed(
+                                    CareRobotMC.Waist.byte,
+                                    Direction.CCW.direction,
+                                    0f,
+                                    0.1f
+                                )
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Waist.byte] =
+                                    sendParser.Data!!.clone()
+                                sharedViewModel.controlPart.value = null
+                            }
+                            KeyEvent.KEYCODE_BUTTON_R1 -> {
+                                controllerPad.isUsable = false
+                                sharedViewModel.isControl.set(0)
+                                sendParser.ControlAcceleratedSpeed(
+                                    CareRobotMC.Right_Shoulder.byte,
+                                    Direction.CCW.direction,
+                                    0f,
+                                    0.1f
+                                )
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                    sendParser.Data!!.clone()
+                                sharedViewModel.controlPart.value = null
+                            }
+                            KeyEvent.KEYCODE_BUTTON_L1 -> {
+                                controllerPad.isUsable = false
+                                sharedViewModel.isControl.set(0)
+                                sendParser.ControlAcceleratedSpeed(
+                                    CareRobotMC.Left_Shoulder.byte,
+                                    Direction.CCW.direction,
+                                    0f,
+                                    0.1f
+                                )
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                    sendParser.Data!!.clone()
+                                sharedViewModel.controlPart.value = null
+                            }
+                            else -> {
+                                keyCode.takeIf { isFireKey(it) }?.run {
+                                    handled = true
+                                }
                             }
                         }
                     }
+
+                } else if (eventAction == KeyEvent.ACTION_DOWN) {
+                    if (event.repeatCount == 0) {
+                        when (keyCode) {
+                            KeyEvent.KEYCODE_BUTTON_A -> {
+                                controllerPad.isUsable = true
+                                isAnotherJob = true
+
+                                sendParser.setExpression(
+                                    CareRobotMC.Eyes_Display.byte,
+                                    expression.toByte()
+                                )
+                                if (controllerPad.isUsable) {
+                                    sharedViewModel.sendProtocolMap[CareRobotMC.Eyes_Display.byte] =
+                                        sendParser.Data!!.clone()
+                                }
+                                expression++
+                                if (expression >= 7) expression = 0
+                                isAnotherJob = false
+                            }
+                            KeyEvent.KEYCODE_BUTTON_B -> {
+                                controllerPad.isUsable = true
+                                sharedViewModel.isControl.set(CareRobotMC.Leg_Angle.byte.toInt())
+                                sharedViewModel.controlPart.value = CareRobotMC.Leg_Angle.byte
+                            }
+                            KeyEvent.KEYCODE_BUTTON_X -> {
+                                controllerPad.isUsable = true
+                                sharedViewModel.isControl.set(CareRobotMC.Wheel.byte.toInt())
+                                sharedViewModel.controlPart.value = CareRobotMC.Wheel.byte
+                            }
+                            KeyEvent.KEYCODE_BUTTON_Y -> {
+                                controllerPad.isUsable = true
+                                sharedViewModel.isControl.set(CareRobotMC.Waist_Sensor.byte.toInt())
+                                sharedViewModel.controlPart.value = CareRobotMC.Waist.byte
+                            }
+                            KeyEvent.KEYCODE_BUTTON_R1 -> {
+                                controllerPad.isUsable = true
+                                sharedViewModel.isControl.set(CareRobotMC.Right_Shoulder.byte.toInt())
+                                sharedViewModel.controlPart.value = CareRobotMC.Right_Shoulder.byte
+                            }
+                            KeyEvent.KEYCODE_BUTTON_L1 -> {
+                                controllerPad.isUsable = true
+                                sharedViewModel.isControl.set(CareRobotMC.Left_Shoulder.byte.toInt())
+                                sharedViewModel.controlPart.value = CareRobotMC.Left_Shoulder.byte
+                            }
+                            KeyEvent.KEYCODE_BUTTON_R2 -> {
+
+                            }
+                            KeyEvent.KEYCODE_BUTTON_L2 -> {
+
+                            }
+                            else -> {
+                                keyCode.takeIf { isFireKey(it) }?.run {
+                                    handled = true
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
+
         }
-        return super.onKeyUp(keyCode, event)
+        return super.dispatchKeyEvent(event)
     }
 
     private fun isFireKey(keyCode: Int): Boolean =
@@ -938,13 +1114,17 @@ class MainActivity : AppCompatActivity() {
 //                    }
 //                }
 //            }
-            if (sharedViewModel.controlPart.value == CareRobotMC.Wheel.byte) {
-                val tmpRPM = getRPMMath(it)
-                moveWheelchair(tmpRPM)
+            if (!controllerPad.isUsable) {
+                return@observe
             } else {
-                for (i in 0..2) {
-                    stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
-                    Thread.sleep(20)
+                if (sharedViewModel.controlPart.value == CareRobotMC.Wheel.byte) {
+                    val tmpRPM = getRPMMath(it)
+                    moveWheelchair(tmpRPM)
+                } else {
+                    for (i in 0..2) {
+                        stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
+                        Thread.sleep(20)
+                    }
                 }
             }
         }
@@ -1084,11 +1264,13 @@ class MainActivity : AppCompatActivity() {
         val joy_y = coordinate.y * -1f
         val angle = Math.toDegrees(atan2(joy_y, joy_x).toDouble())
         val radian = angle * Math.PI / 180f
-        val r = abs(round(sqrt(joy_x.pow(2) + joy_y.pow(2)) * 100) / 100f)
+        var r = abs(round(sqrt(joy_x.pow(2) + joy_y.pow(2)) * 100) / 100f)
         Log.d(
             TAG,
             "x: $joy_x\tY: $joy_y\t anlge: $angle\t r: $r"
         )
+        if (r > 1f)
+            r = 1f
 
         if (joy_x > 0 && joy_y > 0) {
             //우회전
@@ -1999,7 +2181,7 @@ class MainActivity : AppCompatActivity() {
                                         data
                                     )
                                 usbSerialHandler.sendMessage(msg)
-                                Log.d("보내는거","${HexDump.toHexString(data)}")
+                                Log.d("보내는거", "${HexDump.toHexString(data)}")
                                 sharedViewModel.sendProtocolMap[i.key] = data
                             }
 
