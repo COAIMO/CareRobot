@@ -79,13 +79,15 @@ class ControllerPad(viewModel: SharedViewModel) {
         //왼쪽 조이스틱
         var x: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_X, historyPos)
         var y: Float = getCenteredAxis(event, inputDevice, MotionEvent.AXIS_Y, historyPos)
-        if (!ex_X.equals(x) || !ex_Y.equals(y)) {
-            ex_X = x
-            ex_Y = y
-//            sharedViewModel.left_Joystick.value = JoystickCoordinate(x, y)
+//        if (!ex_X.equals(x) || !ex_Y.equals(y)) {
+//            ex_X = x
+//            ex_Y = y
             sharedViewModel.left_Joystick.postValue(JoystickCoordinate(x, y))
 
-        }
+//        }
+//        if  (ex_X == 0f || ex_Y == 0f){
+            sharedViewModel.left_Joystick.postValue(JoystickCoordinate(x, y))
+//        }
 
 
         //방향키값 들어옴

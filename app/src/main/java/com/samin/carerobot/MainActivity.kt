@@ -693,9 +693,27 @@ class MainActivity : AppCompatActivity() {
                 try {
                     if (controllerEvent != null) {
                         controllerPad.processJoystickInput(controllerEvent!!, -1)
+                        if (!controllerPad.isUsable) {
+                        } else {
+                            if (sharedViewModel.controlPart.value == CareRobotMC.Wheel.byte) {
+                                val tmpRPM = getRPMMath(sharedViewModel.left_Joystick.value!!)
+                                moveWheelchair(tmpRPM)
+                            } else {
+                                for (i in 0..2) {
+
+                                    stopMotor(
+                                        CareRobotMC.Left_Wheel.byte,
+                                        CareRobotMC.Right_Wheel.byte
+                                    )
+                                    Thread.sleep(20)
+                                }
+                            }
+                        }
+
                     }
-                    Thread.sleep(20)
-                }catch (e:Exception){
+
+                    Thread.sleep(80)
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
@@ -1099,9 +1117,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun moveRobot() {
 
-        sharedViewModel.left_Joystick.observe(this) {
+//        sharedViewModel.left_Joystick.observe(this) {
+////            if (!controllerPad.isUsable) {
+////                stopRobot()
+////                return@observe
+////            } else {
+////                if (sharedViewModel.controlPart.value == CareRobotMC.Wheel.byte) {
+////                    val tmpRPM = getRPMMath(it)
+////                    moveWheelchair(tmpRPM)
+////                } else {
+////                    for (i in 0..2) {
+////                        stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
+////                        Thread.sleep(20)
+////                    }
+////                }
+////            }
 //            if (!controllerPad.isUsable) {
-//                stopRobot()
 //                return@observe
 //            } else {
 //                if (sharedViewModel.controlPart.value == CareRobotMC.Wheel.byte) {
@@ -1114,20 +1145,8 @@ class MainActivity : AppCompatActivity() {
 //                    }
 //                }
 //            }
-            if (!controllerPad.isUsable) {
-                return@observe
-            } else {
-                if (sharedViewModel.controlPart.value == CareRobotMC.Wheel.byte) {
-                    val tmpRPM = getRPMMath(it)
-                    moveWheelchair(tmpRPM)
-                } else {
-                    for (i in 0..2) {
-                        stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
-                        Thread.sleep(20)
-                    }
-                }
-            }
-        }
+//        }
+
         sharedViewModel.right_Joystick.observe(this) {
             Log.d("컨트롤", "ㄴㅁㅇㄻㄴㅇㄻ")
             if (!controllerPad.isUsable) {
@@ -2165,6 +2184,8 @@ class MainActivity : AppCompatActivity() {
                                         i.value
                                     )
                                 usbSerialHandler.sendMessage(msg)
+                                Log.d("보내는거 다를경우", "${HexDump.toHexString(i.value)}")
+
                                 //데이터를 보낸다.
                             } else {
                                 //이전 보낸 데이터와 현재 데이터가 같을경우
