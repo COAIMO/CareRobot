@@ -11,6 +11,7 @@ import com.samin.carerobot.Logics.SharedViewModel
 import java.lang.Math.abs
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
+import kotlin.system.measureTimeMillis
 
 class MotorControllerParser(viewModel: SharedViewModel) {
     val viewModel: SharedViewModel = viewModel
@@ -98,6 +99,10 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                 (littleEndianConversion(arg!!.slice(7..8).toByteArray()) / 4096f * 360f)
             val sensorData = arg[11] == 1.toByte()
             viewModel.posInfos[encorder_id] = position
+            Log.d(
+                "어깨",
+                "encorder_id : ${encorder_id} position: ${position}"
+            )
             hmapLastedDate[encorder_id] = time
             setMotorInfo(encorder_id, position, sensorData)
         }
@@ -249,5 +254,39 @@ class MotorControllerParser(viewModel: SharedViewModel) {
         exPositonhmap[id] = position
     }
 
-    private fun setWaistInfo() {}
+
+//    fun callTimemout() {
+//        isCallTimeout = false
+//        callTimeoutThread?.interrupt()
+//        callTimeoutThread?.join()
+//
+//        isCallTimeout = true
+//        if (viewModel.isCheckTimeOut) {
+//            callTimeoutThread = Thread {
+//                while (isCallTimeout) {
+//                    try {
+//                        val elapsed: Long = measureTimeMillis {
+//                            tmp.timeoutAQCheckStep()
+//                        }
+////                    Log.d("callTimeoutThread", "Time : $elapsed")
+//
+//                        Thread.sleep(50)
+//                    } catch (e: Exception) {
+//                        e.printStackTrace()
+//                    }
+//                }
+//            }
+//            callTimeoutThread?.start()
+//        }
+//    }
+//    var isCallTimeout = true
+//    var callTimeoutThread: Thread? = null
+//
+//    fun discallTimemout() {
+//        isCallTimeout = false
+//        callTimeoutThread?.interrupt()
+//        callTimeoutThread?.join()
+//        callTimeoutThread = null
+//    }
+
 }

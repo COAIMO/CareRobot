@@ -60,4 +60,5 @@ class SharedViewModel:ViewModel() {
     val usingMic = MutableLiveData<Boolean>()
     var wheelMaxSpeed :Float = WheelSpeed.First.speed
     val waistlstRecvTime = ConcurrentHashMap<Byte, Long>()
+    var setControlpartMap = ConcurrentHashMap<Byte, Boolean>()
 }

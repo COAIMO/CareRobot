@@ -95,10 +95,10 @@ class UsbSerialService : Service() {
     private var serialPort_1Connected = false
     private var serialPort_2Connected = false
 
-    private var usbIoManager_1: SerialInputOutputManager? = null
-    private var usbIoManager_2: SerialInputOutputManager? = null
-    private var robotIOManager: SerialInputOutputManager? = null
-    private var pcIOmanager: SerialInputOutputManager? = null
+    private var usbIoManager_1: CoAISerialInputOutputManager? = null
+    private var usbIoManager_2: CoAISerialInputOutputManager? = null
+    private var robotIOManager: CoAISerialInputOutputManager? = null
+    private var pcIOmanager: CoAISerialInputOutputManager? = null
 
 
     private val port1_Listener = Port1_SerialListener()
@@ -287,7 +287,7 @@ class UsbSerialService : Service() {
                 )
                 usbSerialPort_1!!.dtr = true
                 usbSerialPort_1!!.rts = true
-                usbIoManager_1 = SerialInputOutputManager(usbSerialPort_1, port1_Listener)
+                usbIoManager_1 = CoAISerialInputOutputManager(usbSerialPort_1, port1_Listener)
                 usbIoManager_1!!.readTimeout = 10
                 usbIoManager_1!!.start()
                 serialPort_1Connected = true
@@ -319,7 +319,7 @@ class UsbSerialService : Service() {
                 )
                 usbSerialPort_2!!.dtr = true
                 usbSerialPort_2!!.rts = true
-                usbIoManager_2 = SerialInputOutputManager(usbSerialPort_2, port2_Listener)
+                usbIoManager_2 = CoAISerialInputOutputManager(usbSerialPort_2, port2_Listener)
                 usbIoManager_2!!.readTimeout = 10
                 usbIoManager_2!!.start()
                 serialPort_2Connected = true
@@ -354,7 +354,7 @@ class UsbSerialService : Service() {
             )
             usbSerialPort_1!!.dtr = true
             usbSerialPort_1!!.rts = true
-            usbIoManager_1 = SerialInputOutputManager(usbSerialPort_1, port1_Listener)
+            usbIoManager_1 = CoAISerialInputOutputManager(usbSerialPort_1, port1_Listener)
             usbIoManager_1!!.readTimeout = 10
             usbIoManager_1!!.start()
             serialPort_1Connected = true
@@ -386,7 +386,7 @@ class UsbSerialService : Service() {
             )
             usbSerialPort_2!!.dtr = true
             usbSerialPort_2!!.rts = true
-            usbIoManager_2 = SerialInputOutputManager(usbSerialPort_2, port2_Listener)
+            usbIoManager_2 = CoAISerialInputOutputManager(usbSerialPort_2, port2_Listener)
             usbIoManager_2!!.readTimeout = 10
             usbIoManager_2!!.start()
             serialPort_2Connected = true
@@ -835,7 +835,6 @@ class UsbSerialService : Service() {
     var isFirst = true
 
     inner class Port1_SerialListener() : SerialInputOutputManager.Listener {
-        private lateinit var ioManager: SerialInputOutputManager
         override fun onNewData(data: ByteArray?) {
             try {
                 if (data != null) {

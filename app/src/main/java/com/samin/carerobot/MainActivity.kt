@@ -1477,14 +1477,13 @@ class MainActivity : AppCompatActivity() {
 //                sendProtocolToSerial(nuriMC.Data!!.clone())
             } else {
                 val sedate = ByteArray(22)
-                sendParser.ControlPosSpeed(id_1, Direction.CCW.direction, 0f, 0f)
+                sendParser.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
 //                sendParser.Data!!.clone().copyInto(sedate, 0, 0, sendParser.Data!!.size)
                 sharedViewModel.sendProtocolMap[id_1] = sendParser.Data!!.clone()
 
-                sendParser.ControlPosSpeed(id_2, Direction.CCW.direction, 0f, 0f)
+                sendParser.ControlAcceleratedSpeed(id_2, Direction.CCW.direction, 0f, 0.1f)
 //                sendParser.Data!!.clone().copyInto(sedate, 11, 0, sendParser.Data!!.size)
                 sharedViewModel.sendProtocolMap[id_2] = sendParser.Data!!.clone()
-
 //                sendProtocolToSerial(sedate)
 
             }
@@ -1531,139 +1530,150 @@ class MainActivity : AppCompatActivity() {
 
         when (mode) {
             1 -> {
+                val startTime = System.currentTimeMillis()
                 changeRobotPositionThread = Thread {
                     try {
                         while (step_1) {
-                            val rightShoulder_tmp =
-                                sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
-                            val leftShoulder_tmp =
-                                sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
-                            if (rightShoulder_tmp?.position!! > 2 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 10) {
-                                right_ShoulderSet = false
-                                if (rightShoulder_tmp?.position!! < 4) {
-                                    nuriMC.ControlAcceleratedSpeed(
-                                        CareRobotMC.Right_Shoulder.byte,
-                                        Direction.CW.direction,
-                                        0.3f,
-                                        0.1f
-                                    )
-                                } else {
-                                    nuriMC.ControlAcceleratedSpeed(
-                                        CareRobotMC.Right_Shoulder.byte,
-                                        Direction.CW.direction,
-                                        1f,
-                                        0.1f
+                            val refreshTime = System.currentTimeMillis()
+                            if (refreshTime < startTime + 20000) {
+                                val rightShoulder_tmp =
+                                    sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
+                                val leftShoulder_tmp =
+                                    sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
+                                if (rightShoulder_tmp?.position!! > 2 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 10) {
+                                    right_ShoulderSet = false
+                                    if (rightShoulder_tmp?.position!! < 4) {
+                                        nuriMC.ControlAcceleratedSpeed(
+                                            CareRobotMC.Right_Shoulder.byte,
+                                            Direction.CW.direction,
+                                            0.3f,
+                                            0.1f
+                                        )
+                                    } else {
+                                        nuriMC.ControlAcceleratedSpeed(
+                                            CareRobotMC.Right_Shoulder.byte,
+                                            Direction.CW.direction,
+                                            1f,
+                                            0.1f
 
 
-                                    )
-                                }
-                                val data = nuriMC.Data!!.clone()
-                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
-                                    data
+                                        )
+                                    }
+                                    val data = nuriMC.Data!!.clone()
+                                    sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                        data
 //                                val msg =
 //                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                                dataHandler.sendMessage(msg)
-                                Thread.sleep(40)
-                            } else if (rightShoulder_tmp.min_Range!! < rightShoulder_tmp.position!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 10) {
-                                right_ShoulderSet = false
-                                if (rightShoulder_tmp.position!! > 362) {
-                                    nuriMC.ControlAcceleratedSpeed(
-                                        CareRobotMC.Right_Shoulder.byte,
-                                        Direction.CCW.direction,
-                                        0.3f,
-                                        0.1f
-                                    )
-                                } else {
-                                    nuriMC.ControlAcceleratedSpeed(
-                                        CareRobotMC.Right_Shoulder.byte,
-                                        Direction.CCW.direction,
-                                        1f,
-                                        0.1f
-                                    )
-                                }
-                                val data = nuriMC.Data!!.clone()
-                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
-                                    data
+                                    Thread.sleep(40)
+                                } else if (rightShoulder_tmp.min_Range!! < rightShoulder_tmp.position!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 10) {
+                                    right_ShoulderSet = false
+                                    if (rightShoulder_tmp.position!! > 362) {
+                                        nuriMC.ControlAcceleratedSpeed(
+                                            CareRobotMC.Right_Shoulder.byte,
+                                            Direction.CCW.direction,
+                                            0.3f,
+                                            0.1f
+                                        )
+                                    } else {
+                                        nuriMC.ControlAcceleratedSpeed(
+                                            CareRobotMC.Right_Shoulder.byte,
+                                            Direction.CCW.direction,
+                                            1f,
+                                            0.1f
+                                        )
+                                    }
+                                    val data = nuriMC.Data!!.clone()
+                                    sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                        data
 //                                val msg =
 //                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                                dataHandler.sendMessage(msg)
-                                Thread.sleep(40)
-                            } else if (rightShoulder_tmp.position!! in 0.0..2.0) {
-                                if (!right_ShoulderSet) {
+                                    Thread.sleep(40)
+                                } else if (rightShoulder_tmp.position!! in 0.0..2.0) {
+                                    if (!right_ShoulderSet) {
 //                                    val msg = dataHandler.obtainMessage(
 //                                        SerialService.MSG_STOP_MOTOR,
 //                                        CareRobotMC.Right_Shoulder.byte
 //                                    )
 //                                    dataHandler.sendMessage(msg)
-                                    stopMotor(CareRobotMC.Right_Shoulder.byte)
-                                    Thread.sleep(40)
+                                        stopMotor(CareRobotMC.Right_Shoulder.byte)
+                                        Thread.sleep(40)
+                                    }
+                                    right_ShoulderSet = true
                                 }
-                                right_ShoulderSet = true
-                            }
 
-                            if (leftShoulder_tmp?.position!! > 2 && leftShoulder_tmp.position!! <= leftShoulder_tmp.min_Range!! + 10) {
-                                left_ShoulderSet = false
-                                if (leftShoulder_tmp.position!! < 4) {
-                                    nuriMC.ControlAcceleratedSpeed(
-                                        CareRobotMC.Left_Shoulder.byte,
-                                        Direction.CW.direction,
-                                        0.3f,
-                                        0.1f
-                                    )
-                                } else {
-                                    nuriMC.ControlAcceleratedSpeed(
-                                        CareRobotMC.Left_Shoulder.byte,
-                                        Direction.CW.direction,
-                                        1f,
-                                        0.1f
-                                    )
-                                }
-                                val data = nuriMC.Data!!.clone()
+                                if (leftShoulder_tmp?.position!! > 2 && leftShoulder_tmp.position!! <= leftShoulder_tmp.min_Range!! + 10) {
+                                    left_ShoulderSet = false
+                                    if (leftShoulder_tmp.position!! < 4) {
+                                        nuriMC.ControlAcceleratedSpeed(
+                                            CareRobotMC.Left_Shoulder.byte,
+                                            Direction.CW.direction,
+                                            0.3f,
+                                            0.1f
+                                        )
+                                    } else {
+                                        nuriMC.ControlAcceleratedSpeed(
+                                            CareRobotMC.Left_Shoulder.byte,
+                                            Direction.CW.direction,
+                                            1f,
+                                            0.1f
+                                        )
+                                    }
+                                    val data = nuriMC.Data!!.clone()
 //                                val msg =
 //                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                                dataHandler.sendMessage(msg)
-                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
-                                    data
-                                Thread.sleep(40)
-                            } else if (leftShoulder_tmp.position!! > leftShoulder_tmp.min_Range!! && leftShoulder_tmp.position!! > leftShoulder_tmp.max_Range!! - 10) {
-                                left_ShoulderSet = false
-                                if (leftShoulder_tmp.position!! > 362) {
-                                    nuriMC.ControlAcceleratedSpeed(
-                                        CareRobotMC.Left_Shoulder.byte,
-                                        Direction.CCW.direction,
-                                        0.3f,
-                                        0.1f
-                                    )
-                                } else {
-                                    nuriMC.ControlAcceleratedSpeed(
-                                        CareRobotMC.Left_Shoulder.byte,
-                                        Direction.CCW.direction,
-                                        1f,
-                                        0.1f
-                                    )
-                                }
-                                val data = nuriMC.Data!!.clone()
+                                    sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                        data
+                                    Thread.sleep(40)
+                                } else if (leftShoulder_tmp.position!! > leftShoulder_tmp.min_Range!! && leftShoulder_tmp.position!! > leftShoulder_tmp.max_Range!! - 10) {
+                                    left_ShoulderSet = false
+                                    if (leftShoulder_tmp.position!! > 362) {
+                                        nuriMC.ControlAcceleratedSpeed(
+                                            CareRobotMC.Left_Shoulder.byte,
+                                            Direction.CCW.direction,
+                                            0.3f,
+                                            0.1f
+                                        )
+                                    } else {
+                                        nuriMC.ControlAcceleratedSpeed(
+                                            CareRobotMC.Left_Shoulder.byte,
+                                            Direction.CCW.direction,
+                                            1f,
+                                            0.1f
+                                        )
+                                    }
+                                    val data = nuriMC.Data!!.clone()
 //                                val msg =
 //                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                                dataHandler.sendMessage(msg)
-                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
-                                    data
-                                Thread.sleep(40)
-                            } else if (leftShoulder_tmp.position!! in 0.0..2.0) {
-                                if (!left_ShoulderSet) {
+                                    sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                        data
+                                    Thread.sleep(40)
+                                } else if (leftShoulder_tmp.position!! in 0.0..2.0) {
+                                    if (!left_ShoulderSet) {
 //                                    val msg = dataHandler.obtainMessage(
 //                                        SerialService.MSG_STOP_MOTOR,
 //                                        CareRobotMC.Left_Shoulder.byte
 //                                    )
 //                                    dataHandler.sendMessage(msg)
-                                    stopMotor(CareRobotMC.Left_Shoulder.byte)
-                                    Thread.sleep(40)
+                                        stopMotor(CareRobotMC.Left_Shoulder.byte)
+                                        Thread.sleep(40)
+                                    }
+                                    left_ShoulderSet = true
                                 }
-                                left_ShoulderSet = true
-                            }
 
-                            if (right_ShoulderSet && left_ShoulderSet) {
+                                if (right_ShoulderSet && left_ShoulderSet) {
+                                    step_1 = false
+                                    break
+                                }
+
+                            } else {
                                 step_1 = false
+                                right_ShoulderSet = false
+                                left_ShoulderSet = false
+                                break
                             }
 
 
@@ -1792,172 +1802,182 @@ class MainActivity : AppCompatActivity() {
             }
 
             2 -> {
+                val startTime = System.currentTimeMillis()
                 changeRobotPositionThread = Thread {
                     while (step_1) {
-
-                        val rightShoulder_tmp =
-                            sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
-                        val leftShoulder_tmp =
-                            sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
-                        if (rightShoulder_tmp?.position!! > 181 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 10) {
-                            right_ShoulderSet = false
-                            if (rightShoulder_tmp.position!! < 184) {
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Right_Shoulder.byte,
-                                    Direction.CW.direction,
-                                    0.3f,
-                                    0.1f
-                                )
-                            } else {
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Right_Shoulder.byte,
-                                    Direction.CW.direction,
-                                    1f,
-                                    0.1f
-                                )
-                            }
-                            val data = nuriMC.Data!!.clone()
+                        val refreshTime = System.currentTimeMillis()
+                        if (refreshTime < startTime + 20000) {
+                            val rightShoulder_tmp =
+                                sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
+                            val leftShoulder_tmp =
+                                sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
+                            if (rightShoulder_tmp?.position!! > 181 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 10) {
+                                right_ShoulderSet = false
+                                if (rightShoulder_tmp.position!! < 184) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Shoulder.byte,
+                                        Direction.CW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Shoulder.byte,
+                                        Direction.CW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                val data = nuriMC.Data!!.clone()
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
-                                data
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                    data
 //                            Thread.sleep(20)
-                        } else if (rightShoulder_tmp.position!! > rightShoulder_tmp.min_Range!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 10) {
-                            right_ShoulderSet = false
-                            nuriMC.ControlAcceleratedSpeed(
-                                CareRobotMC.Right_Shoulder.byte,
-                                Direction.CCW.direction,
-                                1f,
-                                0.1f
-                            )
-                            val data = nuriMC.Data!!.clone()
-//                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-//                            dataHandler.sendMessage(msg)
-//                            Thread.sleep(20)
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
-                                data
-                            Thread.sleep(40)
-                        } else if (rightShoulder_tmp.position!! < 179) {
-                            right_ShoulderSet = false
-                            if (rightShoulder_tmp.position!! > 176) {
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Right_Shoulder.byte,
-                                    Direction.CCW.direction,
-                                    0.3f,
-                                    0.1f
-                                )
-                            } else {
+                            } else if (rightShoulder_tmp.position!! > rightShoulder_tmp.min_Range!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 10) {
+                                right_ShoulderSet = false
                                 nuriMC.ControlAcceleratedSpeed(
                                     CareRobotMC.Right_Shoulder.byte,
                                     Direction.CCW.direction,
                                     1f,
                                     0.1f
                                 )
-                            }
-                            val data = nuriMC.Data!!.clone()
+                                val data = nuriMC.Data!!.clone()
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)
 //                            Thread.sleep(20)
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
-                                data
-                            Thread.sleep(40)
-                        } else if (rightShoulder_tmp.position!! in 179.0..181.0) {
-                            if (right_ShoulderSet) {
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                    data
+                                Thread.sleep(40)
+                            } else if (rightShoulder_tmp.position!! < 179) {
+                                right_ShoulderSet = false
+                                if (rightShoulder_tmp.position!! > 176) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Shoulder.byte,
+                                        Direction.CCW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Right_Shoulder.byte,
+                                        Direction.CCW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                val data = nuriMC.Data!!.clone()
+//                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
+//                            dataHandler.sendMessage(msg)
+//                            Thread.sleep(20)
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                    data
+                                Thread.sleep(40)
+                            } else if (rightShoulder_tmp.position!! in 179.0..181.0) {
+                                if (right_ShoulderSet) {
 //                                val msg = dataHandler.obtainMessage(
 //                                    SerialService.MSG_STOP_MOTOR,
 //                                    CareRobotMC.Right_Shoulder.byte
 //                                )
 //                                dataHandler.sendMessage(msg)
-                                stopMotor(CareRobotMC.Right_Shoulder.byte)
+                                    stopMotor(CareRobotMC.Right_Shoulder.byte)
+                                    Thread.sleep(40)
+                                }
+                                right_ShoulderSet = true
+                            }
+
+                            if (leftShoulder_tmp?.position!! < 179 && leftShoulder_tmp.position!! >= leftShoulder_tmp.max_Range!! - 10) {
+                                left_ShoulderSet = false
+                                if (leftShoulder_tmp.position!! > 176) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Shoulder.byte,
+                                        Direction.CCW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Shoulder.byte,
+                                        Direction.CCW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                val data = nuriMC.Data!!.clone()
+//                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
+//                            dataHandler.sendMessage(msg)
+//                            Thread.sleep(20)
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                    data
                                 Thread.sleep(40)
-                            }
-                            right_ShoulderSet = true
-                        }
-
-                        if (leftShoulder_tmp?.position!! < 179 && leftShoulder_tmp.position!! >= leftShoulder_tmp.max_Range!! - 10) {
-                            left_ShoulderSet = false
-                            if (leftShoulder_tmp.position!! > 176) {
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Left_Shoulder.byte,
-                                    Direction.CCW.direction,
-                                    0.3f,
-                                    0.1f
-                                )
-
-                            } else {
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Left_Shoulder.byte,
-                                    Direction.CCW.direction,
-                                    1f,
-                                    0.1f
-                                )
-                            }
-                            val data = nuriMC.Data!!.clone()
-//                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-//                            dataHandler.sendMessage(msg)
-//                            Thread.sleep(20)
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
-                                data
-                            Thread.sleep(40)
-                        } else if (leftShoulder_tmp.position!! < leftShoulder_tmp.min_Range!! + 10) {
-                            left_ShoulderSet = false
-                            nuriMC.ControlAcceleratedSpeed(
-                                CareRobotMC.Left_Shoulder.byte,
-                                Direction.CW.direction,
-                                2f,
-                                0.1f
-                            )
-                            val data = nuriMC.Data!!.clone()
-//                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
-//                            dataHandler.sendMessage(msg)
-//                            Thread.sleep(20)
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
-                                data
-                            Thread.sleep(40)
-                        } else if (leftShoulder_tmp.position!! > 181) {
-                            left_ShoulderSet = false
-                            if (leftShoulder_tmp.position!! < 183) {
+                            } else if (leftShoulder_tmp.position!! < leftShoulder_tmp.min_Range!! + 10) {
+                                left_ShoulderSet = false
                                 nuriMC.ControlAcceleratedSpeed(
                                     CareRobotMC.Left_Shoulder.byte,
                                     Direction.CW.direction,
-                                    0.3f,
+                                    2f,
                                     0.1f
                                 )
-                            } else {
-                                nuriMC.ControlAcceleratedSpeed(
-                                    CareRobotMC.Left_Shoulder.byte,
-                                    Direction.CW.direction,
-                                    1f,
-                                    0.1f
-                                )
-                            }
-                            val data = nuriMC.Data!!.clone()
+                                val data = nuriMC.Data!!.clone()
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)
 //                            Thread.sleep(20)
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
-                                data
-                            Thread.sleep(40)
-                        } else if (leftShoulder_tmp.position!! in 179.0..181.0) {
-                            if (!left_ShoulderSet) {
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                    data
+                                Thread.sleep(40)
+                            } else if (leftShoulder_tmp.position!! > 181) {
+                                left_ShoulderSet = false
+                                if (leftShoulder_tmp.position!! < 183) {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Shoulder.byte,
+                                        Direction.CW.direction,
+                                        0.3f,
+                                        0.1f
+                                    )
+                                } else {
+                                    nuriMC.ControlAcceleratedSpeed(
+                                        CareRobotMC.Left_Shoulder.byte,
+                                        Direction.CW.direction,
+                                        1f,
+                                        0.1f
+                                    )
+                                }
+                                val data = nuriMC.Data!!.clone()
+//                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
+//                            dataHandler.sendMessage(msg)
+//                            Thread.sleep(20)
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                    data
+                                Thread.sleep(40)
+                            } else if (leftShoulder_tmp.position!! in 179.0..181.0) {
+                                if (!left_ShoulderSet) {
 //                                val msg = dataHandler.obtainMessage(
 //                                    SerialService.MSG_STOP_MOTOR,
 //                                    CareRobotMC.Left_Shoulder.byte
 //                                )
 //                                dataHandler.sendMessage(msg)
-                                stopMotor(CareRobotMC.Left_Shoulder.byte)
-                                Thread.sleep(40)
+                                    stopMotor(CareRobotMC.Left_Shoulder.byte)
+                                    Thread.sleep(40)
+                                }
+                                left_ShoulderSet = true
                             }
-                            left_ShoulderSet = true
+
+                            if (right_ShoulderSet && left_ShoulderSet) {
+                                step_1 = false
+                                break
+                            }
+                        }else{
+                            step_1 = false
+                            right_ShoulderSet = false
+                            left_ShoulderSet = false
+                            break
+                        }
+                        runOnUiThread {
+                            sharedViewModel.viewState.value = setView
+                            loadingView.dismiss()
                         }
 
-                        if (right_ShoulderSet && left_ShoulderSet) {
-                            step_1 = false
-                        }
-                    }
-                    runOnUiThread {
-                        sharedViewModel.viewState.value = setView
-                        loadingView.dismiss()
                     }
                 }
                 changeRobotPositionThread.start()
