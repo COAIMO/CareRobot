@@ -7,6 +7,7 @@ data class MotorInfo(
     var encoder_id : Byte? = null,
     var currnet_Direction:Direction? = null,
     var position:Float? = null,
+    var isStop:Boolean = true,
     var min_Range:Float? = null,
     var max_Range:Float? = null,
     var min_Alert:Boolean? = false,

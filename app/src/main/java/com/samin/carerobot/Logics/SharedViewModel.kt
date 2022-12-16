@@ -61,4 +61,12 @@ class SharedViewModel:ViewModel() {
     var wheelMaxSpeed :Float = WheelSpeed.First.speed
     val waistlstRecvTime = ConcurrentHashMap<Byte, Long>()
     var setControlpartMap = ConcurrentHashMap<Byte, Boolean>()
+
+    val motorIsStopMap = ConcurrentHashMap<Byte, Boolean>()
+    val sensorInfo = ConcurrentHashMap<Byte,MotorInfo>()
+    var controlDirectionMap = ConcurrentHashMap<Byte,Byte>()
+
+    val feedBackProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
+    val commandProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
+
 }

@@ -32,6 +32,9 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             val tmp = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
             tmpInfo.motor_id = tmp.ID
             tmpInfo.position = tmp.Pos
+            Log.d("Speed", "${tmp.Speed}")
+            tmpInfo.isStop = tmp.Speed!! <= 0f
+            Log.d("isStop", "${tmpInfo.isStop}")
 
             var exPosition = exPositonhmap[arg[2]]
             if (exPosition == null) {
@@ -75,25 +78,7 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             viewModel.motorInfo[arg[2]] = tmpInfo
             viewModel.waistlstRecvTime[arg[2]] = System.currentTimeMillis()
             viewModel.waistStateMap[tmpInfo.encoder_id!!] = tmpInfo.sensorData!!.toInt()
-        } else if (arg[2] == 10.toByte()) {
-            Log.d("leg", HexDump.dumpHexString(arg))
-            Log.d("leg_sensor", "${arg[11]}")
-            val tmpInfo = MotorInfo()
-            tmpInfo.encoder_id = arg[2]
-            tmpInfo.proximity_Sensor = arg[11] != 0x00.toByte()
-            tmpInfo.sensorData = arg[11]
-            viewModel.motorInfo[arg[2]] = tmpInfo
-
-        } else if (arg[2] == 8.toByte()) {
-            receiveParser.Data = arg
-            val tmp = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
-            val tmpInfo = MotorInfo()
-            tmpInfo.motor_id = tmp.ID
-            tmpInfo.currnet_Direction = tmp.Direction
-            tmpInfo.position = tmp.Pos
-
-            viewModel.motorInfo[arg[2]] = tmpInfo
-        } else {
+        }else {
             val encorder_id = arg[2]
             val position =
                 (littleEndianConversion(arg!!.slice(7..8).toByteArray()) / 4096f * 360f)
@@ -154,11 +139,13 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                         //min이랑 가까울때
                         if (viewModel.controlDirection != Direction.CW) {
                             tmpInfo.min_Alert = true
+                            tmpInfo.max_Alert = false
                         }
                     } else {
                         //max랑 가까울때
                         if (viewModel.controlDirection != Direction.CCW) {
                             tmpInfo.max_Alert = true
+                            tmpInfo.min_Alert = false
                         }
                     }
                 } else {

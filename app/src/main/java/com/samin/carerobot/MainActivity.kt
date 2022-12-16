@@ -1067,9 +1067,9 @@ class MainActivity : AppCompatActivity() {
                                 isAnotherJob = false
                             }
                             KeyEvent.KEYCODE_BUTTON_B -> {
-                                controllerPad.isUsable = true
-                                sharedViewModel.isControl.set(CareRobotMC.Leg_Angle.byte.toInt())
-                                sharedViewModel.controlPart.value = CareRobotMC.Leg_Angle.byte
+//                                controllerPad.isUsable = true
+//                                sharedViewModel.isControl.set(CareRobotMC.Leg_Angle.byte.toInt())
+//                                sharedViewModel.controlPart.value = CareRobotMC.Leg_Angle.byte
                             }
                             KeyEvent.KEYCODE_BUTTON_X -> {
                                 controllerPad.isUsable = true
@@ -1209,7 +1209,7 @@ class MainActivity : AppCompatActivity() {
                         }
 //                        isAnotherJob = false
                     }
-                    CareRobotMC.Leg_Angle.byte -> {
+//                    CareRobotMC.Leg_Angle.byte -> {
 //                        isAnotherJob = true
 //                        val tmp = getLegDirectionRPM(it)
 //                        sendParser.ControlAcceleratedSpeed(
@@ -1230,7 +1230,7 @@ class MainActivity : AppCompatActivity() {
 //                            sendProtocolToSerial(sendParser.Data!!.clone())
 //                        }
 //                        isAnotherJob = false
-                    }
+//                    }
 
                 }
             }
