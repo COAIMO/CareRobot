@@ -2,6 +2,8 @@ package com.samin.carerobot
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -366,7 +368,6 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.leftControlDirection = Direction.CW
-//                        activity?.sendProtocolToSerial(nuriMC.Data!!)
                         sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                             nuriMC.Data!!.clone()
                     }
@@ -419,7 +420,6 @@ class ControlFragment : Fragment() {
                             0.1f
                         )
                         sharedViewModel.leftControlDirection = Direction.CCW
-//                        activity?.sendProtocolToSerial(nuriMC.Data!!)
                         sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                             nuriMC.Data!!.clone()
                     }

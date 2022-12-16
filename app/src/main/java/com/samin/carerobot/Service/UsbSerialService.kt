@@ -23,6 +23,7 @@ import com.jeongmin.nurimotortester.NurirobotMC
 import com.samin.carerobot.BuildConfig
 import com.samin.carerobot.Logics.CareRobotMC
 import com.samin.carerobot.Logics.HexDump
+import com.samin.carerobot.MainActivity
 import com.samin.carerobot.Nuri.MovementMode
 import com.samin.carerobot.Nuri.PC_Protocol
 import com.samin.carerobot.Nuri.PC_ProtocolMode
@@ -67,6 +68,7 @@ class UsbSerialService : Service() {
 
         const val MSG_ROBOT_SERIAL_SEND = 18
         const val MSG_PC_SERIAL_SEND = 19
+        const val SERIALPORT_INITIALIZE = 20
     }
 
     private var usbSerialPort_1: UsbSerialPort? = null
@@ -686,6 +688,10 @@ class UsbSerialService : Service() {
 
     lateinit var checkPortThread: Thread
     private fun checkPort() {
+        incomingHandler!!.obtainMessage(
+            SERIALPORT_INITIALIZE
+        ).sendToTarget()
+
         val sendParser = NurirobotMC()
         val startTime = System.currentTimeMillis()
         CoroutineScope(Dispatchers.IO).launch {
@@ -772,6 +778,12 @@ class UsbSerialService : Service() {
                 MSG_ROBOT_SERIAL_SEND -> {
                     msg.data.getByteArray("").let {
                         robot_SendData(it!!)
+                    }
+                }
+                SERIALPORT_INITIALIZE->{
+                    val message = Message.obtain(null, SERIALPORT_INITIALIZE, null)
+                    clients.forEach {
+                        it.send(message)
                     }
                 }
                 else -> super.handleMessage(msg)
