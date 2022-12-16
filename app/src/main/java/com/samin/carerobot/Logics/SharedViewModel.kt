@@ -47,7 +47,27 @@ class SharedViewModel:ViewModel() {
     var controlPart = MutableLiveData<Byte?>()
     val motorInfo = ConcurrentHashMap<Byte,MotorInfo>()
     val posInfos = ConcurrentHashMap<Byte, Float>()
-    var controlDirection = Direction.CW
+
+    /**
+     * 사용하면 안됨.
+     */
+//    var controlDirection = Direction.CW
+
+    /**
+     * 움직일 방향(왼쪽)
+     */
+    var leftControlDirection = Direction.CW
+
+    /**
+     * 움직일 방향(오른쪽)
+     */
+    var rightControlDirection = Direction.CW
+
+    /**
+     * 움직일 방향(허리)
+     */
+    var waistControlDirection = Direction.CW
+
 //    val waistInfo = MutableLiveData<NuriPosSpeedAclCtrl>()
     val waistInfo = MutableLiveData<MotorInfo>()
     val lockobj = Object()

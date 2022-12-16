@@ -294,7 +294,7 @@ class MainActivity : AppCompatActivity() {
                                 1f,
                                 0.1f
                             )
-                            sharedViewModel.controlDirection = Direction.CW
+                            sharedViewModel.leftControlDirection = Direction.CW
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                                 sendParser.Data!!.clone()
                         }
@@ -305,7 +305,7 @@ class MainActivity : AppCompatActivity() {
                                 1f,
                                 0.1f
                             )
-                            sharedViewModel.controlDirection = Direction.CCW
+                            sharedViewModel.leftControlDirection = Direction.CCW
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                                 sendParser.Data!!.clone()
                         }
@@ -316,7 +316,7 @@ class MainActivity : AppCompatActivity() {
                                 1f,
                                 0.1f
                             )
-                            sharedViewModel.controlDirection = Direction.CCW
+                            sharedViewModel.rightControlDirection = Direction.CCW
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                                 sendParser.Data!!.clone()
                         }
@@ -327,7 +327,7 @@ class MainActivity : AppCompatActivity() {
                                 1f,
                                 0.1f
                             )
-                            sharedViewModel.controlDirection = Direction.CW
+                            sharedViewModel.rightControlDirection = Direction.CW
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                                 sendParser.Data!!.clone()
                         }
@@ -598,7 +598,7 @@ class MainActivity : AppCompatActivity() {
                                 CareRobotMC.Waist_Sensor.byte -> {
                                     Log.d("허리센서", "${value}")
                                     if (value == 1) {
-                                        if (sharedViewModel.controlDirection == Direction.CW) {
+                                        if (sharedViewModel.waistControlDirection == Direction.CW) {
                                             waistIsUsable = false
                                             sendParser.ControlAcceleratedSpeed(
                                                 CareRobotMC.Waist.byte,
@@ -614,7 +614,7 @@ class MainActivity : AppCompatActivity() {
                                         }
 
                                     } else if (value == 4) {
-                                        if (sharedViewModel.controlDirection == Direction.CCW) {
+                                        if (sharedViewModel.waistControlDirection == Direction.CCW) {
                                             waistIsUsable = false
                                             sendParser.ControlAcceleratedSpeed(
                                                 CareRobotMC.Waist.byte,
@@ -1156,7 +1156,7 @@ class MainActivity : AppCompatActivity() {
                 when (sharedViewModel.controlPart.value) {
                     CareRobotMC.Waist.byte -> {
                         val tmp = getDirectionRPM(it)
-                        sharedViewModel.controlDirection = tmp.LeftDirection
+                        sharedViewModel.waistControlDirection = tmp.LeftDirection
                         if (waistIsUsable) {
 //                            isAnotherJob = true
                             sendParser.ControlAcceleratedSpeed(
@@ -1177,6 +1177,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     CareRobotMC.Right_Shoulder.byte -> {
 //                        isAnotherJob = true
+                        if (sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder.byte]?.max_Alert == true){
                         val tmp = getShoulderDirectionRPM(it)
                         sendParser.ControlAcceleratedSpeed(
                             CareRobotMC.Right_Shoulder.byte,
@@ -1184,11 +1185,13 @@ class MainActivity : AppCompatActivity() {
                             tmp.Right,
                             0.1f
                         )
-                        sharedViewModel.controlDirection = tmp.RightDirection
+                        sharedViewModel.rightControlDirection = tmp.RightDirection
                         if (controllerPad.isUsable) {
 //                            sendProtocolToSerial(sendParser.Data!!.clone())
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                                 sendParser.Data!!.clone()
+                        }
+
                         }
 //                        isAnotherJob = false
                     }
@@ -1201,7 +1204,7 @@ class MainActivity : AppCompatActivity() {
                             tmp.Left,
                             0.1f
                         )
-                        sharedViewModel.controlDirection = tmp.LeftDirection
+                        sharedViewModel.leftControlDirection = tmp.LeftDirection
                         if (controllerPad.isUsable) {
 //                            sendProtocolToSerial(sendParser.Data!!.clone())
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
@@ -1477,11 +1480,11 @@ class MainActivity : AppCompatActivity() {
 //                sendProtocolToSerial(nuriMC.Data!!.clone())
             } else {
                 val sedate = ByteArray(22)
-                sendParser.ControlPosSpeed(id_1, Direction.CCW.direction, 0f, 0f)
+                sendParser.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
 //                sendParser.Data!!.clone().copyInto(sedate, 0, 0, sendParser.Data!!.size)
                 sharedViewModel.sendProtocolMap[id_1] = sendParser.Data!!.clone()
 
-                sendParser.ControlPosSpeed(id_2, Direction.CCW.direction, 0f, 0f)
+                sendParser.ControlAcceleratedSpeed(id_2, Direction.CCW.direction, 0f, 0.1f)
 //                sendParser.Data!!.clone().copyInto(sedate, 11, 0, sendParser.Data!!.size)
                 sharedViewModel.sendProtocolMap[id_2] = sendParser.Data!!.clone()
 
@@ -1538,7 +1541,7 @@ class MainActivity : AppCompatActivity() {
                                 sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
                             val leftShoulder_tmp =
                                 sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
-                            if (rightShoulder_tmp?.position!! > 2 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 10) {
+                            if (rightShoulder_tmp?.position!! > 2 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 80) {
                                 right_ShoulderSet = false
                                 if (rightShoulder_tmp?.position!! < 4) {
                                     nuriMC.ControlAcceleratedSpeed(
@@ -1557,6 +1560,7 @@ class MainActivity : AppCompatActivity() {
 
                                     )
                                 }
+                                sharedViewModel.rightControlDirection = Direction.CW
                                 val data = nuriMC.Data!!.clone()
                                 sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                                     data
@@ -1564,7 +1568,7 @@ class MainActivity : AppCompatActivity() {
 //                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                                dataHandler.sendMessage(msg)
                                 Thread.sleep(40)
-                            } else if (rightShoulder_tmp.min_Range!! < rightShoulder_tmp.position!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 10) {
+                            } else if (rightShoulder_tmp.min_Range!! < rightShoulder_tmp.position!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 80) {
                                 right_ShoulderSet = false
                                 if (rightShoulder_tmp.position!! > 362) {
                                     nuriMC.ControlAcceleratedSpeed(
@@ -1581,6 +1585,7 @@ class MainActivity : AppCompatActivity() {
                                         0.1f
                                     )
                                 }
+                                sharedViewModel.rightControlDirection = Direction.CCW
                                 val data = nuriMC.Data!!.clone()
                                 sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                                     data
@@ -1601,7 +1606,7 @@ class MainActivity : AppCompatActivity() {
                                 right_ShoulderSet = true
                             }
 
-                            if (leftShoulder_tmp?.position!! > 2 && leftShoulder_tmp.position!! <= leftShoulder_tmp.min_Range!! + 10) {
+                            if (leftShoulder_tmp?.position!! > 2 && leftShoulder_tmp.position!! <= leftShoulder_tmp.min_Range!! + 80) {
                                 left_ShoulderSet = false
                                 if (leftShoulder_tmp.position!! < 4) {
                                     nuriMC.ControlAcceleratedSpeed(
@@ -1618,6 +1623,7 @@ class MainActivity : AppCompatActivity() {
                                         0.1f
                                     )
                                 }
+                                sharedViewModel.leftControlDirection = Direction.CW
                                 val data = nuriMC.Data!!.clone()
 //                                val msg =
 //                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
@@ -1625,7 +1631,7 @@ class MainActivity : AppCompatActivity() {
                                 sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                                     data
                                 Thread.sleep(40)
-                            } else if (leftShoulder_tmp.position!! > leftShoulder_tmp.min_Range!! && leftShoulder_tmp.position!! > leftShoulder_tmp.max_Range!! - 10) {
+                            } else if (leftShoulder_tmp.position!! > leftShoulder_tmp.min_Range!! && leftShoulder_tmp.position!! > leftShoulder_tmp.max_Range!! - 80) {
                                 left_ShoulderSet = false
                                 if (leftShoulder_tmp.position!! > 362) {
                                     nuriMC.ControlAcceleratedSpeed(
@@ -1643,6 +1649,8 @@ class MainActivity : AppCompatActivity() {
                                     )
                                 }
                                 val data = nuriMC.Data!!.clone()
+                                sharedViewModel.leftControlDirection = Direction.CCW
+
 //                                val msg =
 //                                    dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                                dataHandler.sendMessage(msg)
@@ -1799,7 +1807,7 @@ class MainActivity : AppCompatActivity() {
                             sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]
                         val leftShoulder_tmp =
                             sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]
-                        if (rightShoulder_tmp?.position!! > 181 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 10) {
+                        if (rightShoulder_tmp?.position!! > 181 && rightShoulder_tmp.position!! <= rightShoulder_tmp.min_Range!! + 80) {
                             right_ShoulderSet = false
                             if (rightShoulder_tmp.position!! < 184) {
                                 nuriMC.ControlAcceleratedSpeed(
@@ -1816,13 +1824,14 @@ class MainActivity : AppCompatActivity() {
                                     0.1f
                                 )
                             }
+                            sharedViewModel.rightControlDirection = Direction.CW
                             val data = nuriMC.Data!!.clone()
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                                 data
 //                            Thread.sleep(20)
-                        } else if (rightShoulder_tmp.position!! > rightShoulder_tmp.min_Range!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 10) {
+                        } else if (rightShoulder_tmp.position!! > rightShoulder_tmp.min_Range!! && rightShoulder_tmp.position!! > rightShoulder_tmp.max_Range!! - 80) {
                             right_ShoulderSet = false
                             nuriMC.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Shoulder.byte,
@@ -1834,6 +1843,8 @@ class MainActivity : AppCompatActivity() {
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)
 //                            Thread.sleep(20)
+                            sharedViewModel.rightControlDirection = Direction.CCW
+
                             sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                                 data
                             Thread.sleep(40)
@@ -1854,6 +1865,8 @@ class MainActivity : AppCompatActivity() {
                                     0.1f
                                 )
                             }
+                            sharedViewModel.rightControlDirection = Direction.CCW
+
                             val data = nuriMC.Data!!.clone()
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)
@@ -1874,7 +1887,7 @@ class MainActivity : AppCompatActivity() {
                             right_ShoulderSet = true
                         }
 
-                        if (leftShoulder_tmp?.position!! < 179 && leftShoulder_tmp.position!! >= leftShoulder_tmp.max_Range!! - 10) {
+                        if (leftShoulder_tmp?.position!! < 179 && leftShoulder_tmp.position!! >= leftShoulder_tmp.max_Range!! - 80) {
                             left_ShoulderSet = false
                             if (leftShoulder_tmp.position!! > 176) {
                                 nuriMC.ControlAcceleratedSpeed(
@@ -1892,6 +1905,8 @@ class MainActivity : AppCompatActivity() {
                                     0.1f
                                 )
                             }
+                            sharedViewModel.leftControlDirection = Direction.CCW
+
                             val data = nuriMC.Data!!.clone()
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)
@@ -1899,7 +1914,7 @@ class MainActivity : AppCompatActivity() {
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                                 data
                             Thread.sleep(40)
-                        } else if (leftShoulder_tmp.position!! < leftShoulder_tmp.min_Range!! + 10) {
+                        } else if (leftShoulder_tmp.position!! < leftShoulder_tmp.min_Range!! + 80) {
                             left_ShoulderSet = false
                             nuriMC.ControlAcceleratedSpeed(
                                 CareRobotMC.Left_Shoulder.byte,
@@ -1907,6 +1922,8 @@ class MainActivity : AppCompatActivity() {
                                 2f,
                                 0.1f
                             )
+                            sharedViewModel.leftControlDirection = Direction.CW
+
                             val data = nuriMC.Data!!.clone()
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)
@@ -1931,6 +1948,8 @@ class MainActivity : AppCompatActivity() {
                                     0.1f
                                 )
                             }
+                            sharedViewModel.leftControlDirection = Direction.CW
+
                             val data = nuriMC.Data!!.clone()
 //                            val msg = dataHandler.obtainMessage(SerialService.MSG_SERIAL_SEND, data)
 //                            dataHandler.sendMessage(msg)

@@ -147,12 +147,12 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                     // min 또는 max에 가깝게 있는가?
                     if (abs(v1) < abs(v2)) {
                         //min이랑 가까울때
-                        if (viewModel.controlDirection != Direction.CW) {
+                        if (viewModel.leftControlDirection != Direction.CW) {
                             tmpInfo.min_Alert = true
                         }
                     } else {
                         //max랑 가까울때
-                        if (viewModel.controlDirection != Direction.CCW) {
+                        if (viewModel.leftControlDirection != Direction.CCW) {
                             tmpInfo.max_Alert = true
                         }
                     }
@@ -229,12 +229,12 @@ class MotorControllerParser(viewModel: SharedViewModel) {
                     if (abs(min) < abs(max)) {
 
                         //min이랑 가까울때
-                        if (viewModel.controlDirection != Direction.CW) {
+                        if (viewModel.rightControlDirection != Direction.CW) {
                             tmpInfo.min_Alert = true
                         }
                     } else {
                         //max랑 가까울때
-                        if (viewModel.controlDirection != Direction.CCW) {
+                        if (viewModel.rightControlDirection != Direction.CCW) {
                             tmpInfo.max_Alert = true
                         }
                     }

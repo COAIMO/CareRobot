@@ -365,7 +365,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
-                        sharedViewModel.controlDirection = Direction.CW
+                        sharedViewModel.leftControlDirection = Direction.CW
 //                        activity?.sendProtocolToSerial(nuriMC.Data!!)
                         sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                             nuriMC.Data!!.clone()
@@ -377,7 +377,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
-                        sharedViewModel.controlDirection = Direction.CW
+                        sharedViewModel.rightControlDirection = Direction.CW
 //                        activity?.sendProtocolToSerial(nuriMC.Data!!)
                         sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                             nuriMC.Data!!.clone()
@@ -401,7 +401,9 @@ class ControlFragment : Fragment() {
                         )
 //                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
 //                        activity?.sendProtocolToSerial(sedate)
-                        sharedViewModel.controlDirection = Direction.CW
+                        sharedViewModel.leftControlDirection = Direction.CW
+                        sharedViewModel.rightControlDirection = Direction.CW
+
                         sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                             nuriMC.Data!!.clone()
                     }
@@ -416,7 +418,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
-                        sharedViewModel.controlDirection = Direction.CCW
+                        sharedViewModel.leftControlDirection = Direction.CCW
 //                        activity?.sendProtocolToSerial(nuriMC.Data!!)
                         sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                             nuriMC.Data!!.clone()
@@ -428,7 +430,7 @@ class ControlFragment : Fragment() {
                             1f,
                             0.1f
                         )
-                        sharedViewModel.controlDirection = Direction.CCW
+                        sharedViewModel.rightControlDirection = Direction.CCW
 //                        activity?.sendProtocolToSerial(nuriMC.Data!!)
                         sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                             nuriMC.Data!!.clone()
@@ -452,7 +454,10 @@ class ControlFragment : Fragment() {
                         )
 //                        nuriMC.Data!!.copyInto(sedate, 10, 0, nuriMC.Data!!.size)
 //                        activity?.sendProtocolToSerial(sedate)
-                        sharedViewModel.controlDirection = Direction.CCW
+//                        sharedViewModel.controlDirection = Direction.CCW
+                        sharedViewModel.leftControlDirection = Direction.CCW
+                        sharedViewModel.rightControlDirection = Direction.CCW
+
                         sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                             nuriMC.Data!!.clone()
                     }
@@ -464,7 +469,7 @@ class ControlFragment : Fragment() {
             }
             mBinding.btnWaistUp -> {
 //                nuriMC.ControlPosSpeed(CareRobotMC.Waist.byte, Direction.CW.direction, 360f, 0.1f)
-                sharedViewModel.controlDirection = Direction.CW
+                sharedViewModel.waistControlDirection = Direction.CW
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Waist.byte,
                     Direction.CW.direction,
@@ -477,7 +482,7 @@ class ControlFragment : Fragment() {
             }
             mBinding.btnWaistDown -> {
 //                nuriMC.ControlPosSpeed(CareRobotMC.Waist.byte, Direction.CCW.direction, 360f, 0.1f)
-                sharedViewModel.controlDirection = Direction.CCW
+                sharedViewModel.waistControlDirection = Direction.CCW
                 nuriMC.ControlAcceleratedSpeed(
                     CareRobotMC.Waist.byte,
                     Direction.CCW.direction,
