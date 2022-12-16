@@ -31,6 +31,9 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             val tmp = receiveParser.GetDataStruct() as NuriPosSpeedAclCtrl
             tmpInfo.motor_id = tmp.ID
             tmpInfo.position = tmp.Pos
+            if (tmp.Speed != null) {
+                tmpInfo.isStop = tmp.Speed!! == 0f
+            }
 
             var exPosition = exPositonhmap[arg[2]]
             if (exPosition == null) {

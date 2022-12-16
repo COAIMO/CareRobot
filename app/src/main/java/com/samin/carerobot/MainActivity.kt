@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     var waistIsUsable = false
     var leftShoulderIsUsable = false
     var rightShoulderIsUsable = false
-
+    var isWheelStop = true
 
     companion object {
         val TAG = "태그"
@@ -714,6 +714,7 @@ class MainActivity : AppCompatActivity() {
                         } else {
                             if (sharedViewModel.controlPart.value == CareRobotMC.Wheel.byte) {
                                 val tmpRPM = getRPMMath(sharedViewModel.left_Joystick.value!!)
+//                                isWheelStop = tmpRPM.Right == 0f || tmpRPM.Left == 0f
                                 moveWheelchair(tmpRPM)
                             } else {
                                 for (i in 0..2) {
@@ -977,6 +978,7 @@ class MainActivity : AppCompatActivity() {
                             }
                             KeyEvent.KEYCODE_BUTTON_X -> {
                                 controllerPad.isUsable = false
+//                                isWheelStop = true
                                 sharedViewModel.isControl.set(0)
                                 sendParser.ControlAcceleratedSpeed(
                                     CareRobotMC.Left_Wheel.byte,
@@ -1090,6 +1092,7 @@ class MainActivity : AppCompatActivity() {
                             }
                             KeyEvent.KEYCODE_BUTTON_X -> {
                                 controllerPad.isUsable = true
+//                                isWheelStop = false
                                 sharedViewModel.isControl.set(CareRobotMC.Wheel.byte.toInt())
                                 sharedViewModel.controlPart.value = CareRobotMC.Wheel.byte
                             }
@@ -1194,8 +1197,30 @@ class MainActivity : AppCompatActivity() {
                     }
                     CareRobotMC.Right_Shoulder.byte -> {
 //                        isAnotherJob = true
-                        if (sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder.byte]?.max_Alert == true){
+                        if (sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]?.position != null) {
+
                             val tmp = getShoulderDirectionRPM(it)
+                            sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]?.position?.let {
+                                if (it in 180f..270f) {
+                                    if (tmp.RightDirection == Direction.CCW)
+                                        return@observe
+
+                                    Log.d(
+                                        "오른쪽 CCW제한",
+                                        "${sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]?.position}"
+                                    )
+                                } else if (it in 270f..360f) {
+                                    if (tmp.RightDirection == Direction.CW)
+                                        return@observe
+
+                                    Log.d(
+                                        "오른쪽 CW제한",
+                                        "${sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder_Encoder.byte]?.position}"
+                                    )
+                                } else {
+
+                                }
+                            }
                             sendParser.ControlAcceleratedSpeed(
                                 CareRobotMC.Right_Shoulder.byte,
                                 (if (tmp.RightDirection == Direction.CW) 0x01 else 0x00).toByte(),
@@ -1208,7 +1233,6 @@ class MainActivity : AppCompatActivity() {
                                 sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
                                     sendParser.Data!!.clone()
                             }
-
                         }
 //                        isAnotherJob = false
                     }
@@ -1227,7 +1251,42 @@ class MainActivity : AppCompatActivity() {
                             sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
                                 sendParser.Data!!.clone()
                         }
-//                        isAnotherJob = false
+                        if (sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.position != null) {
+                            val tmp = getShoulderDirectionRPM(it)
+                            sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.position?.let {
+                                if (it in 90f..180f) {
+                                    if (tmp.RightDirection == Direction.CCW)
+                                        return@observe
+
+                                    Log.d(
+                                        "왼쪽 CCW제한",
+                                        "${sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.position}"
+                                    )
+                                } else if (it in 0f..90f) {
+                                    if (tmp.RightDirection == Direction.CW)
+                                        return@observe
+
+                                    Log.d(
+                                        "왼쪽 CW제한",
+                                        "${sharedViewModel.motorInfo[CareRobotMC.Left_Shoulder_Encoder.byte]?.position}"
+                                    )
+                                } else {
+
+                                }
+                            }
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Left_Shoulder.byte,
+                                (if (tmp.LeftDirection == Direction.CW) 0x01 else 0x00).toByte(),
+                                tmp.Left,
+                                0.1f
+                            )
+                            sharedViewModel.leftControlDirection = tmp.LeftDirection
+                            if (controllerPad.isUsable) {
+//                            sendProtocolToSerial(sendParser.Data!!.clone())
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Left_Shoulder.byte] =
+                                    sendParser.Data!!.clone()
+                            }
+                        }
                     }
                     CareRobotMC.Leg_Angle.byte -> {
 //                        isAnotherJob = true
@@ -2178,8 +2237,9 @@ class MainActivity : AppCompatActivity() {
     val feedbackallList = listOf<Byte>(
         CareRobotMC.Left_Shoulder_Encoder.byte,
         CareRobotMC.Right_Shoulder_Encoder.byte,
-        CareRobotMC.Waist.byte,
-        CareRobotMC.Waist_Sensor.byte
+        CareRobotMC.Waist_Sensor.byte,
+        CareRobotMC.Right_Wheel.byte,
+        CareRobotMC.Left_Wheel.byte
     )
 
 
@@ -2192,9 +2252,45 @@ class MainActivity : AppCompatActivity() {
                         Thread.sleep(30)
                     }
 
-                    if (sharedViewModel.sendProtocolMap.isEmpty()) {
-                        for (i in feedbackallList) {
-                            sendParser.Feedback(i, ProtocolMode.REQPos.byte)
+//                    if (sharedViewModel.sendProtocolMap.isEmpty()) {
+                    for (i in feedbackallList) {
+                        sendParser.Feedback(i, ProtocolMode.REQPos.byte)
+                        val data = sendParser.Data!!.clone()
+                        val msg =
+                            usbSerialHandler.obtainMessage(
+                                UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                                data
+                            )
+                        usbSerialHandler.sendMessage(msg)
+                        Log.d(
+                            "feedback",
+                            "handler_send : ${HexDump.toHexString(msg.obj as ByteArray)}\t"
+                        )
+                        sharedViewModel.sendProtocolMap[i] = data
+                        Thread.sleep(50)
+                    }
+
+//                    } else {
+                    for (i in sharedViewModel.sendProtocolMap) {
+                        //이전 보낸 데이터와 현재 데이터가 같이 않을경우
+                        if (!sharedViewModel.exProtocolMap[i.key].contentEquals(i.value)) {
+                            val msg =
+                                usbSerialHandler.obtainMessage(
+                                    UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                                    i.value
+                                )
+                            usbSerialHandler.sendMessage(msg)
+                            Log.d("보내는거 다를경우", "${HexDump.toHexString(i.value)}")
+
+                            //데이터를 보낸다.
+                        } else {
+                            //이전 보낸 데이터와 현재 데이터가 같을경우
+                            if (sharedViewModel.isControl.get() == CareRobotMC.Waist_Sensor.byte.toInt())
+                                if (!feedbackWaistList.contains(i.key))
+                                    continue
+                            // 컨트롤 부분이 허리 센서가 아닐경우 계속
+
+                            sendParser.Feedback(i.key, ProtocolMode.REQPos.byte)
                             val data = sendParser.Data!!.clone()
                             val msg =
                                 usbSerialHandler.obtainMessage(
@@ -2202,51 +2298,32 @@ class MainActivity : AppCompatActivity() {
                                     data
                                 )
                             usbSerialHandler.sendMessage(msg)
-                            Log.d(
-                                "feedback",
-                                "handler_send : ${HexDump.toHexString(msg.obj as ByteArray)}\t"
-                            )
-                            sharedViewModel.sendProtocolMap[i] = data
-                            Thread.sleep(50)
+                            Log.d("보내는거", "${HexDump.toHexString(data)}")
+                            sharedViewModel.sendProtocolMap[i.key] = data
                         }
 
-                    } else {
-                        for (i in sharedViewModel.sendProtocolMap) {
-                            //이전 보낸 데이터와 현재 데이터가 같이 않을경우
-                            if (!sharedViewModel.exProtocolMap[i.key].contentEquals(i.value)) {
-                                val msg =
-                                    usbSerialHandler.obtainMessage(
-                                        UsbSerialService.MSG_ROBOT_SERIAL_SEND,
-                                        i.value
-                                    )
-                                usbSerialHandler.sendMessage(msg)
-                                Log.d("보내는거 다를경우", "${HexDump.toHexString(i.value)}")
-
-                                //데이터를 보낸다.
-                            } else {
-                                //이전 보낸 데이터와 현재 데이터가 같을경우
-                                if (sharedViewModel.isControl.get() == CareRobotMC.Waist_Sensor.byte.toInt())
-                                    if (!feedbackWaistList.contains(i.key))
-                                        continue
-                                // 컨트롤 부분이 허리 센서가 아닐경우 계속
-
-                                sendParser.Feedback(i.key, ProtocolMode.REQPos.byte)
-                                val data = sendParser.Data!!.clone()
-                                val msg =
-                                    usbSerialHandler.obtainMessage(
-                                        UsbSerialService.MSG_ROBOT_SERIAL_SEND,
-                                        data
-                                    )
-                                usbSerialHandler.sendMessage(msg)
-                                Log.d("보내는거", "${HexDump.toHexString(data)}")
-                                sharedViewModel.sendProtocolMap[i.key] = data
-                            }
-
-                            Thread.sleep(50)
-                            sharedViewModel.exProtocolMap[i.key] = i.value
-                        }
-
+                        Thread.sleep(50)
+                        sharedViewModel.exProtocolMap[i.key] = i.value
                     }
+
+
+//                    if (isWheelStop){
+//
+//                        for (i in 6..7){
+//                            sendParser.ControlAcceleratedSpeed(i.toByte(), Direction.CCW.direction, 0f, 0.1f)
+//                            val data = sendParser.Data!!.clone()
+//                            val msg =
+//                                usbSerialHandler.obtainMessage(
+//                                    UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+//                                    data
+//                                )
+//                            usbSerialHandler.sendMessage(msg)
+//                            Log.d("스탑", "${HexDump.toHexString(data)}")
+//                            Thread.sleep(50)
+//                        }
+//                    }
+
+//                    }
 //                    if (sharedViewModel.isControl.get() == CareRobotMC.Waist_Sensor.byte.toInt()) {
 //                        sendParser.Feedback(CareRobotMC.Waist_Sensor.byte, ProtocolMode.REQPos.byte)
 //                        val data = sendParser.Data!!.clone()
@@ -2270,6 +2347,7 @@ class MainActivity : AppCompatActivity() {
                     e.printStackTrace()
                 }
             }
+            Log.d("dead", "dead")
         }
         feedBackMotorStateInfoThread?.start()
     }
