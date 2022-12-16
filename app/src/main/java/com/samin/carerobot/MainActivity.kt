@@ -139,8 +139,18 @@ class MainActivity : AppCompatActivity() {
                     Toast.LENGTH_SHORT
                 ).show()
                 UsbManager.ACTION_USB_DEVICE_DETACHED -> {
-                    unbindUsbSerialService()
-                    android.os.Process.killProcess(android.os.Process.myPid())
+                    Toast.makeText(
+                        context,
+                        "USB가 해제 되었습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+//                    unbindUsbSerialService()
+//                    android.os.Process.killProcess(android.os.Process.myPid())
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        //실행할 코드
+                        unbindUsbSerialService()
+                        android.os.Process.killProcess(android.os.Process.myPid())
+                    }, 3000)
                 }
                 BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
                     for (i in 0..2) {
@@ -349,11 +359,18 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(
                         this@MainActivity,
                         "USB가 정상적으로 연결되었는지 확인해주세요.",
-                        Toast.LENGTH_LONG
+                        Toast.LENGTH_SHORT
                     ).show()
-                    Thread.sleep(3000)
-                    unbindUsbSerialService()
-                    android.os.Process.killProcess(android.os.Process.myPid())
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        //실행할 코드
+                        unbindUsbSerialService()
+                        android.os.Process.killProcess(android.os.Process.myPid())
+                    }, 3000)
+
+//                    Thread.sleep(5000)
+//                    unbindUsbSerialService()
+//                    android.os.Process.killProcess(android.os.Process.myPid())
                 }
                 UsbSerialService.MSG_ROBOT_SERIAL_SEND -> {
                     sendProtocolToRobot(msg.obj as ByteArray)
@@ -1178,19 +1195,19 @@ class MainActivity : AppCompatActivity() {
                     CareRobotMC.Right_Shoulder.byte -> {
 //                        isAnotherJob = true
                         if (sharedViewModel.motorInfo[CareRobotMC.Right_Shoulder.byte]?.max_Alert == true){
-                        val tmp = getShoulderDirectionRPM(it)
-                        sendParser.ControlAcceleratedSpeed(
-                            CareRobotMC.Right_Shoulder.byte,
-                            (if (tmp.RightDirection == Direction.CW) 0x01 else 0x00).toByte(),
-                            tmp.Right,
-                            0.1f
-                        )
-                        sharedViewModel.rightControlDirection = tmp.RightDirection
-                        if (controllerPad.isUsable) {
+                            val tmp = getShoulderDirectionRPM(it)
+                            sendParser.ControlAcceleratedSpeed(
+                                CareRobotMC.Right_Shoulder.byte,
+                                (if (tmp.RightDirection == Direction.CW) 0x01 else 0x00).toByte(),
+                                tmp.Right,
+                                0.1f
+                            )
+                            sharedViewModel.rightControlDirection = tmp.RightDirection
+                            if (controllerPad.isUsable) {
 //                            sendProtocolToSerial(sendParser.Data!!.clone())
-                            sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
-                                sendParser.Data!!.clone()
-                        }
+                                sharedViewModel.sendProtocolMap[CareRobotMC.Right_Shoulder.byte] =
+                                    sendParser.Data!!.clone()
+                            }
 
                         }
 //                        isAnotherJob = false
