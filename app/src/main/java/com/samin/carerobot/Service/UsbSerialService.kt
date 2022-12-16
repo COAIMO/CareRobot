@@ -207,6 +207,11 @@ class UsbSerialService : Service() {
     override fun onDestroy() {
 //        Log.d(serviceTAG, "SerialService : onDestroy")
         unregisterReceiver(broadcastReceiver)
+        robotIOManager?.stop();
+        pcIOmanager?.stop();
+        usbConnection_1?.close();
+        usbConnection_2?.close();
+
         super.onDestroy()
     }
 
@@ -278,21 +283,28 @@ class UsbSerialService : Service() {
     private fun serialPortConnect(port_1_Buadrate: Int?, port_2_Buadrate: Int?) {
         if (usbManager != null) {
             if (usbManager.hasPermission(device_1) && usbSerialPort_1 == null) {
-                usbConnection_1 = usbManager.openDevice(device_1)
-                usbSerialPort_1 = usbDriver_1.ports[0]
-                usbSerialPort_1!!.open(usbConnection_1)
-                usbSerialPort_1!!.setParameters(
-                    port_1_Buadrate!!,
-                    UsbSerialPort.DATABITS_8,
-                    UsbSerialPort.STOPBITS_1,
-                    UsbSerialPort.PARITY_NONE
-                )
-                usbSerialPort_1!!.dtr = true
-                usbSerialPort_1!!.rts = true
-                usbIoManager_1 = SerialInputOutputManager(usbSerialPort_1, port1_Listener)
-                usbIoManager_1!!.readTimeout = 10
-                usbIoManager_1!!.start()
-                serialPort_1Connected = true
+                try {
+                    usbConnection_1 = usbManager.openDevice(device_1)
+                    usbSerialPort_1 = usbDriver_1.ports[0]
+                    usbSerialPort_1!!.open(usbConnection_1)
+                    usbSerialPort_1!!.setParameters(
+                        port_1_Buadrate!!,
+                        UsbSerialPort.DATABITS_8,
+                        UsbSerialPort.STOPBITS_1,
+                        UsbSerialPort.PARITY_NONE
+                    )
+                    usbSerialPort_1!!.dtr = true
+                    usbSerialPort_1!!.rts = true
+                    usbIoManager_1 = SerialInputOutputManager(usbSerialPort_1, port1_Listener)
+                    usbIoManager_1!!.readTimeout = 10
+                    usbIoManager_1!!.start()
+                    serialPort_1Connected = true
+                } catch (ex: java.lang.Exception) {
+                    ex.printStackTrace()
+                    val message = Message.obtain(null, MSG_ERROR)
+                    incomingHandler?.sendMSG(message)
+                    return
+                }
 
 //                val msg: Message = mHandler.obtainMessage().apply {
 //                    what = PORT1_CHK_CONNECTED
@@ -309,22 +321,29 @@ class UsbSerialService : Service() {
             }
 
             if (usbManager!!.hasPermission(device_2) && usbSerialPort_2 == null) {
+                try {
+                    usbConnection_2 = usbManager!!.openDevice(device_2)
+                    usbSerialPort_2 = usbDriver_2!!.ports[0]
+                    usbSerialPort_2!!.open(usbConnection_2)
+                    usbSerialPort_2!!.setParameters(
+                        port_2_Buadrate!!,
+                        UsbSerialPort.DATABITS_8,
+                        UsbSerialPort.STOPBITS_1,
+                        UsbSerialPort.PARITY_NONE
+                    )
+                    usbSerialPort_2!!.dtr = true
+                    usbSerialPort_2!!.rts = true
+                    usbIoManager_2 = SerialInputOutputManager(usbSerialPort_2, port2_Listener)
+                    usbIoManager_2!!.readTimeout = 10
+                    usbIoManager_2!!.start()
+                    serialPort_2Connected = true
+                } catch (ex: java.lang.Exception) {
+                    ex.printStackTrace()
+                    val message = Message.obtain(null, MSG_ERROR)
+                    incomingHandler?.sendMSG(message)
+                    return
+                }
 
-                usbConnection_2 = usbManager!!.openDevice(device_2)
-                usbSerialPort_2 = usbDriver_2!!.ports[0]
-                usbSerialPort_2!!.open(usbConnection_2)
-                usbSerialPort_2!!.setParameters(
-                    port_2_Buadrate!!,
-                    UsbSerialPort.DATABITS_8,
-                    UsbSerialPort.STOPBITS_1,
-                    UsbSerialPort.PARITY_NONE
-                )
-                usbSerialPort_2!!.dtr = true
-                usbSerialPort_2!!.rts = true
-                usbIoManager_2 = SerialInputOutputManager(usbSerialPort_2, port2_Listener)
-                usbIoManager_2!!.readTimeout = 10
-                usbIoManager_2!!.start()
-                serialPort_2Connected = true
 //                val msg: Message = mHandler.obtainMessage().apply {
 //                    what = PORT2_CHK_CONNECTED
 //                    arg1 = 1
@@ -411,15 +430,20 @@ class UsbSerialService : Service() {
         isFirst = true
         serialPort_1Connected = false
         serialPort_2Connected = false
+        usbIoManager_1?.stop()
+        usbIoManager_2?.stop()
         usbIoManager_1 = null
         usbIoManager_2 = null
-        usbDrivers = null
         try {
             usbSerialPort_1?.close()
             usbSerialPort_2?.close()
 
+            usbConnection_1?.close()
+            usbConnection_2?.close()
         } catch (ignored: IOException) {
+            ignored.printStackTrace();
         }
+        usbDrivers = null
         usbSerialPort_1 = null
         usbSerialPort_2 = null
     }
