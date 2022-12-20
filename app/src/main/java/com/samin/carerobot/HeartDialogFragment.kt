@@ -11,6 +11,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.activityViewModels
+import com.samin.carerobot.Logics.HexDump
+import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.Nuri.PC_Protocol
 import com.samin.carerobot.Nuri.SpeechMode
 import com.samin.carerobot.databinding.FragmentHeartDialogBinding
@@ -30,6 +33,7 @@ class HeartDialogFragment : DialogFragment() {
     private var param1: String? = null
     private var param2: String? = null
     private lateinit var mBinding: FragmentHeartDialogBinding
+    private val sharedViewModel by activityViewModels<SharedViewModel>()
     private var activity: MainActivity? = null
 
     override fun onAttach(context: Context) {
@@ -75,6 +79,7 @@ class HeartDialogFragment : DialogFragment() {
     override fun onDismiss(dialog: DialogInterface) {
         pcProtocol.setSpeech(SpeechMode.TOUCH_WAITTING_SCREEN.byte)
         val data = pcProtocol.Data!!.clone()
+        sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
         activity?.sendProtocolToPC(data)
         super.onDismiss(dialog)
     }

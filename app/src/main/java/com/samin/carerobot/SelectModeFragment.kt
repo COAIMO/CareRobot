@@ -17,11 +17,14 @@ import android.widget.RadioGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.MutableLiveData
+import com.samin.carerobot.Logics.HexDump
 import com.samin.carerobot.Logics.SharedViewModel
 import com.samin.carerobot.Logics.WheelSpeed
 import com.samin.carerobot.Nuri.PC_Protocol
 import com.samin.carerobot.Nuri.SpeechMode
 import com.samin.carerobot.databinding.FragmentSelectModeBinding
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.concurrent.timer
 
@@ -104,6 +107,7 @@ class SelectModeFragment : Fragment() {
                 isAnimate = false
                 sharedViewModel.usingMic.value = false
                 (mBinding.ivMic.drawable as AnimatedVectorDrawable).stop()
+                sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
             } else {
                 uiTimer?.purge()
                 uiTimer?.cancel()
@@ -114,6 +118,7 @@ class SelectModeFragment : Fragment() {
                 isAnimate = true
                 sharedViewModel.usingMic.value = true
                 (mBinding.ivMic.drawable as AnimatedVectorDrawable).start()
+                sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
             }
         }
 
@@ -123,6 +128,7 @@ class SelectModeFragment : Fragment() {
                     pcProtocol.setSpeech(SpeechMode.TOUCH_MIC_OFF.byte)
                     val data = pcProtocol.Data!!.clone()
                     activity?.sendProtocolToPC(data)
+                    sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
                     isAnimate = false
                     setUITimer()
                     sharedViewModel.usingMic.postValue(false)
@@ -144,6 +150,17 @@ class SelectModeFragment : Fragment() {
             WheelSpeed.Third.speed ->
                 mBinding.btn3rdSpeed.isChecked = true
         }
+
+        sharedViewModel.pcProtocol.observe(viewLifecycleOwner){
+            mBinding.recvProtocolTime.text  = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME).toString()
+            mBinding.recvProtocol.text = it
+        }
+
+        sharedViewModel.pcsendProtocol.observe(viewLifecycleOwner){
+            mBinding.sendProtocolTime.text =LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_TIME).toString()
+            mBinding.sendProtocol.text = it
+        }
+
         return mBinding.root
     }
 
@@ -167,12 +184,14 @@ class SelectModeFragment : Fragment() {
         mBinding.ivHeart1.setOnClickListener {
             pcProtocol.setSpeech(SpeechMode.TOUCH_BUTTON_1.byte)
             val data = pcProtocol.Data!!.clone()
+            sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
             activity?.sendProtocolToPC(data)
         }
         mBinding.ivHeart2.setOnClickListener {
             pcProtocol.setSpeech(SpeechMode.TOUCH_BUTTON_2.byte)
             val data = pcProtocol.Data!!.clone()
             activity?.sendProtocolToPC(data)
+            sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
             activity?.stopRobot()
         }
         mBinding.radioGroup.setOnCheckedChangeListener{ group, checkId ->
@@ -197,24 +216,28 @@ class SelectModeFragment : Fragment() {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CARRY
                 pcProtocol.setSpeech(SpeechMode.TOUCH_CARRYMODE.byte)
                 val data = pcProtocol.Data!!.clone()
+                sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
                 activity?.sendProtocolToPC(data)
             }
             mBinding.btnBehaviorMode -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_BEHAVIOR
                 pcProtocol.setSpeech(SpeechMode.TOUCH_BEHAVIORMODE.byte)
                 val data = pcProtocol.Data!!.clone()
+                sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
                 activity?.sendProtocolToPC(data)
             }
             mBinding.btnChangeMode -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_CHANGE
                 pcProtocol.setSpeech(SpeechMode.TOUCH_CHANGEMODE.byte)
                 val data = pcProtocol.Data!!.clone()
+                sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
                 activity?.sendProtocolToPC(data)
             }
             mBinding.btnAllMode -> {
                 sharedViewModel.viewState.value = SharedViewModel.MODE_ALL
                 pcProtocol.setSpeech(SpeechMode.TOUCH_ALLMODE.byte)
                 val data = pcProtocol.Data!!.clone()
+                sharedViewModel.pcsendProtocol.value = HexDump.toHexString(data)
                 activity?.sendProtocolToPC(data)
             }
         }

@@ -65,6 +65,7 @@ class UsbSerialService : Service() {
         const val MSG_STOP_ROBOT = 15
         const val MSG_MOVE_ROBOT = 16
         const val MSG_SET_SPEED = 17
+        const val MSG_PC_PROTOCOL = 21
 
         const val MSG_ROBOT_SERIAL_SEND = 18
         const val MSG_PC_SERIAL_SEND = 19
@@ -687,14 +688,20 @@ class UsbSerialService : Service() {
                 PC_ProtocolMode.StopRobot.byte -> {
                     val message = Message.obtain(null, MSG_STOP_ROBOT, data)
                     incomingHandler?.sendMSG(message)
+                    val msg = Message.obtain(null, MSG_PC_PROTOCOL, receiveParser.Data!!)
+                    incomingHandler?.sendMSG(msg)
                 }
                 PC_ProtocolMode.MoveRobot.byte -> {
                     val message = Message.obtain(null, MSG_MOVE_ROBOT, receiveParser.Data!![6])
                     incomingHandler?.sendMSG(message)
+                    val msg = Message.obtain(null, MSG_PC_PROTOCOL, receiveParser.Data!!)
+                    incomingHandler?.sendMSG(msg)
                 }
                 PC_ProtocolMode.SETSPEED.byte -> {
                     val message = Message.obtain(null, MSG_SET_SPEED, receiveParser.Data!![6])
                     incomingHandler?.sendMSG(message)
+                    val msg = Message.obtain(null, MSG_PC_PROTOCOL, receiveParser.Data!!)
+                    incomingHandler?.sendMSG(msg)
                 }
                 PC_ProtocolMode.FEEDSPEECH.byte -> {
 

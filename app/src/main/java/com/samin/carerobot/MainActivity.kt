@@ -195,11 +195,16 @@ class MainActivity : AppCompatActivity() {
                 }
                 UsbSerialService.SERIALPORT_READY -> {
                     isFeedBack = true
-                    Thread.sleep(500)
-                    feedback()
-                    observeMotorState()
-                    observeWasteState()
-                    loadingView.dismiss()
+//                    Thread.sleep(500)
+
+
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        //실행할 코드
+                        feedback()
+                        observeMotorState()
+                        observeWasteState()
+                        loadingView.dismiss()
+                    }, 500)
                 }
                 UsbSerialService.MSG_STOP_ROBOT -> {
                     for (i in 0..2) {
@@ -387,6 +392,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 ProtocolMode.FEEDPos.byte.toInt() -> {
                     motorControllerParser.parser(msg.obj as ByteArray)
+                }
+                UsbSerialService.MSG_PC_PROTOCOL ->{
+                    val data = msg.obj as ByteArray
+                    sharedViewModel.pcProtocol.value = HexDump.toHexString(data)
                 }
                 else -> super.handleMessage(msg)
             }
@@ -1569,8 +1578,11 @@ class MainActivity : AppCompatActivity() {
                 sendParser.ControlAcceleratedSpeed(id_1, Direction.CCW.direction, 0f, 0.1f)
                 sharedViewModel.sendProtocolMap[id_1] = sendParser.Data!!.clone()
 
+                Log.d("바퀴","왼 ${HexDump.toHexString(sendParser.Data!!.clone())}")
                 sendParser.ControlAcceleratedSpeed(id_2, Direction.CCW.direction, 0f, 0.1f)
                 sharedViewModel.sendProtocolMap[id_2] = sendParser.Data!!.clone()
+                Log.d("바퀴","오 ${HexDump.toHexString(sendParser.Data!!.clone())}")
+
             }
         }
     }
@@ -1594,6 +1606,7 @@ class MainActivity : AppCompatActivity() {
         for (i in stopList) {
             sendParser.ControlAcceleratedSpeed(i.toByte(), Direction.CCW.direction, 0f, 0.1f)
             sharedViewModel.sendProtocolMap[i.toByte()] = sendParser.Data!!.clone()
+
 //            sendProtocolToSerial(nuriMC.Data!!.clone())
 //            Thread.sleep(20)
         }
@@ -2266,21 +2279,37 @@ class MainActivity : AppCompatActivity() {
                         Thread.sleep(30)
                     }
                     // 휠 컨트롤 할 경우
-                    if (isWheelControl) {
-                        // 왼쪽 오른쪽 휠 피드백만 보냄
-                        for (i in wheelLst) {
-                            sendParser.Feedback(i, ProtocolMode.REQPos.byte)
-                            val data = sendParser.Data!!.clone()
-                            val msg =
-                                usbSerialHandler.obtainMessage(
-                                    UsbSerialService.MSG_ROBOT_SERIAL_SEND,
-                                    data
-                                )
-                            usbSerialHandler.sendMessage(msg)
-                            Thread.sleep(50)
-                        }
-                    } else {
-                        // 휠 컨트롤 할 경우
+//                    if (isWheelControl) {
+////                        // 왼쪽 오른쪽 휠 피드백만 보냄
+////                        for (i in wheelLst) {
+////                            sendParser.Feedback(i, ProtocolMode.REQPos.byte)
+////                            val data = sendParser.Data!!.clone()
+////                            val msg =
+////                                usbSerialHandler.obtainMessage(
+////                                    UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+////                                    data
+////                                )
+////                            usbSerialHandler.sendMessage(msg)
+////                            Thread.sleep(50)
+////                        }
+//                    } else {
+//                        // 휠 컨트롤 안 할 경우
+//                        for (i in topLst) {
+//                            // 왼쪽 오른쪽 엔코더, 허리센서 피드백만 보냄
+//                            sendParser.Feedback(i, ProtocolMode.REQPos.byte)
+//                            val data = sendParser.Data!!.clone()
+//                            val msg =
+//                                usbSerialHandler.obtainMessage(
+//                                    UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+//                                    data
+//                                )
+//                            usbSerialHandler.sendMessage(msg)
+//                            Thread.sleep(30)
+//                        }
+//                    }
+
+                    if (!isWheelControl) {
+//                        // 왼쪽 오른쪽 휠 피드백만 보냄
                         for (i in topLst) {
                             // 왼쪽 오른쪽 엔코더, 허리센서 피드백만 보냄
                             sendParser.Feedback(i, ProtocolMode.REQPos.byte)
@@ -2291,14 +2320,11 @@ class MainActivity : AppCompatActivity() {
                                     data
                                 )
                             usbSerialHandler.sendMessage(msg)
-                            Thread.sleep(50)
+                            Thread.sleep(30)
                         }
                     }
 
-
                     for (i in sharedViewModel.sendProtocolMap) {
-
-//                        if (!sharedViewModel.exProtocolMap[i.key].contentEquals(i.value)) {
                             if (isWheelControl) {
                                 if (i.key == CareRobotMC.Right_Wheel.byte || i.key == CareRobotMC.Left_Wheel.byte) {
                                     val msg =
@@ -2310,6 +2336,79 @@ class MainActivity : AppCompatActivity() {
                                 }
                             } else {
                                 if (i.key != CareRobotMC.Right_Wheel.byte || i.key != CareRobotMC.Left_Wheel.byte) {
+
+                                    if (i.key == 1.toByte()) {
+                                        Log.d("1번", "${sharedViewModel.motorInfo[11]} ${i.value[6]} ${i.value[7]} ${i.value[8]}");
+
+                                        if (sharedViewModel.motorInfo[11]?.position!! in 90f..180f) {
+                                            if(i.value[6] == 1.toByte()) {
+
+                                                if (!(i.value[7] == 0.toByte() && i.value[8] == 0.toByte())) {
+                                                    Thread.sleep(5)
+                                                    continue
+                                                }
+                                            }
+                                        }
+                                        else if (sharedViewModel.motorInfo[11]?.position!! in 0f..90f) {
+                                            if(i.value[6] == 0.toByte()) {
+                                                if (!(i.value[7] == 0.toByte() && i.value[8] == 0.toByte())) {
+                                                    Thread.sleep(5)
+                                                    continue
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (i.key == 3.toByte()) {
+                                        Log.d("1번", "${sharedViewModel.motorInfo[13]} ${i.value[6]} ${i.value[7]} ${i.value[8]}");
+
+                                        if (sharedViewModel.motorInfo[13]?.position!! in 180f..270f) {
+                                            if(i.value[6] == 0.toByte()) {
+
+                                                if (!(i.value[7] == 0.toByte() && i.value[8] == 0.toByte())) {
+                                                    Thread.sleep(5)
+                                                    continue
+                                                }
+                                            }
+                                        }
+                                        else if (sharedViewModel.motorInfo[13]?.position!! in 270f..360f) {
+                                            if(i.value[6] == 1.toByte()) {
+                                                if (!(i.value[7] == 0.toByte() && i.value[8] == 0.toByte())) {
+                                                    Thread.sleep(5)
+                                                    continue
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (i.key == 5.toByte()) {
+                                        Log.d("5번", "${sharedViewModel.motorInfo[15]} ${i.value[6]} ${i.value[7]} ${i.value[8]}");
+
+                                        if (sharedViewModel.motorInfo[15]?.sensorData == 1.toByte() ||
+                                            sharedViewModel.motorInfo[15]?.sensorData == 5.toByte()) {
+                                            if(i.value[6] == 1.toByte()) {
+
+                                                if (!(i.value[7] == 0.toByte() && i.value[8] == 0.toByte())) {
+                                                    Thread.sleep(5)
+                                                    continue
+                                                }
+                                            }
+                                        }
+                                        else if (sharedViewModel.motorInfo[15]?.sensorData == 4.toByte() ||
+                                            sharedViewModel.motorInfo[15]?.sensorData == 5.toByte()) {
+                                            if(i.value[6] == 0.toByte()) {
+                                                if (!(i.value[7] == 0.toByte() && i.value[8] == 0.toByte())) {
+                                                    Thread.sleep(5)
+                                                    continue
+                                                }
+                                            }
+                                        }
+                                    }
+
+
+
+
+
                                     val msg =
                                         usbSerialHandler.obtainMessage(
                                             UsbSerialService.MSG_ROBOT_SERIAL_SEND,
@@ -2319,30 +2418,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                             }
                             Log.d("보내는거 다를경우", "${HexDump.toHexString(i.value)}")
-
-                            //데이터를 보낸다.
-//                        }
-//                        else {
-//                            //이전 보낸 데이터와 현재 데이터가 같을경우
-//                            if (sharedViewModel.isControl.get() == CareRobotMC.Waist_Sensor.byte.toInt())
-//                                if (!feedbackWaistList.contains(i.key))
-//                                    continue
-//                            // 컨트롤 부분이 허리 센서가 아닐경우 계속
-//
-//                            sendParser.Feedback(i.key, ProtocolMode.REQPos.byte)
-//                            val data = sendParser.Data!!.clone()
-//                            val msg =
-//                                usbSerialHandler.obtainMessage(
-//                                    UsbSerialService.MSG_ROBOT_SERIAL_SEND,
-//                                    data
-//                                )
-//                            usbSerialHandler.sendMessage(msg)
-//                            Log.d("보내는거", "${HexDump.toHexString(data)}")
-//                            sharedViewModel.sendProtocolMap[i.key] = data
-//                        }
-
-                        Thread.sleep(50)
-                        sharedViewModel.exProtocolMap[i.key] = i.value
+                        Thread.sleep(5)
                     }
 
 

@@ -80,4 +80,7 @@ class SharedViewModel:ViewModel() {
     val usingMic = MutableLiveData<Boolean>()
     var wheelMaxSpeed :Float = WheelSpeed.First.speed
     val waistlstRecvTime = ConcurrentHashMap<Byte, Long>()
+    val pcProtocol = MutableLiveData<String>()
+    val pcsendProtocol = MutableLiveData<String>()
+
 }
