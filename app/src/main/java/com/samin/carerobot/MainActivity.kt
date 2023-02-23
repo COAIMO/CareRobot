@@ -38,7 +38,7 @@ class MainActivity : AppCompatActivity() {
     var waistIsUsable = false
     var leftShoulderIsUsable = false
     var rightShoulderIsUsable = false
-
+    lateinit var testFragment: TestFragment
 
     companion object {
         val TAG = "태그"
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         motorControllerParser = MotorControllerParser(sharedViewModel)
         controllerPad = ControllerPad(sharedViewModel)
         setFragment()
-        checkLogin()
+//        checkLogin()
         moveRobot()
         loadingView = LoadingDialog(this)
         getGameControllerIds()
@@ -99,8 +99,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun setFragment() {
         loginFragment = LoginFragment()
+        testFragment = TestFragment()
         supportFragmentManager.beginTransaction()
-            .replace(R.id.HostFragment_container, loginFragment).commit()
+            .replace(R.id.HostFragment_container, testFragment).commit()
         newAccountFragment = NewAccountFragment()
         mainFragment = MainFragment()
         heartDialogFragment = HeartDialogFragment()
@@ -126,7 +127,7 @@ class MainActivity : AppCompatActivity() {
     val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
-                SerialService.ACTION_USB_PERMISSION_GRANTED -> {
+                UsbSerialService.ACTION_USB_PERMISSION_GRANTED_1 -> {
                     Toast.makeText(
                         context,
                         "시리얼 포트가 정상 연결되었습니다.",
@@ -164,7 +165,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setFilters() {
         val filter = IntentFilter()
-        filter.addAction(SerialService.ACTION_USB_PERMISSION_GRANTED)
+        filter.addAction(UsbSerialService.ACTION_USB_PERMISSION_GRANTED_1)
         filter.addAction(SerialService.ACTION_USB_PERMISSION_NOT_GRANTED)
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
         filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
@@ -178,9 +179,10 @@ class MainActivity : AppCompatActivity() {
             when (msg.what) {
                 UsbSerialService.SERIALPORT_READY -> {
                     isFeedBack = true
-                    feedback()
-                    observeMotorState()
-                    observeWasteState()
+                    motorTest()
+//                    observeMotorState()
+//                    observeWasteState()
+
                 }
                 UsbSerialService.MSG_STOP_ROBOT -> {
                     for (i in 0..2) {
@@ -1967,7 +1969,7 @@ class MainActivity : AppCompatActivity() {
                                 step_1 = false
                                 break
                             }
-                        }else{
+                        } else {
                             step_1 = false
                             right_ShoulderSet = false
                             left_ShoulderSet = false
@@ -2166,6 +2168,225 @@ class MainActivity : AppCompatActivity() {
         CareRobotMC.Waist_Sensor.byte
     )
 
+    val motorfeedbackList = listOf<Byte>(
+        CareRobotMC.Left_Shoulder.byte,
+        CareRobotMC.Right_Shoulder.byte,
+        CareRobotMC.Waist.byte,
+        CareRobotMC.Left_Wheel.byte,
+        CareRobotMC.Right_Wheel.byte,
+        CareRobotMC.Left_Shoulder_Encoder.byte,
+        CareRobotMC.Right_Shoulder_Encoder.byte,
+        CareRobotMC.Waist_Sensor.byte
+    )
+    lateinit var motorTestThread: Thread
+    var isMotorTest = false
+
+    private fun setTestData() {
+        val sendParser = NurirobotMC()
+
+    }
+
+    private fun motorTest() {
+        isMotorTest = true
+        var count = 0
+        motorTestThread = Thread {
+            val sendParser = NurirobotMC()
+            while (isMotorTest) {
+                try {
+                    while (isAnotherJob) {
+                        Thread.sleep(30)
+                    }
+
+//                    for (i in motorfeedbackList) {
+//                        sendParser.Feedback(i, ProtocolMode.REQPos.byte)
+//                        val data = sendParser.Data!!.clone()
+//                        val msg =
+//                            usbSerialHandler.obtainMessage(
+//                                UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+//                                data
+//                            )
+//                        usbSerialHandler.sendMessage(msg)
+//                        Thread.sleep(50)
+//                    }
+                    //올라가는거
+
+                    sharedViewModel.controlDirection = Direction.CW
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Waist.byte,
+                        Direction.CW.direction,
+                        600f,
+                        3f
+                    )
+//                    sendParser.ControlAcceleratedSpeed(
+//                        CareRobotMC.Waist.byte,
+//                        Direction.CW.direction,
+//                        70f,
+//                        0.1f
+//                    )
+                    val data = sendParser.Data!!.clone()
+                    val msg =
+                        usbSerialHandler.obtainMessage(
+                            UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                            data
+                        )
+                    usbSerialHandler.sendMessage(msg)
+                    Thread.sleep(50)
+
+                    val shuolderUpData = ByteArray(20)
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Left_Shoulder.byte,
+                        Direction.CW.direction,
+                        15f,
+                        3f
+                    )
+//                    sendParser.ControlAcceleratedSpeed(
+//                        CareRobotMC.Left_Shoulder.byte,
+//                        Direction.CW.direction,
+//                        1f,
+//                        0.1f
+//                    )
+                    sendParser.Data!!.copyInto(shuolderUpData, 0, 0, sendParser.Data!!.size)
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Right_Shoulder.byte,
+                        Direction.CCW.direction,
+                        15f,
+                        3f
+                    )
+//                    sendParser.ControlAcceleratedSpeed(
+//                        CareRobotMC.Right_Shoulder.byte,
+//                        Direction.CCW.direction,
+//                        1f,
+//                        0.1f
+//                    )
+                    sendParser.Data!!.copyInto(shuolderUpData, 10, 0, sendParser.Data!!.size)
+                    val msg_shuolderUpData =
+                        usbSerialHandler.obtainMessage(
+                            UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                            shuolderUpData
+                        )
+                    usbSerialHandler.sendMessage(msg_shuolderUpData)
+
+                    Thread.sleep(50)
+
+                    val wheelForwardData = ByteArray(20)
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Left_Wheel.byte,
+                        Direction.CCW.direction,
+                        360f,
+                        3f
+                    )
+//                    sendParser.ControlAcceleratedSpeed(
+//                        CareRobotMC.Left_Wheel.byte,
+//                        Direction.CCW.direction,
+//                        5f,
+//                        0.1f
+//                    )
+                    sendParser.Data!!.copyInto(wheelForwardData, 0, 0, sendParser.Data!!.size)
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Right_Wheel.byte,
+                        Direction.CW.direction,
+                        360f,
+                        3f
+                    )
+//                    sendParser.ControlAcceleratedSpeed(
+//                        CareRobotMC.Right_Wheel.byte,
+//                        Direction.CW.direction,
+//                        5f,
+//                        0.1f
+//                    )
+                    sendParser.Data!!.copyInto(wheelForwardData, 10, 0, sendParser.Data!!.size)
+
+                    val msg_wheelForwardData =
+                        usbSerialHandler.obtainMessage(
+                            UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                            wheelForwardData
+                        )
+                    usbSerialHandler.sendMessage(msg_wheelForwardData)
+
+                    Thread.sleep(50)
+
+                    Thread.sleep(4000)
+                    count++
+                    sharedViewModel.testCount.postValue(count)
+                    stopRobot()
+                    Thread.sleep(500)
+
+                    //내려가는거
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Waist.byte,
+                        Direction.CCW.direction,
+                        0f,
+                        3f
+                    )
+                    val waist_Downdata = sendParser.Data!!.clone()
+                    val waist_Down_msg =
+                        usbSerialHandler.obtainMessage(
+                            UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                            waist_Downdata
+                        )
+                    usbSerialHandler.sendMessage(waist_Down_msg)
+                    Thread.sleep(50)
+
+                    val shoulderDownData = ByteArray(20)
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Left_Shoulder.byte,
+                        Direction.CCW.direction,
+                        0f,
+                        3f
+                    )
+                    sendParser.Data!!.copyInto(shoulderDownData, 0, 0, sendParser.Data!!.size)
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Right_Shoulder.byte,
+                        Direction.CW.direction,
+                        0f,
+                        3f
+                    )
+                    sendParser.Data!!.copyInto(shoulderDownData, 10, 0, sendParser.Data!!.size)
+                    val shoulderDownData_msg =
+                        usbSerialHandler.obtainMessage(
+                            UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                            shoulderDownData
+                        )
+                    usbSerialHandler.sendMessage(shoulderDownData_msg)
+                    Thread.sleep(50)
+
+                    val wheelGoBackData = ByteArray(20)
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Left_Wheel.byte,
+                        Direction.CW.direction,
+                        0f,
+                        3f
+                    )
+                    sendParser.Data!!.copyInto(wheelGoBackData, 0, 0, sendParser.Data!!.size)
+                    sendParser.ControlAcceleratedPos(
+                        CareRobotMC.Right_Wheel.byte,
+                        Direction.CCW.direction,
+                        0f,
+                        3f
+                    )
+                    sendParser.Data!!.copyInto(wheelGoBackData, 10, 0, sendParser.Data!!.size)
+                    val wheelGoBackData_msg =
+                        usbSerialHandler.obtainMessage(
+                            UsbSerialService.MSG_ROBOT_SERIAL_SEND,
+                            wheelGoBackData
+                        )
+                    usbSerialHandler.sendMessage(wheelGoBackData_msg)
+                    Thread.sleep(50)
+
+                    Thread.sleep(4000)
+                    count++
+                    sharedViewModel.testCount.postValue(count)
+                    stopRobot()
+                    Thread.sleep(500)
+
+
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+        motorTestThread?.start()
+    }
 
     fun feedback() {
         feedBackMotorStateInfoThread = Thread {

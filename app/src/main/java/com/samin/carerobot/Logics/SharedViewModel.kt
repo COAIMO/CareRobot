@@ -68,5 +68,8 @@ class SharedViewModel:ViewModel() {
 
     val feedBackProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
     val commandProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
+    val testProtocolMap = ConcurrentHashMap<Byte, ByteArray>()
+    var testCount = MutableLiveData<Int>()
+
 
 }

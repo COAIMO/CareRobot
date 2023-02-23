@@ -102,7 +102,6 @@ class UsbSerialService : Service() {
 
 
     private val port1_Listener = Port1_SerialListener()
-    private val port2_Listener = Port2_SerialListener()
 
     private val HEADER: ByteArray = byteArrayOf(0xff.toByte(), 0xFE.toByte())
     private var lastRecvTime: Long = System.currentTimeMillis()
@@ -123,51 +122,14 @@ class UsbSerialService : Service() {
                         SERIALPORT_CHK_CONNECTED,
                         "USB_Serial_Device1 시리얼 통신 연결되 었습니다."
                     ).sendToTarget()
-                    usbDriver_2 = usbDrivers!![1]
-                    device_2 = usbDriver_2.device
-                    isUsbDevice_2 = true
-                    if (!usbManager.hasPermission(device_2)) {
-                        val intent2: PendingIntent =
-                            PendingIntent.getBroadcast(
-                                context,
-                                0,
-                                Intent(ACTION_USB_PERMISSION_2),
-                                0
-                            )
-                        usbManager.requestPermission(device_2, intent2)
-                    } else {
-                        serialPort2_Connect(PORT2_BAUD_RATE)
-                        incomingHandler!!.obtainMessage(
-                            SERIALPORT_CHK_CONNECTED,
-                            "USB_Serial_Device2 시리얼 통신 연결되 었습니다."
-                        ).sendToTarget()
-                        incomingHandler!!.obtainMessage(
-                            SERIALPORT_CONNECT
-                        ).sendToTarget()
-                    }
+                    incomingHandler!!.obtainMessage(
+                        SERIALPORT_CONNECT
+                    ).sendToTarget()
 
                 } else {
                     incomingHandler!!.obtainMessage(
                         SERIALPORT_CHK_CONNECTED,
                         "USB_Serial_Device1 시리얼 접근을 허용하지 않았습니다."
-                    ).sendToTarget()
-                }
-            } else if (ACTION_USB_PERMISSION_2.equals(intent?.action)) {
-                val granted: Boolean =
-                    intent?.getExtras()!!.getBoolean(UsbManager.EXTRA_PERMISSION_GRANTED)
-                if (granted) {
-                    serialPort2_Connect(PORT2_BAUD_RATE)
-                    incomingHandler!!.obtainMessage(
-                        SERIALPORT_CHK_CONNECTED,
-                        "USB_Serial_Device2 시리얼 통신 연결되 었습니다."
-                    ).sendToTarget()
-                    incomingHandler!!.obtainMessage(
-                        SERIALPORT_CONNECT
-                    ).sendToTarget()
-                } else {
-                    incomingHandler!!.obtainMessage(
-                        SERIALPORT_CHK_CONNECTED,
-                        "USB_Serial_Device2 시리얼 접근을 허용하지 않았습니다."
                     ).sendToTarget()
                 }
             } else if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) {
@@ -176,10 +138,6 @@ class UsbSerialService : Service() {
                 }, 1000)
             } else if (intent?.action == UsbManager.ACTION_USB_DEVICE_DETACHED) {
                 disconnect()
-//                mHandler.obtainMessage(
-//                    SERIALPORT_CHK_CONNECTED,
-//                    "USB 연결이 끊겼습니다."
-//                ).sendToTarget()
             }
         }
     }
@@ -192,6 +150,7 @@ class UsbSerialService : Service() {
         if (incomingHandler == null)
             incomingHandler = IncomingHandler(this)
         messenger = Messenger(incomingHandler)
+
         findUSBSerialDevice()
         return messenger.binder
     }
@@ -200,7 +159,6 @@ class UsbSerialService : Service() {
         setFilter()
         super.onCreate()
     }
-
 
     override fun onDestroy() {
 //        Log.d(serviceTAG, "SerialService : onDestroy")
@@ -211,7 +169,7 @@ class UsbSerialService : Service() {
     private fun setFilter() {
         val filter = IntentFilter()
         filter.addAction(ACTION_USB_PERMISSION_1)
-        filter.addAction(ACTION_USB_PERMISSION_2)
+//        filter.addAction(ACTION_USB_PERMISSION_2)
         filter.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
         filter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
         registerReceiver(broadcastReceiver, filter)
@@ -228,117 +186,27 @@ class UsbSerialService : Service() {
             incomingHandler?.sendMSG_NO_SERIAL()
             return
         }
-        if (usbDrivers?.size!! == 1) {
-            incomingHandler!!.obtainMessage(
-                SERIALPORT_CHK_CONNECTED,
-                "USB 포트를 1개만 연결되었습니다. USB 포트를 1개 더 연결해주세요."
-            ).sendToTarget()
-            return
-        }
-        if (usbDrivers?.size!! == 2) {
-//            Log.d(TAG, "connection failed: only one driver)
-            incomingHandler!!.obtainMessage(
-                SERIALPORT_CHK_CONNECTED,
-                "USB 포트를 2개가 연결되었습니다."
-            ).sendToTarget()
-            usbDriver_1 = usbDrivers!![0]
-            device_1 = usbDriver_1.device
-            isUsbDevice_1 = true
 
+        if (usbDrivers?.size!! > 0) {
+            incomingHandler!!.obtainMessage(
+                SERIALPORT_CHK_CONNECTED,
+                "USB Serial 포트가 연결되어있습니다."
+            ).sendToTarget()
+            usbDriver_1 = usbDrivers!!.get(0)
+            device_1 = usbDriver_1.device
 
             if (!usbManager.hasPermission(device_1)) {
                 val intent: PendingIntent =
                     PendingIntent.getBroadcast(this, 0, Intent(ACTION_USB_PERMISSION_1), 0)
                 usbManager.requestPermission(device_1, intent)
-            } else {
-                usbDriver_2 = usbDrivers!![1]
-                device_2 = usbDriver_2.device
-                isUsbDevice_2 = true
-                if (!usbManager!!.hasPermission(device_2)) {
-                    val intent2: PendingIntent =
-                        PendingIntent.getBroadcast(
-                            this,
-                            0,
-                            Intent(ACTION_USB_PERMISSION_2),
-                            0
-                        )
-                    usbManager?.requestPermission(device_2, intent2)
-                } else {
-                    serialPortConnect(PORT1_BAUD_RATE, PORT2_BAUD_RATE)
-                    incomingHandler!!.obtainMessage(
-                        SERIALPORT_CONNECT
-                    ).sendToTarget()
-                }
+            }else{
+                serialPort1_Connect(PORT1_BAUD_RATE)
+                incomingHandler!!.obtainMessage(
+                    SERIALPORT_CONNECT
+                ).sendToTarget()
             }
         }
-    }
 
-    private fun serialPortConnect(port_1_Buadrate: Int?, port_2_Buadrate: Int?) {
-        if (usbManager != null) {
-            if (usbManager.hasPermission(device_1) && usbSerialPort_1 == null) {
-                usbConnection_1 = usbManager.openDevice(device_1)
-                usbSerialPort_1 = usbDriver_1.ports[0]
-                usbSerialPort_1!!.open(usbConnection_1)
-                usbSerialPort_1!!.setParameters(
-                    port_1_Buadrate!!,
-                    UsbSerialPort.DATABITS_8,
-                    UsbSerialPort.STOPBITS_1,
-                    UsbSerialPort.PARITY_NONE
-                )
-                usbSerialPort_1!!.dtr = true
-                usbSerialPort_1!!.rts = true
-                usbIoManager_1 = CoAISerialInputOutputManager(usbSerialPort_1, port1_Listener)
-                usbIoManager_1!!.readTimeout = 10
-                usbIoManager_1!!.start()
-                serialPort_1Connected = true
-
-//                val msg: Message = mHandler.obtainMessage().apply {
-//                    what = PORT1_CHK_CONNECTED
-//                    arg1 = 1
-//                    obj = baud_rate
-//                }
-//                mHandler.sendMessage(msg)
-            } else {
-//                val msg: Message = mHandler.obtainMessage().apply {
-//                    what = PORT1_CHK_CONNECTED
-//                    arg1 = 2
-//                }
-//                mHandler.sendMessage(msg)
-            }
-
-            if (usbManager!!.hasPermission(device_2) && usbSerialPort_2 == null) {
-
-                usbConnection_2 = usbManager!!.openDevice(device_2)
-                usbSerialPort_2 = usbDriver_2!!.ports[0]
-                usbSerialPort_2!!.open(usbConnection_2)
-                usbSerialPort_2!!.setParameters(
-                    port_2_Buadrate!!,
-                    UsbSerialPort.DATABITS_8,
-                    UsbSerialPort.STOPBITS_1,
-                    UsbSerialPort.PARITY_NONE
-                )
-                usbSerialPort_2!!.dtr = true
-                usbSerialPort_2!!.rts = true
-                usbIoManager_2 = CoAISerialInputOutputManager(usbSerialPort_2, port2_Listener)
-                usbIoManager_2!!.readTimeout = 10
-                usbIoManager_2!!.start()
-                serialPort_2Connected = true
-//                val msg: Message = mHandler.obtainMessage().apply {
-//                    what = PORT2_CHK_CONNECTED
-//                    arg1 = 1
-//                    obj = baud_rate
-//                }
-//                mHandler.sendMessage(msg)
-            } else {
-//                val msg: Message = mHandler.obtainMessage().apply {
-//                    what = PORT2_CHK_CONNECTED
-//                    arg1 = 2
-//                }
-//                mHandler.sendMessage(msg)
-            }
-        } else if (usbManager == null) {
-//            mHandler.obtainMessage(SERIALPORT_CHK_CONNECTED, "시리얼 포트를 연결해 주세요.").sendToTarget()
-        }
     }
 
     private fun serialPort1_Connect(buadrate: Int) {
@@ -373,40 +241,7 @@ class UsbSerialService : Service() {
         }
     }
 
-    private fun serialPort2_Connect(buadrate: Int) {
-        if (usbManager.hasPermission(device_2) && usbSerialPort_2 == null) {
-            usbConnection_2 = usbManager.openDevice(device_2)
-            usbSerialPort_2 = usbDriver_2.ports[0]
-            usbSerialPort_2!!.open(usbConnection_2)
-            usbSerialPort_2!!.setParameters(
-                buadrate,
-                UsbSerialPort.DATABITS_8,
-                UsbSerialPort.STOPBITS_1,
-                UsbSerialPort.PARITY_NONE
-            )
-            usbSerialPort_2!!.dtr = true
-            usbSerialPort_2!!.rts = true
-            usbIoManager_2 = CoAISerialInputOutputManager(usbSerialPort_2, port2_Listener)
-            usbIoManager_2!!.readTimeout = 10
-            usbIoManager_2!!.start()
-            serialPort_2Connected = true
-//                val msg: Message = mHandler.obtainMessage().apply {
-//                    what = PORT1_CHK_CONNECTED
-//                    arg1 = 1
-//                    obj = baud_rate
-//                }
-//                mHandler.sendMessage(msg)
-        } else {
-//                val msg: Message = mHandler.obtainMessage().apply {
-//                    what = PORT1_CHK_CONNECTED
-//                    arg1 = 2
-//                }
-//                mHandler.sendMessage(msg)
-        }
-    }
-
     private fun disconnect() {
-        isFirst = true
         serialPort_1Connected = false
         serialPort_2Connected = false
         usbIoManager_1 = null
@@ -530,79 +365,6 @@ class UsbSerialService : Service() {
         }
     }
 
-    fun parseReceivePCData(data: ByteArray) {
-        lastRecvTime = System.currentTimeMillis()
-        try {
-            //1. 버퍼인덱스(이전 부족한 데이터크기) 및 받은 데이터 크기만큼 배열생성
-            val tmpdata = ByteArray(bufferIndex + data.size)
-            //2.이전 recvBurffer에 남아있는 데이터를 tmpdata로 이동함
-            System.arraycopy(recvBuffer, 0, tmpdata, 0, bufferIndex)
-            //3. 데이터를 tmpdata의 잔여 데이터 뒤에 데이터 사이즈만큼 넣음
-            System.arraycopy(data, 0, tmpdata, bufferIndex, data.size)
-            var idx: Int = 0
-//            Log.d("태그", "received = ${HexDump.dumpHexString(data)}")
-
-            if (tmpdata.size < 6) {
-                //3. 수신받은 데이터 부족 시 리시브버퍼로 데이터 이동
-                System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
-                //4. 이전 받은 데이터 확인을 위해 버퍼 인덱스 수정
-                bufferIndex = tmpdata.size
-                return
-            }
-
-            while (true) {
-                val chkPos = indexOfBytes(tmpdata, idx, tmpdata.size)
-                if (chkPos != -1) {
-                    //해더 유무 체크 및 헤더 몇 번째 있는지 반환
-                    val scndpos = indexOfBytes(tmpdata, chkPos + 1, tmpdata.size)
-                    //다음 헤더가 없는 경우 -1 변환(헤더 중복 체크)
-                    if (scndpos == -1) {
-                        // 다음 데이터 없음
-                        if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
-                            // 해당 전문을 다 받았을 경우 ,또는 크거나
-                            val grabageDataSize = tmpdata.size - chkPos - (tmpdata[chkPos + 3] + 4)
-//                            tmpdata.lastIndex
-//                            tmpdata.sliceArray(tmpdata.lastIndex-grabageDataSize..tmpdata.lastIndex)
-                            //chkPos로 헤더 앞데이터 자르고 뒤에 가바지데이터 제거
-                            val focusdata: ByteArray =
-                                tmpdata.drop(chkPos).dropLast(grabageDataSize).toByteArray()
-                            recvPCData(focusdata)
-                            bufferIndex = 0;
-
-                        } else {
-                            //해당 전문보다 데이터가 작을경우
-                            System.arraycopy(
-                                tmpdata,
-                                chkPos,
-                                recvBuffer,
-                                0,
-                                tmpdata.size - chkPos
-                            )
-                            bufferIndex = tmpdata.size - chkPos
-                        }
-                        break
-
-                    } else {
-
-                        //첫번째 헤더 앞부분 짤라냄.(drop) //첫번째 헤더부터 두번째 헤더 앞까지 짤라냄.(take)
-                        val focusdata: ByteArray =
-                            tmpdata.drop(chkPos).take(scndpos - chkPos).toByteArray()
-                        recvPCData(focusdata)
-                        // 두번째 헤더 부분을 idx
-                        idx = scndpos
-                    }
-                } else {
-                    System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
-                    bufferIndex = tmpdata.size
-                    break
-                }
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-
     private fun indexOfBytes(data: ByteArray, startIdx: Int, count: Int): Int {
         if (data.size == 0 || count == 0 || startIdx >= count)
             return -1
@@ -684,57 +446,6 @@ class UsbSerialService : Service() {
         CareRobotMC.Waist_Sensor.byte
     )
 
-    lateinit var checkPortThread: Thread
-    private fun checkPort() {
-        val sendParser = NurirobotMC()
-        val startTime = System.currentTimeMillis()
-        CoroutineScope(Dispatchers.IO).launch {
-            async {
-                while (true) {
-                    if (isFirst){
-                        val curr = System.currentTimeMillis()
-                        for (i in feedbackallList) {
-                            sendParser.Feedback(i, ProtocolMode.REQPing.byte)
-                            val data = sendParser.Data!!.clone()
-                            port1_SendData(data)
-                            delay(100)
-                        }
-
-                        if (curr > startTime + 3000) {
-                            disconnect()
-                            delay(500)
-                            serialPortConnect(PORT2_BAUD_RATE, PORT1_BAUD_RATE)
-                            delay(500)
-                            break
-                        }
-                    }else break
-                }
-            }.await()
-            async {
-                val startTime_2 = System.currentTimeMillis()
-
-                while (true) {
-                    if (isFirst){
-                        val curr = System.currentTimeMillis()
-                        for (i in feedbackallList) {
-                            sendParser.Feedback(i, ProtocolMode.REQPing.byte)
-                            val data = sendParser.Data!!.clone()
-                            port2_SendData(data)
-                            delay(100)
-                        }
-
-                        if (curr > startTime_2 + 3000) {
-                            val message = Message.obtain(null, MSG_ERROR)
-                            incomingHandler?.sendMSG(message)
-                            break
-                        }
-                    }else break
-                }
-            }
-        }
-
-    }
-
     inner class IncomingHandler(
         service: Service,
         private val context: Context = service.applicationContext
@@ -758,9 +469,14 @@ class UsbSerialService : Service() {
 //                    Toast.makeText(context, msg.obj.toString(), Toast.LENGTH_SHORT).show()
 //                }
 
-                SERIALPORT_CONNECT -> checkPort()
+                SERIALPORT_CONNECT -> {
+                    val grantedIntent = Intent(ACTION_USB_PERMISSION_GRANTED_1)
+                    context?.sendBroadcast(grantedIntent)
+//                    checkPort()
+                    sendSerialReady()
+
+                }
                 SERIALPORT_READY -> {
-                    isFirst = false
                     sendSerialReady()
                 }
 
@@ -771,13 +487,14 @@ class UsbSerialService : Service() {
                 }
                 MSG_ROBOT_SERIAL_SEND -> {
                     msg.data.getByteArray("").let {
-                        robot_SendData(it!!)
+                        port1_SendData(it!!)
                     }
                 }
                 else -> super.handleMessage(msg)
             }
         }
-        fun sendSerialReady(){
+
+        fun sendSerialReady() {
             val message = Message.obtain(null, SERIALPORT_READY, null)
             clients.forEach {
                 it.send(message)
@@ -832,21 +549,21 @@ class UsbSerialService : Service() {
         }
     }
 
-    var isFirst = true
-
     inner class Port1_SerialListener() : SerialInputOutputManager.Listener {
         override fun onNewData(data: ByteArray?) {
             try {
                 if (data != null) {
-                    if (isFirst) {
-                        parseCheckData(data)
-                    } else {
-                        if (usbIoManager_1 == robotIOManager) {
-                            parseReceiveRobotData(data)
-                        } else {
-                            parseReceivePCData(data)
-                        }
-                    }
+                    parseReceiveRobotData(data)
+
+//                    if (isFirst) {
+//                        parseCheckData(data)
+//                    } else {
+//                        if (usbIoManager_1 == robotIOManager) {
+//                            parseReceiveRobotData(data)
+//                        } else {
+//                            parseReceivePCData(data)
+//                        }
+//                    }
                     Log.d("TEST", "port1_recv : ${HexDump.dumpHexString(data)}")
                 }
             } catch (e: Exception) {
@@ -860,213 +577,6 @@ class UsbSerialService : Service() {
             }
         }
 
-        private fun parseCheckData(data: ByteArray) {
-            lastRecvTime = System.currentTimeMillis()
-            try {
-                //1. 버퍼인덱스(이전 부족한 데이터크기) 및 받은 데이터 크기만큼 배열생성
-                val tmpdata = ByteArray(bufferIndex + data.size)
-                //2.이전 recvBurffer에 남아있는 데이터를 tmpdata로 이동함
-                System.arraycopy(recvBuffer, 0, tmpdata, 0, bufferIndex)
-                //3. 데이터를 tmpdata의 잔여 데이터 뒤에 데이터 사이즈만큼 넣음
-                System.arraycopy(data, 0, tmpdata, bufferIndex, data.size)
-                var idx: Int = 0
-//            Log.d("태그", "received = ${HexDump.dumpHexString(data)}")
-
-                if (tmpdata.size < 6) {
-                    //3. 수신받은 데이터 부족 시 리시브버퍼로 데이터 이동
-                    System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
-                    //4. 이전 받은 데이터 확인을 위해 버퍼 인덱스 수정
-                    bufferIndex = tmpdata.size
-                    return
-                }
-
-                while (true) {
-                    val chkPos = indexOfBytes(tmpdata, idx, tmpdata.size)
-                    if (chkPos != -1) {
-                        //해더 유무 체크 및 헤더 몇 번째 있는지 반환
-                        val scndpos = indexOfBytes(tmpdata, chkPos + 1, tmpdata.size)
-                        //다음 헤더가 없는 경우 -1 변환(헤더 중복 체크)
-                        if (scndpos == -1) {
-                            // 다음 데이터 없음
-                            if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
-                                // 해당 전문을 다 받았을 경우 ,또는 크거나
-                                val grabageDataSize =
-                                    tmpdata.size - chkPos - (tmpdata[chkPos + 3] + 4)
-//                            tmpdata.lastIndex
-//                            tmpdata.sliceArray(tmpdata.lastIndex-grabageDataSize..tmpdata.lastIndex)
-                                //chkPos로 헤더 앞데이터 자르고 뒤에 가바지데이터 제거
-                                val focusdata: ByteArray =
-                                    tmpdata.drop(chkPos).dropLast(grabageDataSize).toByteArray()
-                                checkData(focusdata)
-                                bufferIndex = 0;
-
-                            } else {
-                                //해당 전문보다 데이터가 작을경우
-                                System.arraycopy(
-                                    tmpdata,
-                                    chkPos,
-                                    recvBuffer,
-                                    0,
-                                    tmpdata.size - chkPos
-                                )
-                                bufferIndex = tmpdata.size - chkPos
-                            }
-                            break
-
-                        } else {
-
-                            //첫번째 헤더 앞부분 짤라냄.(drop) //첫번째 헤더부터 두번째 헤더 앞까지 짤라냄.(take)
-                            val focusdata: ByteArray =
-                                tmpdata.drop(chkPos).take(scndpos - chkPos).toByteArray()
-                            checkData(focusdata)
-                            // 두번째 헤더 부분을 idx
-                            idx = scndpos
-                        }
-                    } else {
-                        System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
-                        bufferIndex = tmpdata.size
-                        break
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
-        private fun checkData(data: ByteArray) {
-            val receiveParser = NurirobotMC()
-            if (!receiveParser.Parse(data))
-                return
-
-            receiveParser.GetDataStruct()
-            if (receiveParser.packet == ProtocolMode.FEEDPing.byte) {
-                robotSerial_Port = usbSerialPort_1
-                robotIOManager = usbIoManager_1
-                pcSerial_Port = usbSerialPort_2
-                pcIOmanager = usbIoManager_2
-
-                incomingHandler!!.obtainMessage(
-                    SERIALPORT_READY
-                ).sendToTarget()
-            }
-        }
-    }
-
-    inner class Port2_SerialListener() : SerialInputOutputManager.Listener {
-        override fun onNewData(data: ByteArray?) {
-            try {
-                if (data != null) {
-                    if (isFirst) {
-                        parseCheckData(data)
-                    } else {
-                        if (usbIoManager_2 == robotIOManager) {
-                            parseReceiveRobotData(data)
-                        } else {
-                            parseReceivePCData(data)
-                        }
-                    }
-                    Log.d("TEST", "port2_recv : ${HexDump.dumpHexString(data)}")
-                }
-            } catch (e: Exception) {
-            }
-        }
-
-        override fun onRunError(e: java.lang.Exception?) {
-            try {
-                e?.printStackTrace()
-            } catch (e: Exception) {
-            }
-        }
-
-        private fun parseCheckData(data: ByteArray) {
-            lastRecvTime = System.currentTimeMillis()
-            try {
-                //1. 버퍼인덱스(이전 부족한 데이터크기) 및 받은 데이터 크기만큼 배열생성
-                val tmpdata = ByteArray(bufferIndex + data.size)
-                //2.이전 recvBurffer에 남아있는 데이터를 tmpdata로 이동함
-                System.arraycopy(recvBuffer, 0, tmpdata, 0, bufferIndex)
-                //3. 데이터를 tmpdata의 잔여 데이터 뒤에 데이터 사이즈만큼 넣음
-                System.arraycopy(data, 0, tmpdata, bufferIndex, data.size)
-                var idx: Int = 0
-//            Log.d("태그", "received = ${HexDump.dumpHexString(data)}")
-
-                if (tmpdata.size < 6) {
-                    //3. 수신받은 데이터 부족 시 리시브버퍼로 데이터 이동
-                    System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
-                    //4. 이전 받은 데이터 확인을 위해 버퍼 인덱스 수정
-                    bufferIndex = tmpdata.size
-                    return
-                }
-
-                while (true) {
-                    val chkPos = indexOfBytes(tmpdata, idx, tmpdata.size)
-                    if (chkPos != -1) {
-                        //해더 유무 체크 및 헤더 몇 번째 있는지 반환
-                        val scndpos = indexOfBytes(tmpdata, chkPos + 1, tmpdata.size)
-                        //다음 헤더가 없는 경우 -1 변환(헤더 중복 체크)
-                        if (scndpos == -1) {
-                            // 다음 데이터 없음
-                            if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
-                                // 해당 전문을 다 받았을 경우 ,또는 크거나
-                                val grabageDataSize =
-                                    tmpdata.size - chkPos - (tmpdata[chkPos + 3] + 4)
-//                            tmpdata.lastIndex
-//                            tmpdata.sliceArray(tmpdata.lastIndex-grabageDataSize..tmpdata.lastIndex)
-                                //chkPos로 헤더 앞데이터 자르고 뒤에 가바지데이터 제거
-                                val focusdata: ByteArray =
-                                    tmpdata.drop(chkPos).dropLast(grabageDataSize).toByteArray()
-                                checkData(focusdata)
-                                bufferIndex = 0;
-
-                            } else {
-                                //해당 전문보다 데이터가 작을경우
-                                System.arraycopy(
-                                    tmpdata,
-                                    chkPos,
-                                    recvBuffer,
-                                    0,
-                                    tmpdata.size - chkPos
-                                )
-                                bufferIndex = tmpdata.size - chkPos
-                            }
-                            break
-
-                        } else {
-
-                            //첫번째 헤더 앞부분 짤라냄.(drop) //첫번째 헤더부터 두번째 헤더 앞까지 짤라냄.(take)
-                            val focusdata: ByteArray =
-                                tmpdata.drop(chkPos).take(scndpos - chkPos).toByteArray()
-                            checkData(focusdata)
-                            // 두번째 헤더 부분을 idx
-                            idx = scndpos
-                        }
-                    } else {
-                        System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
-                        bufferIndex = tmpdata.size
-                        break
-                    }
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
-        private fun checkData(data: ByteArray) {
-            val receiveParser = NurirobotMC()
-            if (!receiveParser.Parse(data))
-                return
-
-            receiveParser.GetDataStruct()
-            if (receiveParser.packet == ProtocolMode.FEEDPing.byte) {
-                robotSerial_Port = usbSerialPort_2
-                robotIOManager = usbIoManager_2
-                pcSerial_Port = usbSerialPort_1
-                pcIOmanager = usbIoManager_1
-                incomingHandler!!.obtainMessage(
-                    SERIALPORT_READY
-                ).sendToTarget()
-            }
-        }
     }
 
 }
