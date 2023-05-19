@@ -32,6 +32,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
+import kotlin.system.measureTimeMillis
 
 class SerialService : Service(), SerialInputOutputManager.Listener {
     companion object {
@@ -226,48 +227,165 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
         }
     }
 
+//    fun parseReceiveData(data: ByteArray) {
+//        lastRecvTime = System.currentTimeMillis()
+//        try {
+//            //1. 버퍼인덱스(이전 부족한 데이터크기) 및 받은 데이터 크기만큼 배열생성
+//            val tmpdata = ByteArray(bufferIndex + data.size)
+//            //2.이전 recvBurffer에 남아있는 데이터를 tmpdata로 이동함
+//            System.arraycopy(recvBuffer, 0, tmpdata, 0, bufferIndex)
+//            //3. 데이터를 tmpdata의 잔여 데이터 뒤에 데이터 사이즈만큼 넣음
+//            System.arraycopy(data, 0, tmpdata, bufferIndex, data.size)
+//            var idx: Int = 0
+////            Log.d("태그", "received = ${HexDump.dumpHexString(data)}")
+//
+//            if (tmpdata.size < 6) {
+//                //3. 수신받은 데이터 부족 시 리시브버퍼로 데이터 이동
+//                System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
+//                //4. 이전 받은 데이터 확인을 위해 버퍼 인덱스 수정
+//                bufferIndex = tmpdata.size
+//                return
+//            }
+//
+//            while (true) {
+//                val chkPos = indexOfBytes(tmpdata, idx, tmpdata.size)
+//                if (chkPos != -1) {
+//                    //해더 유무 체크 및 헤더 몇 번째 있는지 반환
+//                    val scndpos = indexOfBytes(tmpdata, chkPos + 1, tmpdata.size)
+//                    //다음 헤더가 없는 경우 -1 변환(헤더 중복 체크)
+//                    if (scndpos == -1) {
+//                        // 다음 데이터 없음
+//                        if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
+//                            // 해당 전문을 다 받았을 경우 ,또는 크거나
+//                            val grabageDataSize = tmpdata.size - chkPos - (tmpdata[chkPos + 3] + 4)
+////                            tmpdata.lastIndex
+////                            tmpdata.sliceArray(tmpdata.lastIndex-grabageDataSize..tmpdata.lastIndex)
+//                            //chkPos로 헤더 앞데이터 자르고 뒤에 가바지데이터 제거
+//                            val focusdata: ByteArray =
+//                                tmpdata.drop(chkPos).dropLast(grabageDataSize).toByteArray()
+//                            recvData(focusdata)
+//                            bufferIndex = 0;
+//                            Log.d(REVC, "parseReceiveData1 : ${HexDump.dumpHexString(focusdata)}")
+//
+//                        } else {
+//                            //해당 전문보다 데이터가 작을경우
+//                            System.arraycopy(
+//                                tmpdata,
+//                                chkPos,
+//                                recvBuffer,
+//                                0,
+//                                tmpdata.size - chkPos
+//                            )
+//                            bufferIndex = tmpdata.size - chkPos
+//                        }
+//                        break
+//
+//                    } else {
+//
+//                        //첫번째 헤더 앞부분 짤라냄.(drop) //첫번째 헤더부터 두번째 헤더 앞까지 짤라냄.(take)
+//                        val focusdata: ByteArray =
+//                            tmpdata.drop(chkPos).take(scndpos - chkPos).toByteArray()
+//                        recvData(focusdata)
+//                        Log.d(REVC, "parseReceiveData2 : ${HexDump.dumpHexString(focusdata)}")
+//
+//                        // 두번째 헤더 부분을 idx
+//                        idx = scndpos
+//                    }
+//                } else {
+//                    System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
+//                    bufferIndex = tmpdata.size
+//                    break
+//                }
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
+//    }
+
+//    fun parseReceiveData(data: ByteArray) {
+//        lastRecvTime = System.currentTimeMillis()
+//        try {
+//            val tmpdata = ByteArray(bufferIndex + data.size)
+//            System.arraycopy(recvBuffer, 0, tmpdata, 0, bufferIndex)
+//            System.arraycopy(data, 0, tmpdata, bufferIndex, data.size)
+//            var idx: Int = 0
+//
+//            if (bufferIndex == 0 && tmpdata.size < 6) {
+//                System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
+//                bufferIndex = tmpdata.size
+//                return
+//            }
+//
+//            while (true) {
+//                val chkPos = indexOfBytes(tmpdata, idx, tmpdata.size)
+//                if (chkPos == -1) {
+//                    System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
+//                    bufferIndex = tmpdata.size
+//                    break
+//                }
+//
+//                val scndpos = indexOfBytes(tmpdata, chkPos + 1, tmpdata.size)
+//                if (scndpos == -1) {
+//                    if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
+//                        val focusdata = tmpdata.copyOfRange(chkPos, chkPos + tmpdata[chkPos + 3] + 4)
+//                        recvData(focusdata)
+//                        bufferIndex = 0;
+//                        Log.d(REVC, "parseReceiveData1 : ${HexDump.dumpHexString(focusdata)}")
+//                    } else {
+//                        System.arraycopy(
+//                            tmpdata,
+//                            chkPos,
+//                            recvBuffer,
+//                            0,
+//                            tmpdata.size - chkPos
+//                        )
+//                        bufferIndex = tmpdata.size - chkPos
+//                    }
+//                    break
+//
+//                } else {
+//                    val focusdata = tmpdata.copyOfRange(chkPos, scndpos)
+//                    recvData(focusdata)
+//                    Log.d(REVC, "parseReceiveData2 : ${HexDump.dumpHexString(focusdata)}")
+//                    idx = scndpos
+//                }
+//            }
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//        }
+//    }
+
     fun parseReceiveData(data: ByteArray) {
-        lastRecvTime = System.currentTimeMillis()
-        try {
-            //1. 버퍼인덱스(이전 부족한 데이터크기) 및 받은 데이터 크기만큼 배열생성
-            val tmpdata = ByteArray(bufferIndex + data.size)
-            //2.이전 recvBurffer에 남아있는 데이터를 tmpdata로 이동함
-            System.arraycopy(recvBuffer, 0, tmpdata, 0, bufferIndex)
-            //3. 데이터를 tmpdata의 잔여 데이터 뒤에 데이터 사이즈만큼 넣음
-            System.arraycopy(data, 0, tmpdata, bufferIndex, data.size)
-            var idx: Int = 0
-//            Log.d("태그", "received = ${HexDump.dumpHexString(data)}")
+        val elapsed: Long = measureTimeMillis {
+            lastRecvTime = System.currentTimeMillis()
+            try {
+                val tmpdata = ByteArray(bufferIndex + data.size)
+                System.arraycopy(recvBuffer, 0, tmpdata, 0, bufferIndex)
+                System.arraycopy(data, 0, tmpdata, bufferIndex, data.size)
+                var idx: Int = 0
 
-            if (tmpdata.size < 6) {
-                //3. 수신받은 데이터 부족 시 리시브버퍼로 데이터 이동
-                System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
-                //4. 이전 받은 데이터 확인을 위해 버퍼 인덱스 수정
-                bufferIndex = tmpdata.size
-                return
-            }
+                if (bufferIndex == 0 && tmpdata.size < 6) {
+                    System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
+                    bufferIndex = tmpdata.size
+                    return
+                }
 
-            while (true) {
-                val chkPos = indexOfBytes(tmpdata, idx, tmpdata.size)
-                if (chkPos != -1) {
-                    //해더 유무 체크 및 헤더 몇 번째 있는지 반환
+                while (true) {
+                    val chkPos = indexOfBytes(tmpdata, idx, tmpdata.size)
+                    if (chkPos == -1) {
+                        System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
+                        bufferIndex = tmpdata.size
+                        break
+                    }
+
                     val scndpos = indexOfBytes(tmpdata, chkPos + 1, tmpdata.size)
-                    //다음 헤더가 없는 경우 -1 변환(헤더 중복 체크)
                     if (scndpos == -1) {
-                        // 다음 데이터 없음
-                        if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
-                            // 해당 전문을 다 받았을 경우 ,또는 크거나
-                            val grabageDataSize = tmpdata.size - chkPos - (tmpdata[chkPos + 3] + 4)
-//                            tmpdata.lastIndex
-//                            tmpdata.sliceArray(tmpdata.lastIndex-grabageDataSize..tmpdata.lastIndex)
-                            //chkPos로 헤더 앞데이터 자르고 뒤에 가바지데이터 제거
-                            val focusdata: ByteArray =
-                                tmpdata.drop(chkPos).dropLast(grabageDataSize).toByteArray()
+                        if (chkPos + 3 < tmpdata.size && tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
+                            val focusdata = tmpdata.copyOfRange(chkPos, chkPos + tmpdata[chkPos + 3] + 4)
+                            Log.d(REVC, "parseReceiveData1 : ${HexDump.dumpHexString(focusdata)}")
                             recvData(focusdata)
                             bufferIndex = 0;
-                            Log.d(REVC, "parseReceiveData1 : ${HexDump.dumpHexString(focusdata)}")
-
                         } else {
-                            //해당 전문보다 데이터가 작을경우
                             System.arraycopy(
                                 tmpdata,
                                 chkPos,
@@ -280,43 +398,56 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
                         break
 
                     } else {
-
-                        //첫번째 헤더 앞부분 짤라냄.(drop) //첫번째 헤더부터 두번째 헤더 앞까지 짤라냄.(take)
-                        val focusdata: ByteArray =
-                            tmpdata.drop(chkPos).take(scndpos - chkPos).toByteArray()
-                        recvData(focusdata)
-                        Log.d(REVC, "parseReceiveData2 : ${HexDump.dumpHexString(focusdata)}")
-
-                        // 두번째 헤더 부분을 idx
+                        if (tmpdata[chkPos + 3] + 4 <= scndpos) {
+                            val focusdata = tmpdata.copyOfRange(chkPos, scndpos)
+                            Log.d(REVC, "parseReceiveData2 : ${HexDump.dumpHexString(focusdata)}")
+                            recvData(focusdata)
+                        }
                         idx = scndpos
                     }
-                } else {
-                    System.arraycopy(tmpdata, idx, recvBuffer, 0, tmpdata.size)
-                    bufferIndex = tmpdata.size
-                    break
                 }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
+        Log.d(REVC, "calc time  : ${elapsed}")
     }
 
+//    private fun indexOfBytes(data: ByteArray, startIdx: Int, count: Int): Int {
+//        if (data.size == 0 || count == 0 || startIdx >= count)
+//            return -1
+//        var i = startIdx
+//        val endIndex = Math.min(startIdx + count, data.size)
+//        var fidx: Int = 0
+//        var lastFidx = 0
+//        while (i < endIndex) {
+//            lastFidx = fidx
+//            fidx = if (data[i] == HEADER[fidx]) fidx + 1 else 0
+//            if (fidx == 2) {
+//                return i - fidx + 1
+//            }
+//            if (lastFidx > 0 && fidx == 0) {
+//                i = i - lastFidx
+//                lastFidx = 0
+//            }
+//            i++
+//        }
+//        return -1
+//    }
     private fun indexOfBytes(data: ByteArray, startIdx: Int, count: Int): Int {
         if (data.size == 0 || count == 0 || startIdx >= count)
             return -1
         var i = startIdx
         val endIndex = Math.min(startIdx + count, data.size)
         var fidx: Int = 0
-        var lastFidx = 0
         while (i < endIndex) {
-            lastFidx = fidx
-            fidx = if (data[i] == HEADER[fidx]) fidx + 1 else 0
-            if (fidx == 2) {
-                return i - fidx + 1
-            }
-            if (lastFidx > 0 && fidx == 0) {
-                i = i - lastFidx
-                lastFidx = 0
+            if (data[i] == HEADER[fidx]) {
+                fidx++
+                if (fidx == 2) {
+                    return i - fidx + 1
+                }
+            } else {
+                fidx = 0
             }
             i++
         }
