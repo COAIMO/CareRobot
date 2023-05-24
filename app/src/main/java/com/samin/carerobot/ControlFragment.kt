@@ -359,6 +359,8 @@ class ControlFragment : Fragment() {
                 activity?.stopMotor(CareRobotMC.Left_Wheel.byte, CareRobotMC.Right_Wheel.byte)
             }
             mBinding.btnRotateLeft -> {
+                sharedViewModel.currentMax[1] = 0
+                sharedViewModel.currentMax[3] = 0
                 when (selectedShoulderMode) {
                     ControlMode.Left.byte -> {
                         nuriMC.ControlAcceleratedSpeed(
@@ -411,6 +413,8 @@ class ControlFragment : Fragment() {
                 }
             }
             mBinding.btnRotateRight -> {
+                sharedViewModel.currentMax[1] = 0
+                sharedViewModel.currentMax[3] = 0
                 when (selectedShoulderMode) {
                     ControlMode.Left.byte -> {
                         nuriMC.ControlAcceleratedSpeed(

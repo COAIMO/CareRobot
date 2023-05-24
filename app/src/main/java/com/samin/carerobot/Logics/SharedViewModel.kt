@@ -47,6 +47,7 @@ class SharedViewModel:ViewModel() {
     var controlPart = MutableLiveData<Byte?>()
     val motorInfo = ConcurrentHashMap<Byte,MotorInfo>()
     val posInfos = ConcurrentHashMap<Byte, Float>()
+    val currentMax = ConcurrentHashMap<Byte, Short>()
 
     /**
      * 사용하면 안됨.

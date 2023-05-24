@@ -9,7 +9,7 @@ android {
     defaultConfig {
         applicationId "com.samin.carerobot"
         minSdk 25
-        targetSdk 28
+        targetSdk 31
         versionCode 5
         versionName "2.0.5"
 

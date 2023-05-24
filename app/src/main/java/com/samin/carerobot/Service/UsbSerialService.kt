@@ -378,7 +378,7 @@ class UsbSerialService : Service() {
             usbSerialPort_1!!.dtr = true
             usbSerialPort_1!!.rts = true
             usbIoManager_1 = SerialInputOutputManager(usbSerialPort_1, port1_Listener)
-            usbIoManager_1!!.readTimeout = 10
+            usbIoManager_1!!.readTimeout = 0
             usbIoManager_1!!.start()
             serialPort_1Connected = true
 //                val msg: Message = mHandler.obtainMessage().apply {
@@ -410,7 +410,7 @@ class UsbSerialService : Service() {
             usbSerialPort_2!!.dtr = true
             usbSerialPort_2!!.rts = true
             usbIoManager_2 = SerialInputOutputManager(usbSerialPort_2, port2_Listener)
-            usbIoManager_2!!.readTimeout = 10
+            usbIoManager_2!!.readTimeout = 0
             usbIoManager_2!!.start()
             serialPort_2Connected = true
 //                val msg: Message = mHandler.obtainMessage().apply {
@@ -453,7 +453,7 @@ class UsbSerialService : Service() {
     fun port1_SendData(data: ByteArray) {
         try {
             usbIoManager_1?.writeAsync(data)
-            Log.d("로그", "port1_SendData : \n${HexDump.dumpHexString(data)}")
+//            Log.d("로그", "port1_SendData : \n${HexDump.dumpHexString(data)}")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -462,7 +462,7 @@ class UsbSerialService : Service() {
     fun port2_SendData(data: ByteArray) {
         try {
             usbIoManager_2?.writeAsync(data)
-            Log.d("로그", "port2_SendData : \n${HexDump.dumpHexString(data)}")
+//            Log.d("로그", "port2_SendData : \n${HexDump.dumpHexString(data)}")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -471,7 +471,7 @@ class UsbSerialService : Service() {
     fun robot_SendData(data: ByteArray) {
         try {
             robotIOManager?.writeAsync(data)
-            Log.d("로그", "port1_SendData : \n${HexDump.dumpHexString(data)}")
+//            Log.d("로그", "port1_SendData : \n${HexDump.dumpHexString(data)}")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -480,7 +480,7 @@ class UsbSerialService : Service() {
     fun pc_SendData(data: ByteArray) {
         try {
             pcIOmanager?.writeAsync(data)
-            Log.d("로그", "port2_SendData : \n${HexDump.dumpHexString(data)}")
+//            Log.d("로그", "port2_SendData : \n${HexDump.dumpHexString(data)}")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -514,7 +514,7 @@ class UsbSerialService : Service() {
                     //다음 헤더가 없는 경우 -1 변환(헤더 중복 체크)
                     if (scndpos == -1) {
                         // 다음 데이터 없음
-                        if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
+                        if (chkPos + 3 < tmpdata.size && tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
                             // 해당 전문을 다 받았을 경우 ,또는 크거나
                             val grabageDataSize = tmpdata.size - chkPos - (tmpdata[chkPos + 3] + 4)
 //                            tmpdata.lastIndex
@@ -681,7 +681,7 @@ class UsbSerialService : Service() {
         receiveParser.GetDataStruct()
         when (receiveParser.packet) {
             ProtocolMode.FEEDPing.byte -> {
-                Log.d("ssf", "CheckProductPing data : \n${HexDump.dumpHexString(data)}")
+//                Log.d("ssf", "CheckProductPing data : \n${HexDump.dumpHexString(data)}")
                 val getID = receiveParser.Data!!.get(2)
                 mcIDMap.put(getID, getID)
             }
@@ -691,7 +691,7 @@ class UsbSerialService : Service() {
             }
             ProtocolMode.FEEDPos.byte -> {
                 val message = Message.obtain(null, ProtocolMode.FEEDPos.byte.toInt(), data)
-                Log.d("확인", "${HexDump.dumpHexString(data)}")
+                Log.d("위치 피드백", "${HexDump.dumpHexString(data)}")
                 incomingHandler?.sendMSG(message)
             }
             ProtocolMode.FEEDFirmware.byte -> {
@@ -1087,7 +1087,7 @@ class UsbSerialService : Service() {
                             parseReceivePCData(data)
                         }
                     }
-                    Log.d("TEST", "port2_recv : ${HexDump.dumpHexString(data)}")
+//                    Log.d("TEST", "port2_recv : ${HexDump.dumpHexString(data)}")
                 }
             } catch (e: Exception) {
             }

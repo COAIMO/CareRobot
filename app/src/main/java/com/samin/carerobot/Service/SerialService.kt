@@ -474,7 +474,7 @@ class SerialService : Service(), SerialInputOutputManager.Listener {
             }
             ProtocolMode.FEEDPos.byte -> {
                 val message = Message.obtain(null, ProtocolMode.FEEDPos.byte.toInt(), data)
-                Log.d("확인", "${HexDump.dumpHexString(data)}")
+//                Log.d("확인", "${HexDump.dumpHexString(data)}")
                 incomingHandler?.sendMSG(message)
             }
             ProtocolMode.FEEDFirmware.byte ->{

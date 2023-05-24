@@ -9,6 +9,7 @@ import com.samin.carerobot.Logics.HexDump
 import com.samin.carerobot.Logics.MotorInfo
 import com.samin.carerobot.Logics.SharedViewModel
 import java.lang.Math.abs
+import java.lang.Math.max
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.HashMap
 
@@ -56,19 +57,12 @@ class MotorControllerParser(viewModel: SharedViewModel) {
             }
             exPositonhmap[arg[2]] = tmpInfo.position!!
             viewModel.posInfos[arg[2]] = tmpInfo.position!!
+            viewModel.currentMax[arg[2]] = maxOf(viewModel.currentMax[arg[2]] ?: 0, tmp.Current!! )
 
-            if (tmp.ID == CareRobotMC.Waist.byte) {
-                Log.d(
-                    "허리허리",
-                    "ID: ${tmp.ID} Direction : ${tmp.Direction}\t Pos : ${tmp.Speed}"
-                )
-//                viewModel.waistStateMap[tmp.ID!!] = tmp.Speed!!.toInt()
-            }
+            if (arg[2] in 1..3)
+                Log.i("팔", "${arg[2]} ${viewModel.currentMax[arg[2]]}")
+
         } else if (arg[2] == CareRobotMC.Waist_Sensor.byte) {
-            Log.d(
-                "로봇",
-                "id : ${arg[2]} sensor: ${arg[11]}"
-            )
             val tmpInfo = MotorInfo()
             val sensorData = arg[11] != 0x00.toByte()
             tmpInfo.encoder_id = arg[2]
