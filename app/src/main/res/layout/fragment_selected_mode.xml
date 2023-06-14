@@ -7,56 +7,104 @@
     tools:context=".SelectedModeFragment">
 
     <!--    물건 옮기기 모드-->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/carry_mode_layout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/circle_message">
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_heavy"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@drawable/carry_mode_button"
-            android:text="무거운 물건\n들어주기"
-            android:textColor="@color/navi_textColor"
-            android:textSize="50sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@id/btn_height"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_default="percent"
-            app:layout_constraintHeight_percent="0.25"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="packed"
-            app:layout_constraintWidth_default="percent"
-            app:layout_constraintWidth_percent="0.5" />
-
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btn_height"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="40dp"
-            android:background="@drawable/carry_mode_button"
-            android:text="@string/carry_mode_title_height"
-            android:textColor="@color/navi_textColor"
-            android:textSize="50sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_default="percent"
-            app:layout_constraintHeight_percent="0.25"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_heavy"
-            app:layout_constraintWidth_default="percent"
-            app:layout_constraintWidth_percent="0.5" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!--    거동보조 모드-->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/carry_mode_layout"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="visible"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/circle_message"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintVertical_bias="1.0">
+
+        <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_heavy"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@drawable/carry_mode_button"
+                android:text="무거운 물건\n들어주기"
+                android:textColor="@color/navi_textColor"
+                android:textSize="50sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toTopOf="@id/btn_height"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_default="percent"
+                app:layout_constraintHeight_percent="0.25"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintWidth_default="percent"
+                app:layout_constraintWidth_percent="0.5" />
+
+        <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_heavy_study"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="@drawable/change_mode_button"
+                android:text="학습모드"
+                android:textColor="@color/navi_textColor"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_default="percent"
+                app:layout_constraintHeight_percent="0.25"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintWidth_default="percent"
+                app:layout_constraintWidth_percent="0.5"
+                app:layout_constraintHorizontal_bias="0.918"
+                app:layout_constraintVertical_bias="0.301"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_height"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="40dp"
+                android:background="@drawable/carry_mode_button"
+                android:text="@string/carry_mode_title_height"
+                android:textColor="@color/navi_textColor"
+                android:textSize="50sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_default="percent"
+                app:layout_constraintHeight_percent="0.25"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_heavy"
+                app:layout_constraintWidth_default="percent"
+                app:layout_constraintWidth_percent="0.5" />
+
+        <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_height_study"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:background="@drawable/change_mode_button"
+                android:text="학습모드"
+                android:textColor="@color/navi_textColor"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHeight_default="percent"
+                app:layout_constraintHeight_percent="0.25"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintVertical_chainStyle="packed"
+                app:layout_constraintWidth_default="percent"
+                app:layout_constraintWidth_percent="0.5"
+                app:layout_constraintHorizontal_bias="0.918"
+                app:layout_constraintVertical_bias="0.705"
+                app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/behavior_mode_layout"
         android:layout_width="0dp"

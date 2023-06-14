@@ -6,10 +6,8 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.activityViewModels
 import com.jeongmin.nurimotortester.Nuri.Direction
@@ -55,6 +53,45 @@ class SelectedModeFragment : Fragment() {
         requireActivity().onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
     }
 
+
+    private lateinit var gestureDetector: GestureDetector
+
+    private val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
+        private val SWIPE_THRESHOLD = 100
+        private val SWIPE_VELOCITY_THRESHOLD = 100
+
+        override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+            val diffY = e2.y - e1.y
+            val diffX = e2.x - e1.x
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                    if (diffX > 0) {
+                        onSwipeRight()
+                    } else {
+                        onSwipeLeft()
+                    }
+                }
+            }
+            return true
+        }
+    }
+
+
+
+    private fun onSwipeRight() {
+        // Right swipe action here
+        mBinding.btnHeavyStudy.visibility = View.VISIBLE
+        mBinding.btnHeightStudy.visibility = View.VISIBLE
+    }
+
+    private fun onSwipeLeft() {
+        // Left swipe action here
+        mBinding.btnHeavyStudy.visibility = View.GONE
+        mBinding.btnHeightStudy.visibility = View.GONE
+        mBinding.btnHeavyStudy.text = "학습모드"
+        mBinding.btnHeightStudy.text = "학습모드"
+    }
+
     override fun onDetach() {
         super.onDetach()
         activity = null
@@ -76,6 +113,17 @@ class SelectedModeFragment : Fragment() {
         mBinding = FragmentSelectedModeBinding.inflate(inflater, container, false)
         initView()
         setButtonClickEvent()
+//        gestureDetector = GestureDetector(context, gestureListener)
+//        mBinding.root.setOnTouchListener { _, event ->
+//            gestureDetector.onTouchEvent(event)
+//        }
+        gestureDetector = GestureDetector(context, gestureListener)
+        mBinding.btnHeavy.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+        }
+        mBinding.btnHeight.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+        }
         return mBinding.root
     }
 
@@ -92,6 +140,8 @@ class SelectedModeFragment : Fragment() {
             when (it) {
                 SharedViewModel.MODE_CARRY -> {
                     mBinding.carryModeLayout.visibility = View.VISIBLE
+                    mBinding.btnHeavyStudy.visibility = View.GONE
+                    mBinding.btnHeightStudy.visibility = View.GONE
                 }
                 SharedViewModel.MODE_BEHAVIOR -> {
                     mBinding.behaviorModeLayout.visibility = View.VISIBLE
@@ -148,6 +198,24 @@ class SelectedModeFragment : Fragment() {
         }
         mBinding.btnTransferChair.setOnClickListener {
             onClick(mBinding.btnTransferChair)
+        }
+
+        mBinding.btnHeavyStudy.setOnClickListener {
+            if (mBinding.btnHeavyStudy.text !== "저장") {
+                mBinding.btnHeavyStudy.text = "저장"
+            }
+            else {
+                mBinding.btnHeavyStudy.text = "학습모드"
+            }
+        }
+
+        mBinding.btnHeightStudy.setOnClickListener {
+            if (mBinding.btnHeightStudy.text !== "저장") {
+                mBinding.btnHeightStudy.text = "저장"
+            }
+            else {
+                mBinding.btnHeightStudy.text = "학습모드"
+            }
         }
     }
 
