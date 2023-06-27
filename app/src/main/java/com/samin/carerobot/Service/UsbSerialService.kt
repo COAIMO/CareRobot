@@ -514,7 +514,8 @@ class UsbSerialService : Service() {
                     //다음 헤더가 없는 경우 -1 변환(헤더 중복 체크)
                     if (scndpos == -1) {
                         // 다음 데이터 없음
-                        if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
+                        if (chkPos + 3 < tmpdata.size && tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
+//                        if (tmpdata[chkPos + 3] + 4 <= tmpdata.size - chkPos) {
                             // 해당 전문을 다 받았을 경우 ,또는 크거나
                             val grabageDataSize = tmpdata.size - chkPos - (tmpdata[chkPos + 3] + 4)
 //                            tmpdata.lastIndex
